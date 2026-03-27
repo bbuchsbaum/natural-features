@@ -1,0 +1,92 @@
+{
+  "acoustic_phonetics": {
+    "articulatory": {
+      "fingerprint": "5a5c90f6e0c792bae7ac",
+      "shape": [
+        12,
+        24
+      ],
+      "time_end_s": 5.52,
+      "time_start_s": 0.02
+    },
+    "posteriorgrams": {
+      "fingerprint": "ae7591be6f6c42f5a79c",
+      "shape": [
+        12,
+        13
+      ],
+      "time_end_s": 5.52,
+      "time_start_s": 0.02
+    }
+  },
+  "audio_batch": {
+    "collapsed": {
+      "fingerprint": "abcc958775dde369a0d6",
+      "shape": [
+        66
+      ]
+    },
+    "matrix": {
+      "fingerprint": "b9f9a0cb384e7ae5d15d",
+      "shape": [
+        6,
+        33
+      ],
+      "time_end_s": 5.0,
+      "time_start_s": 0.0
+    }
+  },
+  "mfcc": {
+    "fingerprint": "bb381cdaee4cfe44a985",
+    "shape": [
+      598,
+      26
+    ],
+    "time_end_s": 5.9825,
+    "time_start_s": 0.0125
+  },
+  "multiscale_language": {
+    "16.0": {
+      "fingerprint": "5cf9d6fa9a576f3e0231",
+      "shape": [
+        1,
+        515
+      ],
+      "time_end_s": 0.0,
+      "time_start_s": 0.0
+    },
+    "2.0": {
+      "fingerprint": "f0621584cc91fde66fff",
+      "shape": [
+        4,
+        515
+      ],
+      "time_end_s": 6.0,
+      "time_start_s": 0.0
+    },
+    "4.0": {
+      "fingerprint": "44da8f4bbe11a93a1fb8",
+      "shape": [
+        2,
+        515
+      ],
+      "time_end_s": 4.0,
+      "time_start_s": 0.0
+    }
+  },
+  "reference_version": 1,
+  "stimulus": {
+    "audio": "tests/stimuli/tier_a/audio_speechlike.wav",
+    "video": "tests/stimuli/tier_a/video_scene_cut.npy"
+  },
+  "tier": "A",
+  "visual_energy": {
+    "fingerprint": "44d519cf2f95f3724244",
+    "shape": [
+      60,
+      8
+    ],
+    "time_end_s": 5.9,
+    "time_start_s": 0.0
+  }
+}

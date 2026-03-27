@@ -1,0 +1,428 @@
+{
+  "prd_id": "NF-PRD-002",
+  "title": "natural_features v1.2: Multiscale LLM Language Features",
+  "version": "1.0.0",
+  "status": "draft",
+  "owners": [
+    "natural_features maintainers"
+  ],
+  "last_updated": "2026-02-19",
+  "summary": "Add an opt-in, provider-agnostic pipeline for high-quality language/semantic features from transcript or audio-derived transcript, sampled at multiple temporal scales (e.g., 2s, 4s, 16s) and returned as aligned feature matrices.",
+  "problem_statement": "Current language features are baseline-oriented and mostly single-scale. Researchers need stronger semantic representations (LLM-grade) and ergonomic multiscale outputs for encoding/decoding analysis.",
+  "goals": [
+    "Provide a one-call multiscale language feature workflow from transcript or audio.",
+    "Support opt-in API-backed embedding/LLM providers with secure key handling.",
+    "Return deterministic, time-aligned multiscale outputs as FeatureSeries and optional DataFrames.",
+    "Support sentence/paragraph-level semantic features in addition to token/word-level features.",
+    "Integrate with existing fMRI utilities (resampling, HRF, design matrix)."
+  ],
+  "non_goals": [
+    "Mandating any cloud provider for core installation.",
+    "Guaranteeing identical vectors across providers/models.",
+    "Building a hosted orchestration service in this milestone.",
+    "Replacing existing local baseline extractors."
+  ],
+  "target_users": [
+    "Neuroimaging researchers requiring semantic regressors across multiple timescales.",
+    "NLP/ML researchers benchmarking semantic feature spaces for naturalistic stimuli.",
+    "Labs that need reproducible API-driven feature extraction with clear provenance."
+  ],
+  "assumptions": [
+    "Users may have transcript text directly, or audio that can be transcribed to timestamped words.",
+    "Provider APIs can have latency/rate limits and occasional transient failures.",
+    "Users need strict reproducibility metadata even when embeddings come from remote APIs."
+  ],
+  "personas": [
+    {
+      "name": "Transcript-first Researcher",
+      "needs": [
+        "High-quality sentence/paragraph embeddings.",
+        "Multi-window outputs (2s, 4s, 16s).",
+        "Simple conversion to design matrices."
+      ]
+    },
+    {
+      "name": "Audio-only Researcher",
+      "needs": [
+        "ASR fallback to generate timestamped transcript.",
+        "Same multiscale API regardless of transcript source.",
+        "Quality metadata to filter unreliable spans."
+      ]
+    }
+  ],
+  "functional_requirements": [
+    {
+      "id": "FR-201",
+      "name": "Multiscale Feature Workflow API",
+      "description": "Implement a high-level API that extracts language features and returns outputs at user-specified scales.",
+      "priority": "P0",
+      "api_contract": {
+        "python": "extract_multiscale_language(input, scales_s, feature_families, provider_config, as_dataframe=False, collapse=None) -> MultiscaleLanguageResult",
+        "result_shape": "dict[float, FeatureSeries] and optional dict[float, DataFrame]"
+      }
+    },
+    {
+      "id": "FR-202",
+      "name": "Input Modalities",
+      "description": "Support transcript input (with optional timestamps) and audio input (with ASR transcript fallback).",
+      "priority": "P0"
+    },
+    {
+      "id": "FR-203",
+      "name": "LLM/Embedding Provider Abstraction",
+      "description": "Provide provider adapters for API-backed embeddings behind optional extras and configuration.",
+      "priority": "P0",
+      "details": {
+        "provider_interface": [
+          "embed_text_batch(texts, model, **kwargs) -> ndarray[n_texts, d]",
+          "score_surprisal(tokens_or_text, model, **kwargs) -> ndarray[n_items]"
+        ],
+        "providers_initial": [
+          "openai (opt-in)",
+          "anthropic (opt-in, if embedding endpoint available in configured account)",
+          "local_hf (baseline fallback)"
+        ]
+      }
+    },
+    {
+      "id": "FR-204",
+      "name": "API Key and Credential Handling",
+      "description": "Load credentials from environment or explicit runtime config without persisting keys to artifacts, logs, or cache keys.",
+      "priority": "P0",
+      "details": {
+        "env_vars": [
+          "OPENAI_API_KEY",
+          "ANTHROPIC_API_KEY"
+        ],
+        "error_behavior": "Fail fast with actionable message when provider selected but key missing."
+      }
+    },
+    {
+      "id": "FR-205",
+      "name": "Semantic Unitization",
+      "description": "Generate semantic units at word, sentence, and paragraph/segment levels from timestamped text.",
+      "priority": "P1",
+      "details": {
+        "units": [
+          "token_or_word",
+          "sentence",
+          "paragraph_or_fixed_segment"
+        ],
+        "timestamp_policy": "Each unit gets onset/offset with clear alignment policy (onset, center, or duration-weighted)."
+      }
+    },
+    {
+      "id": "FR-206",
+      "name": "Multiscale Rendering",
+      "description": "Render semantic unit features to multiple temporal grids in one pass.",
+      "priority": "P0",
+      "details": {
+        "required_scales_examples": [
+          2.0,
+          4.0,
+          16.0
+        ],
+        "methods": [
+          "mean",
+          "duration_weighted_mean",
+          "nearest"
+        ],
+        "window_policy": [
+          "centered",
+          "causal"
+        ]
+      }
+    },
+    {
+      "id": "FR-207",
+      "name": "Feature Families",
+      "description": "Expose configurable feature families for language modeling.",
+      "priority": "P0",
+      "details": {
+        "families": [
+          "contextual embeddings",
+          "sentence/paragraph embeddings",
+          "surprisal/uncertainty",
+          "lexical controls (length, frequency if lexicon available)"
+        ]
+      }
+    },
+    {
+      "id": "FR-208",
+      "name": "Caching and Provenance for API Features",
+      "description": "Cache provider responses by text+model+params hash and store provenance metadata for reproducibility.",
+      "priority": "P0",
+      "details": {
+        "cache_key_components": [
+          "normalized_text",
+          "provider_name",
+          "model_name",
+          "request_params_hash",
+          "code_version"
+        ],
+        "required_metadata": [
+          "provider_name",
+          "model_name",
+          "model_revision_if_available",
+          "request_params",
+          "api_mode",
+          "timestamp_utc"
+        ]
+      }
+    },
+    {
+      "id": "FR-209",
+      "name": "fMRI Compatibility",
+      "description": "Outputs must be directly usable with existing `natural_features.fmri` transforms and remain compatible with `fmrimod` integration points.",
+      "priority": "P0"
+    },
+    {
+      "id": "FR-210",
+      "name": "Recipe and CLI Support",
+      "description": "Allow declarative multiscale language extraction via recipe YAML and CLI flags.",
+      "priority": "P1"
+    }
+  ],
+  "non_functional_requirements": [
+    {
+      "id": "NFR-201",
+      "name": "Security",
+      "description": "Never persist raw API keys in run logs, metadata, manifests, or cache artifacts.",
+      "priority": "P0"
+    },
+    {
+      "id": "NFR-202",
+      "name": "Reliability",
+      "description": "Provider calls implement retry with backoff and classify transient vs permanent errors.",
+      "priority": "P0"
+    },
+    {
+      "id": "NFR-203",
+      "name": "Determinism",
+      "description": "Given identical text/model/provider params and cached responses, outputs are bitwise stable.",
+      "priority": "P0"
+    },
+    {
+      "id": "NFR-204",
+      "name": "Performance",
+      "description": "Batch requests and chunk processing to control cost and latency for long transcripts.",
+      "priority": "P1"
+    },
+    {
+      "id": "NFR-205",
+      "name": "Ergonomics",
+      "description": "Single-call API and concise defaults for common scale sets (2, 4, 16 seconds).",
+      "priority": "P1"
+    }
+  ],
+  "data_contracts": {
+    "output_type": "dict[scale_s -> FeatureSeries]",
+    "feature_series_contract": {
+      "dims": [
+        "time",
+        "feature"
+      ],
+      "times_s": "monotonic, aligned to selected scale grid",
+      "coords.feature": "stable names with provider/model prefixing where needed"
+    },
+    "multiscale_result_object": {
+      "fields": [
+        "by_scale",
+        "by_scale_dataframe_optional",
+        "metadata",
+        "qc"
+      ],
+      "qc_fields": [
+        "n_segments",
+        "n_tokens",
+        "missing_timestamp_fraction",
+        "provider_fallback_used",
+        "cache_hit_fraction"
+      ]
+    }
+  },
+  "configuration_model": {
+    "provider_config": {
+      "provider": "openai|anthropic|local_hf",
+      "model": "provider model id",
+      "api_key_env_var": "optional override",
+      "request_params": {
+        "temperature": 0,
+        "max_retries": 3,
+        "timeout_s": 60
+      }
+    },
+    "multiscale_config": {
+      "scales_s": [
+        2.0,
+        4.0,
+        16.0
+      ],
+      "aggregation": "duration_weighted_mean",
+      "window_policy": "centered"
+    },
+    "feature_families_default": [
+      "sentence_embeddings",
+      "surprisal",
+      "lexical_controls"
+    ]
+  },
+  "api_examples": [
+    {
+      "name": "audio_only_with_asr_fallback",
+      "python": "extract_multiscale_language('clip.wav', scales_s=[2,4,16], provider_config={'provider':'openai','model':'text-embedding-model','api_key_env_var':'OPENAI_API_KEY'})"
+    },
+    {
+      "name": "transcript_with_timestamps",
+      "python": "extract_multiscale_language(words_event_series, scales_s=[2,4,16], provider_config={'provider':'local_hf','model':'sentence-transformers/all-mpnet-base-v2'})"
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-201",
+      "requirement_ids": [
+        "FR-201",
+        "FR-206"
+      ],
+      "criterion": "Given valid input and `scales_s=[2,4,16]`, API returns three FeatureSeries with aligned time grids at exactly those scales.",
+      "verification": "Unit test checks keys, grid spacing, monotonic times, and non-empty matrices."
+    },
+    {
+      "id": "AC-202",
+      "requirement_ids": [
+        "FR-202"
+      ],
+      "criterion": "Audio-only input generates timestamped transcript events and then multiscale features without user-supplied transcript.",
+      "verification": "Integration test asserts ASR fallback path and output presence for all requested scales."
+    },
+    {
+      "id": "AC-203",
+      "requirement_ids": [
+        "FR-204",
+        "NFR-201"
+      ],
+      "criterion": "When provider API key is missing, system fails with actionable error; no secrets appear in logs/artifacts.",
+      "verification": "Negative test inspects exceptions and run logs for redaction."
+    },
+    {
+      "id": "AC-204",
+      "requirement_ids": [
+        "FR-208",
+        "NFR-203"
+      ],
+      "criterion": "Repeated run with same text/provider/model/params yields cache hit and identical outputs.",
+      "verification": "Integration test compares hashes and cache hit metrics."
+    },
+    {
+      "id": "AC-205",
+      "requirement_ids": [
+        "FR-203",
+        "NFR-202"
+      ],
+      "criterion": "Transient provider errors are retried with backoff; permanent errors fail fast with classified reason.",
+      "verification": "Mock provider tests for HTTP 429/5xx vs 4xx behavior."
+    },
+    {
+      "id": "AC-206",
+      "requirement_ids": [
+        "FR-205",
+        "FR-206"
+      ],
+      "criterion": "Sentence and paragraph units are both renderable to multiscale grids with selectable alignment policy.",
+      "verification": "Unit tests for onset/center/duration-weighted rendering."
+    },
+    {
+      "id": "AC-207",
+      "requirement_ids": [
+        "FR-209"
+      ],
+      "criterion": "Outputs from each scale can be passed directly to `fmri.resample`, `fmri.hrf`, and `fmri.design.concat` without schema conversion.",
+      "verification": "Integration test exercises full transform chain."
+    },
+    {
+      "id": "AC-208",
+      "requirement_ids": [
+        "FR-210"
+      ],
+      "criterion": "Equivalent multiscale extraction is runnable from recipe and CLI with explicit provider config.",
+      "verification": "CLI test with fixture recipe and mocked provider."
+    }
+  ],
+  "milestones": [
+    {
+      "id": "M2.1",
+      "name": "Core Multiscale API",
+      "scope": [
+        "Result object",
+        "scale rendering",
+        "local provider baseline"
+      ],
+      "exit_criteria": [
+        "AC-201",
+        "AC-206"
+      ]
+    },
+    {
+      "id": "M2.2",
+      "name": "API Provider Adapters",
+      "scope": [
+        "OpenAI adapter",
+        "Anthropic adapter",
+        "retry/backoff",
+        "secret handling"
+      ],
+      "exit_criteria": [
+        "AC-203",
+        "AC-205"
+      ]
+    },
+    {
+      "id": "M2.3",
+      "name": "Caching + fMRI Integration",
+      "scope": [
+        "provider-aware cache",
+        "provenance metadata",
+        "fMRI chain compatibility"
+      ],
+      "exit_criteria": [
+        "AC-204",
+        "AC-207"
+      ]
+    },
+    {
+      "id": "M2.4",
+      "name": "Recipe/CLI + Docs",
+      "scope": [
+        "recipe schema updates",
+        "CLI flags",
+        "usage docs and examples"
+      ],
+      "exit_criteria": [
+        "AC-208"
+      ]
+    }
+  ],
+  "risks_and_mitigations": [
+    {
+      "risk": "Provider/model drift over time affects feature consistency.",
+      "mitigation": "Record provider/model metadata and optionally pin model revisions; encourage local cache snapshots."
+    },
+    {
+      "risk": "API cost/latency on long transcripts.",
+      "mitigation": "Batching, caching, chunking, and configurable family selection."
+    },
+    {
+      "risk": "Timestamp quality from ASR impacts semantic alignment.",
+      "mitigation": "Surface QC metrics and support optional alignment refinement."
+    },
+    {
+      "risk": "Cross-provider feature non-comparability.",
+      "mitigation": "Expose provider/model in feature names and metadata; discourage naive pooling across providers."
+    }
+  ],
+  "open_questions": [
+    "Default semantic unit policy: sentence segmentation vs fixed-duration text chunks?",
+    "Whether to include provider-specific embedding dimensionality normalization by default.",
+    "Whether to support optional prompt-based latent dimensions (valence, sociality, etc.) in this milestone or v1.3."
+  ]
+}

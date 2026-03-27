@@ -1,0 +1,487 @@
+{
+  "prd_id": "NF-PRD-001",
+  "title": "natural_features v1: Time-Aligned Feature Zoo for Naturalistic Stimuli",
+  "version": "1.0.0",
+  "status": "draft",
+  "owners": [
+    "natural_features maintainers"
+  ],
+  "last_updated": "2026-02-19",
+  "summary": "Build natural_features as a general-purpose, extensible feature toolbox and feature zoo for video/audio/speech/text with fMRI-friendly defaults (time alignment, TR rendering, HRF, design matrix export).",
+  "problem_statement": "Researchers need reproducible, time-aligned multimodal feature extraction for naturalistic stimuli without stitching together brittle one-off pipelines.",
+  "goals": [
+    "Provide canonical, time-aligned feature object types for continuous, event, and track data.",
+    "Deliver a discoverable feature zoo with stable naming, metadata contracts, and recipe-driven execution.",
+    "Enable fMRI-ready transforms (TR resampling, event rendering, HRF convolution, lagging, design matrix export).",
+    "Guarantee reproducibility via deterministic IDs, parameter hashing, lineage metadata, and artifact cataloging.",
+    "Keep core install lightweight with optional extras and plugin extensibility."
+  ],
+  "non_goals": [
+    "Full managed orchestration platform in v1.",
+    "Cloud-native dashboard/service in v1.",
+    "Comprehensive Slurm/HPC feature parity in initial release.",
+    "Implementing all possible deep/social/affect models before stable core contracts exist."
+  ],
+  "target_users": [
+    "Computational neuroimaging researchers",
+    "ML researchers building encoding/decoding models",
+    "Labs requiring reproducible multimodal feature pipelines"
+  ],
+  "core_principles": [
+    "Everything is time-aligned first.",
+    "Extractors are standalone-importable; workflow engine is optional glue.",
+    "Feature zoo is a first-class product surface.",
+    "Strict IO contracts and schema validation.",
+    "Optional heavy dependencies and plugin-based extension."
+  ],
+  "functional_requirements": [
+    {
+      "id": "FR-001",
+      "name": "Canonical Feature Types",
+      "description": "Provide FeatureSeries, EventSeries, TrackSeries as canonical outputs for all extractors.",
+      "priority": "P0"
+    },
+    {
+      "id": "FR-002",
+      "name": "Stimulus IO and Timebase",
+      "description": "Provide video/audio/text/multimodal stimulus objects with deterministic timestamps and stream/chunk iterators.",
+      "priority": "P0"
+    },
+    {
+      "id": "FR-003",
+      "name": "Feature Zoo Registry",
+      "description": "Provide discoverable registry with stable names, tags, requirements, parameter specs, and output specs.",
+      "priority": "P0"
+    },
+    {
+      "id": "FR-004",
+      "name": "Recipe-Driven Extraction",
+      "description": "Support YAML/JSON recipes and presets for selecting extractor bundles and postprocessing.",
+      "priority": "P0"
+    },
+    {
+      "id": "FR-005",
+      "name": "fMRI Transform Layer",
+      "description": "Provide TR resampling, event rendering, HRF convolution, lag expansion, concatenation, standardization.",
+      "priority": "P0"
+    },
+    {
+      "id": "FR-006",
+      "name": "Artifact Storage and Catalog",
+      "description": "Store outputs with metadata and lineage using Zarr/Parquet/NPZ and index in SQLite (DuckDB optional).",
+      "priority": "P0"
+    },
+    {
+      "id": "FR-007",
+      "name": "Deterministic Reproducibility",
+      "description": "Use deterministic extractor IDs and artifact fingerprints from code version, params, model revision, and upstream IDs.",
+      "priority": "P0"
+    },
+    {
+      "id": "FR-008",
+      "name": "Baseline Extractor Coverage",
+      "description": "Ship baseline vision/audio/speech extractors and at least three flagship presets.",
+      "priority": "P0"
+    },
+    {
+      "id": "FR-009",
+      "name": "Deep Model Families",
+      "description": "Provide deep vision and speech SSL extractors with layer selection and pooling/reduction controls behind extras.",
+      "priority": "P1"
+    },
+    {
+      "id": "FR-010",
+      "name": "Optional Local Workflow Engine",
+      "description": "Provide local execution with plan mode, cache hits/invalidations, structured run logging, and retries.",
+      "priority": "P1"
+    },
+    {
+      "id": "FR-011",
+      "name": "Plugin Extensibility",
+      "description": "Allow external extractor plugins via entry points without core code modification.",
+      "priority": "P1"
+    },
+    {
+      "id": "FR-012",
+      "name": "Transcript Fallback and Alignment Contract",
+      "description": "If a stimulus lacks transcript input, the system must generate transcript events from ASR and produce aligned word timestamps (best-effort), with confidence and QC metadata.",
+      "priority": "P0"
+    },
+    {
+      "id": "FR-013",
+      "name": "Phonological and Articulatory Feature Generation",
+      "description": "Provide phonological/articulatory feature spaces derived from ASR/alignment and/or speech SSL representations, including explicit output schemas and time alignment.",
+      "priority": "P0"
+    }
+  ],
+  "non_functional_requirements": [
+    {
+      "id": "NFR-001",
+      "name": "Determinism",
+      "description": "Repeated runs with same inputs/config produce identical artifact IDs and same numeric outputs within tolerance.",
+      "priority": "P0"
+    },
+    {
+      "id": "NFR-002",
+      "name": "Performance",
+      "description": "Streaming/chunked processing must prevent unbounded memory growth on long media.",
+      "priority": "P0"
+    },
+    {
+      "id": "NFR-003",
+      "name": "Usability",
+      "description": "CLI and API expose discoverable extractors/presets and clear validation errors.",
+      "priority": "P0"
+    },
+    {
+      "id": "NFR-004",
+      "name": "Portability",
+      "description": "Core features run on CPU-only environments; heavy models remain optional extras.",
+      "priority": "P0"
+    },
+    {
+      "id": "NFR-005",
+      "name": "Observability",
+      "description": "Runs produce machine-readable logs and summary reports for audit/debugging.",
+      "priority": "P1"
+    }
+  ],
+  "canonical_data_contracts": {
+    "timebase_kinds": [
+      "frames",
+      "audio_hop",
+      "windows",
+      "events",
+      "tokens"
+    ],
+    "feature_object_types": [
+      "FeatureSeries/v1",
+      "EventSeries/v1",
+      "TrackSeries/v1"
+    ],
+    "required_metadata_fields": [
+      "artifact_id",
+      "run_id",
+      "stage_id",
+      "schema",
+      "dtype",
+      "shape",
+      "timebase",
+      "params_hash",
+      "extractor_id",
+      "code_version",
+      "model_name",
+      "model_revision",
+      "upstream_ids",
+      "created_at",
+      "backend",
+      "hostname"
+    ]
+  },
+  "initial_feature_scope": {
+    "vision": [
+      "vision.lowlevel.visual_energy",
+      "vision.dynamics.frame_diffs",
+      "vision.motion.optical_flow_mag",
+      "meta.scene_cuts",
+      "vision.deep.resnet (extra)",
+      "vision.deep.vit (extra, optional)",
+      "vision.deep.clip_image (extra, optional)",
+      "vision.motion.motion_energy via pymoten (extra)"
+    ],
+    "audio": [
+      "audio.lowlevel.rms",
+      "audio.lowlevel.mel",
+      "audio.lowlevel.mfcc",
+      "audio.lowlevel.spectral_stats",
+      "audio.opensmile.egemaps_lld (extra)"
+    ],
+    "speech": [
+      "speech.vad.energy_vad",
+      "speech.asr.whisper (extra)",
+      "speech.ssl.wavlm (extra)",
+      "speech.posteriorgrams.* (optional)",
+      "speech.articulatory.*"
+    ],
+    "language": [
+      "language.embed.bert_words (extra)",
+      "language.predict.surprisal (extra, optional)"
+    ],
+    "affect_and_social": [
+      "affect.audio.* (v1.1)",
+      "affect.visual.* (v1.1)",
+      "vision.faces/objects/pose (v1.1)"
+    ]
+  },
+  "presets_v1": [
+    "fmri_movie_baselines",
+    "fmri_movie_deep_vision",
+    "fmri_speech_language"
+  ],
+  "packaging_and_extras": {
+    "core": "natural_features",
+    "extras": {
+      "vision": [
+        "torch",
+        "torchvision",
+        "timm",
+        "pyav|decord|opencv"
+      ],
+      "audio": [
+        "librosa",
+        "soundfile",
+        "torchaudio"
+      ],
+      "speech": [
+        "transformers",
+        "faster-whisper",
+        "whisperx(optional)",
+        "gentle(optional_legacy_not_default)"
+      ],
+      "language": [
+        "transformers",
+        "sentence-transformers(optional)",
+        "spacy(optional)"
+      ],
+      "affect": [
+        "opensmile-python",
+        "parselmouth(optional)",
+        "mediapipe(optional)"
+      ],
+      "hpc": [
+        "slurm-related deps (optional)"
+      ]
+    }
+  },
+  "milestones": [
+    {
+      "id": "M0",
+      "name": "Foundations",
+      "target": "v0.0",
+      "scope": [
+        "FeatureSeries/EventSeries/TrackSeries",
+        "Stimulus IO with deterministic timestamps",
+        "Writers (Zarr/Parquet/NPZ)",
+        "Minimal catalog + run metadata"
+      ]
+    },
+    {
+      "id": "M1",
+      "name": "Core Baselines",
+      "target": "v0.1",
+      "scope": [
+        "Vision low-level + dynamics baselines",
+        "Audio low-level baselines",
+        "VAD baseline",
+        "fMRI transforms (TR/HRF/lags/design concat)",
+        "Tiny clip integration tests"
+      ]
+    },
+    {
+      "id": "M2",
+      "name": "Registry and Recipes",
+      "target": "v0.2",
+      "scope": [
+        "Zoo spec loader + validator",
+        "Preset/recipe execution",
+        "CLI list/describe/extract",
+        "Caching fingerprints + invalidation reasons"
+      ]
+    },
+    {
+      "id": "M3",
+      "name": "Canonical Baselines Expansion",
+      "target": "v0.3",
+      "scope": [
+        "pymoten motion-energy wrapper",
+        "openSMILE eGeMAPS wrapper"
+      ]
+    },
+    {
+      "id": "M4",
+      "name": "Speech and Language",
+      "target": "v0.4",
+      "scope": [
+        "Transcript fallback when transcript input is missing",
+        "ASR words/segments",
+        "Word-level alignment + QC metadata",
+        "Speech SSL layer features",
+        "Phonological/articulatory feature outputs (posteriorgrams and/or mapped articulatory features)",
+        "Word-aligned language embeddings"
+      ]
+    },
+    {
+      "id": "M5",
+      "name": "Workflow Hardening",
+      "target": "v1.0",
+      "scope": [
+        "Plan mode + local runner",
+        "Retries/backoff + cancellation propagation",
+        "Run logs + report output",
+        "Catalog querying + manifest export/import"
+      ]
+    },
+    {
+      "id": "M6",
+      "name": "Advanced Families",
+      "target": "v1.1",
+      "scope": [
+        "Affect/social feature families",
+        "Large-output chunked map ergonomics",
+        "Optional Slurm backend"
+      ]
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-001",
+      "requirement_ids": ["FR-001"],
+      "statement": "All extractors return only FeatureSeries, EventSeries, or TrackSeries objects and pass schema validation.",
+      "verification": "Unit tests across all built-in extractors"
+    },
+    {
+      "id": "AC-002",
+      "requirement_ids": ["FR-002"],
+      "statement": "Video/audio stimulus decoding produces monotonic timestamps in seconds referenced to stimulus start.",
+      "verification": "Integration tests on fixed test clips; timestamp monotonicity assertions"
+    },
+    {
+      "id": "AC-003",
+      "requirement_ids": ["FR-003", "NFR-003"],
+      "statement": "`nf list` and `nf describe <name>` expose extractor requirements, params, outputs, and tags from registry specs.",
+      "verification": "CLI snapshot tests"
+    },
+    {
+      "id": "AC-004",
+      "requirement_ids": ["FR-004"],
+      "statement": "A recipe can execute at least one end-to-end preset and resolve explicit output references between extractors.",
+      "verification": "Integration test using fmri_speech_language preset with ref wiring"
+    },
+    {
+      "id": "AC-005",
+      "requirement_ids": ["FR-005"],
+      "statement": "fMRI transform layer supports TR resampling, event rendering (impulse/boxcar), HRF convolution (glover or spm), and lag expansion.",
+      "verification": "Unit + numerical regression tests"
+    },
+    {
+      "id": "AC-006",
+      "requirement_ids": ["FR-006", "FR-007", "NFR-001"],
+      "statement": "Artifacts are written with complete metadata and deterministic IDs; lineage links to upstream artifacts.",
+      "verification": "Catalog metadata validation tests and deterministic rerun tests"
+    },
+    {
+      "id": "AC-007",
+      "requirement_ids": ["FR-008"],
+      "statement": "Ship and execute three presets: fmri_movie_baselines, fmri_movie_deep_vision, fmri_speech_language.",
+      "verification": "Preset execution smoke tests with expected outputs"
+    },
+    {
+      "id": "AC-008",
+      "requirement_ids": ["FR-009"],
+      "statement": "Deep vision and speech SSL extractors support layer selection and at least one pooling mode with optional dimensionality reduction.",
+      "verification": "Extractor tests for layer/pooling variants"
+    },
+    {
+      "id": "AC-009",
+      "requirement_ids": ["FR-010", "NFR-005"],
+      "statement": "Local runner provides plan output, cache hit/miss reasons, stage status transitions, and run summary JSON.",
+      "verification": "Runner integration tests with forced cache invalidation scenarios"
+    },
+    {
+      "id": "AC-010",
+      "requirement_ids": ["FR-011"],
+      "statement": "An external plugin package can register a new extractor via entry points and appear in `nf list` without core changes.",
+      "verification": "Plugin fixture integration test"
+    },
+    {
+      "id": "AC-013",
+      "requirement_ids": ["FR-012"],
+      "statement": "When no transcript is provided, running speech-language preset auto-generates transcript events and aligned word timestamps with confidence + QC fields; when transcript is provided, alignment stage can refine timings without replacing source text by default.",
+      "verification": "Integration tests for (a) missing transcript fallback and (b) provided transcript refinement path"
+    },
+    {
+      "id": "AC-014",
+      "requirement_ids": ["FR-013"],
+      "statement": "System emits at least one explicit phonological/articulatory feature output (e.g., phoneme posteriorgrams and/or articulatory distinctive-feature vectors) aligned to shared timebase and renderable to TR space.",
+      "verification": "Extractor integration tests validating schema, time alignment, and TR rendering compatibility"
+    },
+    {
+      "id": "AC-011",
+      "requirement_ids": ["NFR-002"],
+      "statement": "Processing a 10-minute test video using baseline preset completes without memory growth beyond configured chunk limits.",
+      "verification": "Performance test with memory telemetry assertions"
+    },
+    {
+      "id": "AC-012",
+      "requirement_ids": ["NFR-004"],
+      "statement": "Core install and baseline CPU-only preset run without requiring GPU-only dependencies.",
+      "verification": "CI matrix job on CPU-only environment"
+    }
+  ],
+  "risks": [
+    {
+      "id": "R-001",
+      "risk": "Dependency drift and incompatible model/tool versions",
+      "mitigation": "Pin/test known compatible ranges; record model revisions in artifacts"
+    },
+    {
+      "id": "R-002",
+      "risk": "High-dimensional deep features causing storage/memory blowups",
+      "mitigation": "Chunked Zarr, default pooling/reduction, streaming pipeline"
+    },
+    {
+      "id": "R-003",
+      "risk": "ASR/alignment quality variability across stimuli",
+      "mitigation": "Expose confidence/QC outputs and keep alignment optional"
+    },
+    {
+      "id": "R-005",
+      "risk": "Forced-alignment backend instability/maintenance risk",
+      "mitigation": "Default to Whisper/faster-whisper + optional WhisperX; keep Gentle as optional legacy plugin only, not default"
+    },
+    {
+      "id": "R-004",
+      "risk": "Feature zoo sprawl and inconsistent naming/contracts",
+      "mitigation": "Strict namespace conventions, spec validation, CI enforcement"
+    }
+  ],
+  "dependencies": [
+    "ffmpeg runtime",
+    "numpy/scipy/pandas",
+    "zarr/parquet stack",
+    "optional torch ecosystem",
+    "optional transformers ecosystem",
+    "optional opensmile"
+  ],
+  "success_metrics": [
+    {
+      "id": "SM-001",
+      "metric": "Preset reliability",
+      "target": ">= 95% successful runs in CI smoke suite"
+    },
+    {
+      "id": "SM-002",
+      "metric": "Cache effectiveness",
+      "target": ">= 80% stage cache-hit rate on unchanged reruns"
+    },
+    {
+      "id": "SM-003",
+      "metric": "Reproducibility",
+      "target": "100% deterministic artifact IDs on repeated fixed-input runs"
+    },
+    {
+      "id": "SM-004",
+      "metric": "Time-to-first-matrix",
+      "target": "< 10 minutes for baseline preset on 5-minute clip (CPU reference env)"
+    }
+  ],
+  "deliverables": [
+    "Core package structure and canonical types",
+    "Zoo spec + registry + validator",
+    "Three shipped presets and sample recipes",
+    "Baseline extractor families (vision/audio/speech)",
+    "fMRI transform and design matrix utilities",
+    "Artifact catalog and manifest I/O",
+    "CLI commands for list/describe/extract/plan/report"
+  ]
+}

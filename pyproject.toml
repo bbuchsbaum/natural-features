@@ -1,0 +1,65 @@
+[build-system]
+requires = ["hatchling>=1.24.2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "natural-features"
+version = "0.0.1"
+description = "Time-aligned feature extraction primitives for naturalistic stimuli."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+  { name = "natural_features maintainers" }
+]
+dependencies = [
+  "numpy>=1.24",
+  "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+storage = [
+  "zarr>=2.17",
+  "pandas>=2.0",
+  "pyarrow>=14.0",
+]
+speech = [
+  "torch>=2.2",
+  "transformers>=4.40",
+  "faster-whisper>=1.0.0",
+]
+alignment = [
+  "whisperx>=3.1.0",
+]
+alignment_mfa = [
+  "montreal-forced-aligner>=3.3.9",
+]
+alignment_legacy = [
+  "gentle>=0.1",
+]
+llm = [
+  "openai>=1.40.0",
+]
+dev = [
+  "pytest>=8.0",
+]
+
+[project.scripts]
+nf = "natural_features.cli.main:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+  "smoke: fast deterministic tests intended for every run",
+  "media: tests that exercise media fixtures (Tier A/B)",
+  "nightly: heavier tests intended for scheduled runs",
+  "external: tests requiring optional external dependencies",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/natural_features"]
+
+[dependency-groups]
+dev = [
+    "librosa>=0.11.0",
+]

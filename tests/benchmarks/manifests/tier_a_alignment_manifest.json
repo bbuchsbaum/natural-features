@@ -1,0 +1,13 @@
+{
+  "manifest_version": 1,
+  "description": "Tier A deterministic alignment benchmark (small and CI-friendly).",
+  "items": [
+    {
+      "id": "tier_a_audio_speechlike",
+      "audio_path": "../../stimuli/tier_a/audio_speechlike.wav",
+      "reference_ctm": "../../stimuli/tier_a/reference_words.ctm",
+      "transcript_path": "../../stimuli/tier_a/transcript_reference.txt",
+      "language": "en"
+    }
+  ]
+}

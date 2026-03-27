@@ -1,0 +1,351 @@
+api_version: 1
+extractors:
+  - name: vision.lowlevel.visual_energy
+    impl: natural_features.features.vision.lowlevel:visual_energy
+    version: "1.0"
+    modalities: [video]
+    requires: [vision]
+    tags: [baseline, vision]
+    params:
+      include_deltas:
+        type: bool
+        default: true
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+        dims: [time, feature]
+
+  - name: vision.dynamics.frame_diffs
+    impl: natural_features.features.vision.dynamics:frame_diffs
+    version: "1.0"
+    modalities: [video]
+    requires: [vision]
+    tags: [baseline, vision]
+    params: {}
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+        dims: [time, feature]
+
+  - name: vision.motion.optical_flow_mag
+    impl: natural_features.features.vision.motion:optical_flow_mag
+    version: "1.0"
+    modalities: [video]
+    requires: [vision]
+    tags: [baseline, vision, motion]
+    params: {}
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+        dims: [time, feature]
+
+  - name: vision.motion.motion_energy
+    impl: natural_features.features.vision.motion_energy:motion_energy_pymoten
+    version: "1.0"
+    modalities: [video]
+    requires: [vision, pymoten]
+    tags: [baseline, vision, motion, canonical]
+    params:
+      fps_downsample: { type: float, default: 0.0 }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: meta.scene_cuts
+    impl: natural_features.features.vision.scene:scene_cuts
+    version: "1.0"
+    modalities: [video]
+    requires: [vision]
+    tags: [baseline, events]
+    params:
+      threshold_z:
+        type: float
+        default: 2.5
+    outputs:
+      default:
+        schema: EventSeries/v1
+        kind: events
+
+  - name: audio.lowlevel.rms
+    impl: natural_features.features.audio.lowlevel:rms
+    version: "1.0"
+    modalities: [audio]
+    requires: [audio]
+    tags: [baseline, audio]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      win_s: { type: float, default: 0.025 }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: audio.lowlevel.mel
+    impl: natural_features.features.audio.lowlevel:mel
+    version: "1.0"
+    modalities: [audio]
+    requires: [audio]
+    tags: [baseline, audio]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      win_s: { type: float, default: 0.025 }
+      n_mels: { type: int, default: 64 }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: audio.lowlevel.mfcc
+    impl: natural_features.features.audio.lowlevel:mfcc
+    version: "1.0"
+    modalities: [audio]
+    requires: [audio]
+    tags: [baseline, audio]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      win_s: { type: float, default: 0.025 }
+      n_mfcc: { type: int, default: 40 }
+      n_mels: { type: int, default: 64 }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: audio.lowlevel.spectral_stats
+    impl: natural_features.features.audio.lowlevel:spectral_stats
+    version: "1.0"
+    modalities: [audio]
+    requires: [audio]
+    tags: [baseline, audio]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      win_s: { type: float, default: 0.025 }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: speech.vad.energy_vad
+    impl: natural_features.features.speech.vad:energy_vad
+    version: "1.0"
+    modalities: [audio]
+    requires: [speech]
+    tags: [baseline, speech]
+    params:
+      hop_s: { type: float, default: 0.02 }
+      win_s: { type: float, default: 0.03 }
+      threshold: { type: float, default: 0.5 }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: speech.asr.whisper
+    impl: natural_features.features.speech.asr:whisper_transcribe
+    version: "1.0"
+    modalities: [audio]
+    requires: [speech_asr]
+    tags: [speech, asr]
+    params:
+      model: { type: str, default: small }
+      language: { type: str, default: auto }
+      word_timestamps: { type: bool, default: true }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+    outputs:
+      segments: { schema: EventSeries/v1, kind: events }
+      words: { schema: EventSeries/v1, kind: events }
+
+  - name: speech.asr.whisper_chunked
+    impl: natural_features.features.speech.asr:whisper_transcribe_chunked
+    version: "1.0"
+    modalities: [audio]
+    requires: [speech_asr]
+    tags: [speech, asr, chunked]
+    params:
+      model: { type: str, default: small }
+      language: { type: str, default: auto }
+      word_timestamps: { type: bool, default: true }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+      chunk_window_s: { type: float, default: 30.0 }
+      chunk_overlap_s: { type: float, default: 1.0 }
+      dedupe_tolerance_s: { type: float, default: 0.03 }
+    outputs:
+      segments: { schema: EventSeries/v1, kind: events }
+      words: { schema: EventSeries/v1, kind: events }
+
+  - name: speech.align.whisperx
+    impl: natural_features.features.speech.align:whisperx_align
+    version: "1.0"
+    modalities: [audio]
+    requires: [whisperx, mfa_optional]
+    tags: [speech, alignment]
+    params:
+      backend: { type: str, default: auto }
+      language: { type: str, default: en }
+      mfa_dictionary_path: { type: str, default: null, nullable: true }
+      mfa_acoustic_model_path: { type: str, default: null, nullable: true }
+      mfa_timeout_s: { type: float, default: 300.0 }
+      mfa_tmp_dir: { type: str, default: null, nullable: true }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+    outputs:
+      words: { schema: EventSeries/v1, kind: events }
+
+  - name: speech.ssl.wavlm
+    impl: natural_features.features.speech.ssl:wavlm_hidden_states
+    version: "1.0"
+    modalities: [audio]
+    requires: [speech, transformers]
+    tags: [speech, ssl]
+    params:
+      model: { type: str, default: microsoft/wavlm-base-plus }
+      layers: { type: "list[int]", default: [2, 6, 12] }
+      stride_s: { type: float, default: 0.02 }
+      pooling: { type: str, default: none }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: speech.phonology.posteriorgrams
+    impl: natural_features.features.speech.phonology:phoneme_posteriorgrams
+    version: "1.0"
+    modalities: [audio]
+    requires: [speech]
+    tags: [speech, phonology]
+    params:
+      hop_s: { type: float, default: 0.02 }
+      n_classes: { type: int, default: 8 }
+      class_labels: { type: "list[str]", default: [] }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: speech.phonology.acoustic_posteriors
+    impl: natural_features.features.speech.phonology:acoustic_phone_posteriors
+    version: "1.0"
+    modalities: [audio]
+    requires: [speech]
+    tags: [speech, phonology, posterior]
+    params:
+      hop_s: { type: float, default: 0.02 }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: speech.phonology.ctc_posteriors
+    impl: natural_features.features.speech.phonology:ctc_phone_posteriors
+    version: "1.0"
+    modalities: [audio]
+    requires: [speech, transformers]
+    tags: [speech, phonology, posterior, ctc]
+    params:
+      model: { type: str, default: bobboyms/wav2vec2-base-en-phoneme-ctc-41h }
+      local_files_only: { type: bool, default: true }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+      drop_special_tokens: { type: bool, default: true }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: speech.articulatory.features
+    impl: natural_features.features.speech.phonology:articulatory_features
+    version: "1.0"
+    modalities: [tokens]
+    requires: [speech]
+    tags: [speech, articulatory]
+    params: {}
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: speech.articulatory.from_phoneme_events
+    impl: natural_features.features.speech.phonology:articulatory_from_phoneme_events
+    version: "1.0"
+    modalities: [tokens]
+    requires: [speech]
+    tags: [speech, articulatory, phoneme]
+    params:
+      include_confidence: { type: bool, default: true }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: speech.articulatory.from_posteriors
+    impl: natural_features.features.speech.phonology:articulatory_from_posteriors
+    version: "1.0"
+    modalities: [features]
+    requires: [speech]
+    tags: [speech, articulatory, posterior]
+    params:
+      renormalize_posteriors: { type: bool, default: true }
+      include_uncertainty: { type: bool, default: true }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: language.embed.bert_words
+    impl: natural_features.features.language.embed:bert_word_embeddings
+    version: "1.0"
+    modalities: [tokens]
+    requires: [language, transformers]
+    tags: [language, embedding]
+    params:
+      model: { type: str, default: bert-base-uncased }
+      layers: { type: "list[int]", default: [12] }
+      pooling: { type: str, default: mean_subwords }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: language.predict.surprisal
+    impl: natural_features.features.language.predictability:surprisal
+    version: "1.0"
+    modalities: [tokens]
+    requires: [language]
+    tags: [language, predictability]
+    params:
+      model: { type: str, default: gpt2 }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: audio.opensmile.egemaps_lld
+    impl: natural_features.features.audio.opensmile:egemaps_lld
+    version: "1.0"
+    modalities: [audio]
+    requires: [audio, opensmile]
+    tags: [baseline, audio, opensmile]
+    params:
+      frame_s: { type: float, default: 0.01 }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: affect.audio.proxies
+    impl: natural_features.features.affect.audio:audio_affect_proxies
+    version: "1.0"
+    modalities: [audio]
+    requires: [affect]
+    tags: [affect, audio]
+    params:
+      hop_s: { type: float, default: 0.02 }
+      win_s: { type: float, default: 0.03 }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: affect.visual.social_proxies
+    impl: natural_features.features.affect.visual:social_visual_proxies
+    version: "1.0"
+    modalities: [video]
+    requires: [affect]
+    tags: [affect, visual, social]
+    params: {}
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }

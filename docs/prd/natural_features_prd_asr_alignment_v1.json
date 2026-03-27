@@ -1,0 +1,431 @@
+{
+  "prd_id": "NF-PRD-003",
+  "title": "natural_features v1.3: Robust ASR + Alignment",
+  "version": "1.0.0",
+  "status": "draft",
+  "owners": [
+    "natural_features maintainers"
+  ],
+  "last_updated": "2026-02-21",
+  "summary": "Harden ASR and alignment into a production-grade subsystem that can start from audio-only inputs, produce reliable word and phoneme timing, and emit quality-controlled, reproducible outputs for downstream language and phonological modeling.",
+  "problem_statement": "Current ASR/alignment paths are functional but not robust: alignment refinement is still passthrough, long-audio behavior is limited, phoneme-level timing contracts are missing, and QC metrics are too shallow for scientific reliability.",
+  "goals": [
+    "Automatically generate transcript + aligned timestamps when transcript input is missing.",
+    "Provide real alignment refinement (not passthrough) with explicit backend contracts.",
+    "Emit both word-level and phoneme-level aligned outputs with stable schemas.",
+    "Improve robustness on long audio via chunking, overlap, and stitching.",
+    "Expose strong QC metrics and provenance for filtering and audit.",
+    "Keep heavy dependencies optional and preserve fallback behavior."
+  ],
+  "non_goals": [
+    "Building a hosted ASR/alignment service.",
+    "Guaranteeing perfect alignment for all recording conditions.",
+    "Replacing SSL posterior-based phonological features.",
+    "Mandating one specific aligner backend for every language."
+  ],
+  "current_gaps": [
+    "whisperx alignment stage is currently passthrough.",
+    "No canonical phoneme interval output contract.",
+    "No CTM/TextGrid import-export interoperability layer.",
+    "No diarization-backed multi-speaker alignment flow.",
+    "Limited long-audio chunk/stitch logic and drift correction.",
+    "QC coverage is minimal (confidence summaries only)."
+  ],
+  "scope": {
+    "in_scope": [
+      "ASR transcript generation when transcript is absent.",
+      "Word alignment refinement using real backend integration.",
+      "Phoneme alignment outputs (interval events + optional posterior views).",
+      "Quality reporting and alignment diagnostics.",
+      "Long-audio chunking and deterministic stitching.",
+      "Import/export for alignment interchange formats.",
+      "Recipe + CLI support for robust speech-language pipelines."
+    ],
+    "out_of_scope": [
+      "End-to-end neural diarization benchmark leadership.",
+      "Cross-language pronunciation lexicon curation at large scale.",
+      "Cloud orchestration or distributed serving."
+    ]
+  },
+  "functional_requirements": [
+    {
+      "id": "FR-301",
+      "name": "Transcript Fallback Contract",
+      "description": "If transcript is not supplied, ASR must generate transcript segments and word events with timestamps, confidences, and provenance metadata.",
+      "priority": "P0"
+    },
+    {
+      "id": "FR-302",
+      "name": "Real Alignment Backend Execution",
+      "description": "speech.align.whisperx must perform real timing refinement when backend is available, not passthrough.",
+      "priority": "P0"
+    },
+    {
+      "id": "FR-303",
+      "name": "Backend Abstraction for Aligners",
+      "description": "Define aligner interface supporting whisperx (primary), MFA (optional), and gentle (legacy optional plugin).",
+      "priority": "P1"
+    },
+    {
+      "id": "FR-304",
+      "name": "Word Event Canonical Output",
+      "description": "Emit canonical word EventSeries with onset_s, offset_s, label, confidence, speaker_id(optional), and aligner metadata.",
+      "priority": "P0"
+    },
+    {
+      "id": "FR-305",
+      "name": "Phoneme Event Canonical Output",
+      "description": "Emit canonical phoneme EventSeries aligned to time with label namespace metadata (ARPABET/IPA/CTC-normalized).",
+      "priority": "P0"
+    },
+    {
+      "id": "FR-306",
+      "name": "Long Audio Chunk and Stitch",
+      "description": "Support chunked ASR/alignment with overlap, boundary deduplication, and monotonic global timestamps.",
+      "priority": "P0"
+    },
+    {
+      "id": "FR-307",
+      "name": "Speaker-Aware Path",
+      "description": "Optional diarization path to attach speaker turns and speaker IDs to aligned words.",
+      "priority": "P1"
+    },
+    {
+      "id": "FR-308",
+      "name": "Alignment QC Report",
+      "description": "Generate structured QC report with dropped tokens, low-confidence spans, duration outliers, boundary jitter, transcript coverage, and backend/fallback info.",
+      "priority": "P0"
+    },
+    {
+      "id": "FR-309",
+      "name": "Interchange Format Support",
+      "description": "Import/export CTM and TextGrid, and JSON-native alignment manifests.",
+      "priority": "P1"
+    },
+    {
+      "id": "FR-310",
+      "name": "Recipe and CLI Ergonomics",
+      "description": "Expose robust ASR+alignment in recipes and CLI with clear flags for backend selection and strict/fallback behavior.",
+      "priority": "P0"
+    },
+    {
+      "id": "FR-311",
+      "name": "Reproducibility Metadata",
+      "description": "Record ASR model ID/revision, aligner backend/version, params hash, chunk policy, and fallback reasons in artifacts.",
+      "priority": "P0"
+    },
+    {
+      "id": "FR-312",
+      "name": "Downstream Compatibility",
+      "description": "Aligned outputs must work directly with language embeddings, phonological/articulatory mapping, TR rendering, and design matrix export.",
+      "priority": "P0"
+    }
+  ],
+  "non_functional_requirements": [
+    {
+      "id": "NFR-301",
+      "name": "Determinism",
+      "description": "Given same inputs and model artifacts, alignment outputs are stable within numeric tolerance and identical metadata fingerprints.",
+      "priority": "P0"
+    },
+    {
+      "id": "NFR-302",
+      "name": "Reliability",
+      "description": "Transient backend errors are retried with bounded backoff; permanent failures surface actionable errors or explicit fallback outputs.",
+      "priority": "P0"
+    },
+    {
+      "id": "NFR-303",
+      "name": "Performance",
+      "description": "Long-audio mode must stream/chunk without unbounded memory growth.",
+      "priority": "P0"
+    },
+    {
+      "id": "NFR-304",
+      "name": "Observability",
+      "description": "QC and provenance fields must be queryable via catalog and visible in run reports.",
+      "priority": "P1"
+    },
+    {
+      "id": "NFR-305",
+      "name": "Security",
+      "description": "No secrets or sensitive provider config values persisted in metadata, reports, or manifests.",
+      "priority": "P0"
+    }
+  ],
+  "data_contracts": {
+    "word_event_series": {
+      "schema": "EventSeries/v1",
+      "required_fields": [
+        "onset_s",
+        "offset_s",
+        "label"
+      ],
+      "recommended_fields": [
+        "confidence",
+        "speaker_id",
+        "word_id"
+      ],
+      "metadata_required": [
+        "extractor_id",
+        "params_hash",
+        "extractor_name",
+        "code_version",
+        "model_revision",
+        "asr_model_name",
+        "aligner_backend",
+        "aligner_version"
+      ]
+    },
+    "phoneme_event_series": {
+      "schema": "EventSeries/v1",
+      "required_fields": [
+        "onset_s",
+        "offset_s",
+        "label"
+      ],
+      "metadata_required": [
+        "label_namespace",
+        "namespace_version",
+        "source_word_alignment_id"
+      ]
+    },
+    "alignment_qc_schema": {
+      "required_fields": [
+        "mode",
+        "fallback_used",
+        "n_words",
+        "low_confidence_words",
+        "dropped_words"
+      ],
+      "extended_fields": [
+        "coverage_fraction",
+        "boundary_jitter_ms_p50",
+        "boundary_jitter_ms_p95",
+        "duration_outliers",
+        "speaker_overlap_fraction",
+        "chunk_count",
+        "stitch_conflicts"
+      ]
+    }
+  },
+  "acceptance_criteria": [
+    {
+      "id": "AC-301",
+      "requirement_ids": [
+        "FR-301"
+      ],
+      "statement": "Audio-only input without transcript produces non-empty segments + words with monotonic timestamps and confidences.",
+      "verification": "Integration test on Tier A synthetic speechlike file."
+    },
+    {
+      "id": "AC-302",
+      "requirement_ids": [
+        "FR-302",
+        "FR-308"
+      ],
+      "statement": "When whisperx is installed, refinement modifies at least one word boundary on known test audio and QC mode reports true alignment backend execution.",
+      "verification": "Backend-enabled integration test with known reference transcript."
+    },
+    {
+      "id": "AC-303",
+      "requirement_ids": [
+        "FR-305"
+      ],
+      "statement": "Phoneme EventSeries is emitted with declared label namespace and valid interval ordering.",
+      "verification": "Unit and integration tests for namespace mapping and monotonic interval checks."
+    },
+    {
+      "id": "AC-304",
+      "requirement_ids": [
+        "FR-306",
+        "NFR-303"
+      ],
+      "statement": "Long-audio chunk mode returns stitched timestamps with no overlaps, no regressions in monotonicity, and bounded memory profile.",
+      "verification": "Synthetic long-audio stress test with chunk overlaps."
+    },
+    {
+      "id": "AC-305",
+      "requirement_ids": [
+        "FR-309"
+      ],
+      "statement": "CTM/TextGrid roundtrip preserves token labels and timestamps within tolerance.",
+      "verification": "Roundtrip parser/writer tests with fixture files."
+    },
+    {
+      "id": "AC-306",
+      "requirement_ids": [
+        "FR-311",
+        "NFR-301"
+      ],
+      "statement": "Repeated runs with same inputs/models generate stable metadata hashes and reproducible alignment outputs (tolerance-bounded).",
+      "verification": "Determinism regression tests."
+    },
+    {
+      "id": "AC-307",
+      "requirement_ids": [
+        "FR-312"
+      ],
+      "statement": "Aligned words/phonemes can be rendered to TR and combined with other feature spaces without schema adaptation.",
+      "verification": "End-to-end design-matrix integration test."
+    },
+    {
+      "id": "AC-308",
+      "requirement_ids": [
+        "FR-310"
+      ],
+      "statement": "CLI exposes one-pass robust ASR+alignment command path with backend selection, strict/fallback mode, and QC export.",
+      "verification": "CLI integration tests."
+    }
+  ],
+  "implementation_plan": [
+    {
+      "phase_id": "P0",
+      "name": "Contracts and Scaffolding",
+      "duration_estimate": "3-5 days",
+      "deliverables": [
+        "Aligner backend protocol and runtime selection.",
+        "Canonical word/phoneme EventSeries schemas.",
+        "QC schema definitions and validators."
+      ],
+      "exit_criteria": [
+        "Type and schema tests pass.",
+        "No API break for existing speech workflows."
+      ]
+    },
+    {
+      "phase_id": "P1",
+      "name": "WhisperX Real Integration",
+      "duration_estimate": "4-7 days",
+      "deliverables": [
+        "Replace passthrough with real whisperx refinement path.",
+        "Backend mode/QC truthfulness fixes.",
+        "Strict and fallback behavior parity with ASR subsystem."
+      ],
+      "exit_criteria": [
+        "AC-302 passes on backend-enabled environment.",
+        "Fallback path remains deterministic."
+      ]
+    },
+    {
+      "phase_id": "P2",
+      "name": "Phoneme Alignment Outputs",
+      "duration_estimate": "5-8 days",
+      "deliverables": [
+        "Phoneme interval extraction pipeline.",
+        "Label namespace normalization and metadata tagging.",
+        "Articulatory mapping directly from phoneme intervals."
+      ],
+      "exit_criteria": [
+        "AC-303 passes.",
+        "Phoneme outputs integrate with existing articulatory features."
+      ]
+    },
+    {
+      "phase_id": "P3",
+      "name": "Long-Audio Robustness",
+      "duration_estimate": "4-6 days",
+      "deliverables": [
+        "Chunk/overlap ASR+alignment pipeline.",
+        "Boundary stitching and deduplication logic.",
+        "Chunk-level QC aggregation."
+      ],
+      "exit_criteria": [
+        "AC-304 passes.",
+        "No memory blowups on stress fixture."
+      ]
+    },
+    {
+      "phase_id": "P4",
+      "name": "Interchange and Tooling",
+      "duration_estimate": "3-5 days",
+      "deliverables": [
+        "CTM/TextGrid import-export.",
+        "CLI + recipe wiring for backend selection and QC output.",
+        "Catalog query helpers for alignment artifacts."
+      ],
+      "exit_criteria": [
+        "AC-305 and AC-308 pass."
+      ]
+    },
+    {
+      "phase_id": "P5",
+      "name": "Hardening and Benchmarking",
+      "duration_estimate": "3-5 days",
+      "deliverables": [
+        "Determinism test battery.",
+        "Regression fixtures for known-truth speech data.",
+        "Documentation and operational runbook."
+      ],
+      "exit_criteria": [
+        "AC-306 and AC-307 pass.",
+        "Release checklist completed."
+      ]
+    }
+  ],
+  "test_strategy": {
+    "unit_tests": [
+      "Schema validation for word/phoneme outputs.",
+      "Namespace mapping and token normalization.",
+      "Chunk stitch edge-case tests (boundary collisions, empty chunks)."
+    ],
+    "integration_tests": [
+      "ASR-only fallback flow.",
+      "ASR + whisperx real refinement flow.",
+      "End-to-end recipe with speech-language preset and TR rendering."
+    ],
+    "reference_data": [
+      "Tier A deterministic synthetic fixtures.",
+      "SNL sentence dataset subset (audio + known sentence text).",
+      "Optional truth-aligned benchmark set for boundary tolerance checks."
+    ],
+    "metrics": [
+      "Word boundary MAE (ms) vs reference alignment.",
+      "Coverage fraction and dropped-token rate.",
+      "Low-confidence fraction.",
+      "Stitch conflict rate."
+    ]
+  },
+  "packaging_strategy": {
+    "core": "No heavy aligners in base install.",
+    "extras": {
+      "speech": [
+        "faster-whisper",
+        "transformers",
+        "torch"
+      ],
+      "alignment": [
+        "whisperx",
+        "optional mfa adapter deps"
+      ],
+      "alignment_legacy": [
+        "gentle adapter plugin only"
+      ]
+    },
+    "policy": "gentle remains optional legacy plugin, not default backend."
+  },
+  "risks_and_mitigations": [
+    {
+      "risk": "Alignment quality is highly data-dependent.",
+      "mitigation": "Ship strong QC outputs and conservative defaults; expose strict mode."
+    },
+    {
+      "risk": "WhisperX/MFA dependency churn.",
+      "mitigation": "Backend abstraction + adapter layer + pinned integration tests."
+    },
+    {
+      "risk": "Long-audio stitching introduces subtle boundary errors.",
+      "mitigation": "Property-based boundary tests and known-truth benchmark fixtures."
+    },
+    {
+      "risk": "Language/phoneme namespace confusion.",
+      "mitigation": "Explicit namespace metadata and normalization utilities with tests."
+    }
+  ],
+  "open_questions": [
+    "Should MFA become first-class in-repo or remain plugin-only in v1.3?",
+    "Which languages beyond English need P0 support for alignment outputs?",
+    "Do we require diarization in v1.3 or keep it P1 behind optional extras?",
+    "Should CTM/TextGrid import be strict by default or permissive with warnings?"
+  ]
+}

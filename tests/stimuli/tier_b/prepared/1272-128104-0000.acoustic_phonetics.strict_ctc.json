@@ -1,0 +1,52 @@
+{
+  "clip_id": "1272-128104-0000",
+  "truth_text": "MISTER QUILTER IS THE APOSTLE OF THE MIDDLE CLASSES AND WE ARE GLAD TO WELCOME HIS GOSPEL",
+  "audio_seconds": 5.855,
+  "posterior_backend": "transformers_ctc",
+  "posterior_shape": [
+    12,
+    111
+  ],
+  "posterior_labels_first10": [
+    "a\u026a",
+    "a\u026a\u0259",
+    "a\u026a\u025a",
+    "a\u028a",
+    "b",
+    "d",
+    "d\u0292",
+    "e\u026a",
+    "f",
+    "h"
+  ],
+  "articulatory_shape": [
+    12,
+    24
+  ],
+  "articulatory_means": {
+    "bilabial": 0.08091863244771957,
+    "labiodental": 0.01414924580603838,
+    "dental": 0.01640300266444683,
+    "alveolar": 0.5872658491134644,
+    "postalveolar": 0.003507814137265086,
+    "palatal": 0.005399404559284449,
+    "velar": 0.06221925839781761,
+    "glottal": 0.019562864676117897,
+    "stop": 0.14353047311306,
+    "fricative": 0.441638708114624,
+    "affricate": 0.002426902763545513,
+    "nasal": 0.3638971149921417,
+    "approximant": 0.42548489570617676,
+    "vowel": 0.5152531266212463,
+    "consonant": 0.763652503490448,
+    "sonorant": 0.6655446290969849,
+    "obstruent": 0.5827422738075256,
+    "voiced": 0.770089864730835,
+    "front": 0.42848193645477295,
+    "central": 0.05746574327349663,
+    "back": 0.041605934500694275,
+    "silence": 0.30423590540885925,
+    "posterior_entropy": 1.4407631158828735,
+    "posterior_peak": 0.6826196312904358
+  }
+}

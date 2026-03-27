@@ -1,0 +1,1 @@
+this synthetic clip has one scene cut and changing audio energy for deterministic integration testing

@@ -1,0 +1,37 @@
+{
+  "manifest_version": 1,
+  "name": "tier_b_reference_stimuli",
+  "license_note": "Do not commit downloaded Tier B binaries by default; fetch on demand and verify checksums.",
+  "entries": [
+    {
+      "id": "blender_sintel_trailer_480p",
+      "enabled": false,
+      "source_url": "https://media.xiph.org/video/derf/y4m/sintel_trailer_2k_480p24.y4m",
+      "path": "tests/stimuli/tier_b/raw/sintel_trailer_480p24.y4m",
+      "sha256": "",
+      "expected_duration_s": null,
+      "diagnostic_tags": [
+        "video",
+        "motion",
+        "scene_cuts",
+        "decoder_variability"
+      ],
+      "license": "See upstream source terms"
+    },
+    {
+      "id": "openslr_librispeech_sample",
+      "enabled": false,
+      "source_url": "https://www.openslr.org/resources/12/dev-clean.tar.gz",
+      "path": "tests/stimuli/tier_b/raw/dev-clean.tar.gz",
+      "sha256": "",
+      "expected_duration_s": null,
+      "diagnostic_tags": [
+        "audio",
+        "speech",
+        "transcript",
+        "alignment"
+      ],
+      "license": "CC BY 4.0 (verify upstream metadata)"
+    }
+  ]
+}

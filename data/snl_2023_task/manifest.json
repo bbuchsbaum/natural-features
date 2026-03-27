@@ -1,0 +1,13 @@
+{
+  "name": "snl_2023_task_sentence_stimuli",
+  "version": 1,
+  "source_root": "/Users/bbuchsbaum/Dropbox/analysis/SNL_2023_task",
+  "n_stimuli": 27,
+  "total_audio_bytes": 9050512,
+  "copied_audio": true,
+  "files": {
+    "sentence_stimuli_csv": "sentence_stimuli.csv",
+    "sentence_metadata_csv": "sentence_metadata.csv",
+    "audio_root": "sentences_wav/"
+  }
+}

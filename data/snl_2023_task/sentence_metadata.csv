@@ -1,0 +1,28 @@
+stimulus,sentence,length_tag,duration_s,size_bytes,sha256
+sentences_wav/cool_slice_8.wav,A cool slice of watermelon bursting with flavor,8,2.403265,212012,1a93bbf715b8271bd4984a32c5334720600bc6fb6e2911c7990eb30ac4ecaebd
+sentences_wav/crunch_autumn_8.wav,The crunch of autumn leaves underneath my feet,8,2.276689,200848,ac00054f3283805704f4025264b5286548f0537613749b880e932b4771367f49
+sentences_wav/dancing_barefoot_12.wav,"Dancing barefoot in summer rain, each drop an invigorating kiss of euphoria",12,4.179592,368684,f49602ef92e492423a4621ba6bb792f44d2a166838c46d8d92902abf9cee0e31
+sentences_wav/distant_churchbells_12.wav,Distant church bells echoed as a cool breeze brushed against my skin,12,3.761633,331820,845d53e95655d8c6e4b58cbd9f4b749f950776682dbd64625092a05670cb2cea
+sentences_wav/distorted_reflection_16.wav,"The distorted reflection in a cracked mirror, the sharp smell of burnt wire in the air",16,4.752449,419210,1e0cd93be2d4d32e757a62a16bddbe79b54659adcd62422ab8e9b3efb3aec6ec
+sentences_wav/electric_buzz_8.wav,The electric buzz of an amusement park ride,8,2.586122,228140,3dd6095610900c71e84b418c9888a1c88c254110d26c2efd00b04cb4fffe8837
+sentences_wav/faded_rose_12.wav,"A faded rose, its wilted petals a silent sonnet of transient love",12,4.216961,371980,a09c75cb264d1060096aaf486f46f9d380afda2d7d6de9151e58d3238c0a62b4
+sentences_wav/fiery_heat_8.wav,The fiery heat of chili pepper infused salsa,8,2.693878,237644,409e4f8a210b864587b3bf19f854622791faac1ec42f981d7dc599f595cb0769
+sentences_wav/hike_crunch_16.wav,"As you hike, the crunch of leaves underfoot and the smell of pine fill your senses",16,4.414694,389420,81e561b9c51ea778346d020744e261319ed8a09ec86bf46697ebe4b3e25ce61c
+sentences_wav/old_cinema_16.wav,"An old cinema ticket, the ghostly rustle of excitement, now a silent film of the past",16,4.978776,439172,e88b8696ecc2962148dd3d7a4602d09761767f3aa2974d971628ed7b508c1b00
+sentences_wav/popping_sound_8.wav,The popping sound of popcorn in the microwave,8,2.530522,223236,0d6bdbfd32f98543f223f2a537a494e33dfab8f6a918c631afeb69d6b2bf9a67
+sentences_wav/pulling_warm_12.wav,"Pulling warm laundry from the dryer, a huggable cloud of clean cotton",12,3.611497,318578,02f30613f622c25cace2001f0d16de68beeb30e53271fb169ca170fa15966055
+sentences_wav/savory_stew_12.wav,"Savory stew, bubbling and rich, filled the cozy cabin with mouthwatering aroma",12,4.362449,384812,dc1d3b585f8a88bc9e506db599d632da7b40610d3176235dfc16cbbf9114ac41
+sentences_wav/sight_childhood_16.wav,"The sight of your childhood home, now empty, each room a silent chorus of forgotten moments",16,4.854943,428250,85927f0c0efa4f66a45ad9631a7114550b4fb0fd3fb7160d22dcbaadc855453b
+sentences_wav/silk_dress_16.wav,"Her silk dress rustles, whispering to your fingertips, the scent of vanilla trailing in the air",16,4.897007,431960,d4d14ccd6bb38b54493559f021112cdc6256accab204c69946f64a860b639a45
+sentences_wav/silk_stockings_12.wav,"Silk stockings graze the leg, a clandestine caress in the dim light",12,4.043424,356674,57a8b02ad1acc9b5702f7596b68ae9b530d51639cc5029cc2c29646690d806bf
+sentences_wav/snowflake_gentle_12.wav,"A snowflake's gentle kiss upon a bare cheek, cold but surprisingly tender",12,4.493061,396332,0ccf01e0fc0ed226d31b41c392c10cf9ed38a5630f15e26b414baab9fe324162
+sentences_wav/soaring_seagull_16.wav,"The soaring seagull, its white wings etched starkly against the cerulean expanse of summer sky",16,5.336871,470756,5d073b33aa2fd5e6fcfdd44c944cf110dc4a3cf8bf362015dd185603c9119add
+sentences_wav/solitary_echo_16.wav,"The solitary echo of footsteps in an old house, each creak a sigh of bygone times",16,4.718027,416174,0caeec030edca8a7a7a64bb5a1999406f8f9559a9ad80c4de981cf92c104b69f
+sentences_wav/swinging_hammock_8.wav,Swinging on a hammock in a gentle breeze,8,2.495283,220128,6acb13b597aeb3a2a153837dfca90d6552235cf073ddc407a12786f9d4e93eef
+sentences_wav/ticklish_tingle_8.wav,The ticklish tingle of sand between my toes,8,2.839977,250530,4190121cc70d49ac003be230dc81aff42ac1e10b3bd0aaf42f8e7933efbacde8
+sentences_wav/treasured_locket_12.wav,"A treasured locket, its faded photograph a mirror into a cherished past",12,4.012630,353958,9afcaaed82b4d7ac8179f5a3c1f0d0d2f18c71c70ab5f934f251913da6515891
+sentences_wav/turning_pages_8.wav,Turning the pages of a well loved novel,8,2.045533,180460,62cfc92bb397aa02e0200ee4dc5cfd536b420adef93c753dbf55a5e5c2df7e67
+sentences_wav/unsettling_sight_12.wav,The unsettling sight of a raven perched ominously on a weathered gravestone,12,3.898073,343854,82956c91a57b7666143ab3bb850de8027a397ecce1a546ddc8cf920a55b2385e
+sentences_wav/whiff_freshly_16.wav,"A whiff of freshly cut pine, the air suddenly imbued with the essence of the forest",16,4.681361,412940,92e3495126849238d718e91f75b64e54239398aa4608f896c9594d023a5bdaa8
+sentences_wav/worn_pages_16.wav,"The worn pages of a beloved childhood book, each word a whispered echo of simpler times",16,5.272222,465054,c46dd2473fd91adebdff28fb1e743d27d181d0802043c889c163070b7f854245
+sentences_wav/zing_minty_8.wav,The zing of minty toothpaste on my tongue,8,2.243107,197886,6efaddd17d8f540690843cc3a40ee70ed0ca339d27d46626c33e58845a6c8df9

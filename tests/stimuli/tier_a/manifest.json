@@ -1,0 +1,67 @@
+{
+  "entries": [
+    {
+      "diagnostics": {
+        "expected_motion_high_window_s": [
+          3.0,
+          6.0
+        ],
+        "expected_scene_cut_s": 3.0,
+        "fps": 10
+      },
+      "duration_s": 6.0,
+      "id": "tier_a_video_scene_cut",
+      "kind": "video_npy",
+      "path": "tests/stimuli/tier_a/video_scene_cut.npy",
+      "sha256": "d03ffb2e9a395788777e26853491db8e6e9969bfbe749c8caabe7ed7d1faad73"
+    },
+    {
+      "diagnostics": {
+        "high_energy_window_s": [
+          1.0,
+          5.0
+        ],
+        "low_energy_windows_s": [
+          [
+            0.0,
+            1.0
+          ],
+          [
+            5.0,
+            6.0
+          ]
+        ],
+        "sr_hz": 16000
+      },
+      "duration_s": 6.0,
+      "id": "tier_a_audio_speechlike",
+      "kind": "audio_wav",
+      "path": "tests/stimuli/tier_a/audio_speechlike.wav",
+      "sha256": "7c0fb581362d5101fafe02624a828e83276d8e98060c31450c2c1a611d447be1"
+    },
+    {
+      "diagnostics": {
+        "word_count": 15
+      },
+      "duration_s": 6.0,
+      "id": "tier_a_transcript_reference",
+      "kind": "text",
+      "path": "tests/stimuli/tier_a/transcript_reference.txt",
+      "sha256": "a3ea832916c005a8a907d73025c62d84a8e644e34904383a5cedfaccdada07c3"
+    },
+    {
+      "diagnostics": {
+        "word_count": 15
+      },
+      "duration_s": 6.0,
+      "id": "tier_a_reference_ctm",
+      "kind": "ctm",
+      "path": "tests/stimuli/tier_a/reference_words.ctm",
+      "sha256": "ae3f2ac14ab4dc27927f3cf027b859eb2c2d21de642d994908059996db4eee2a"
+    }
+  ],
+  "generator": "scripts/generate_tier_a_stimuli.py",
+  "license": "synthetic-generated",
+  "manifest_version": 1,
+  "name": "tier_a_synthetic_stimuli"
+}

@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "description": "Soft/hard benchmark gates for ASR+alignment quality summaries.",
+  "metrics": {
+    "fallback_rate": {
+      "soft_max": 0.5,
+      "hard_max": 1.0
+    },
+    "boundary_mae_ms_mean": {
+      "soft_max": 900.0,
+      "hard_max": 1500.0
+    },
+    "boundary_mae_ms_p95": {
+      "soft_max": 1500.0,
+      "hard_max": 2200.0
+    },
+    "token_f1_mean": {
+      "soft_min": 0.9,
+      "hard_min": 0.75
+    }
+  }
+}

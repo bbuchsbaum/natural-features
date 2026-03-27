@@ -1,0 +1,13 @@
+{
+  "manifest_version": 1,
+  "description": "Example SNL alignment benchmark manifest (requires local data/snl_2023_task).",
+  "items": [
+    {
+      "id": "example_sentence_clip_001",
+      "audio_path": "../../../data/snl_2023_task/sentences/example_001.wav",
+      "reference_ctm": "../../../data/snl_2023_task/bench_refs/example_001.ctm",
+      "transcript_path": "../../../data/snl_2023_task/bench_refs/example_001.txt",
+      "language": "en"
+    }
+  ]
+}

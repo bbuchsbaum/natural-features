@@ -1,0 +1,22 @@
+api_version: 1
+features:
+  - id: vis
+    use: vision.lowlevel.visual_energy
+    params:
+      include_deltas: true
+    postprocess:
+      rename:
+        prefix: "vision.ve."
+
+  - id: cuts
+    use: meta.scene_cuts
+    params:
+      threshold_z: 1.5
+
+  - id: aud
+    use: audio.lowlevel.rms
+    params:
+      hop_s: 0.02
+      win_s: 0.03
+    postprocess:
+      standardize: true

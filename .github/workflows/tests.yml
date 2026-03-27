@@ -1,0 +1,162 @@
+name: tests
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * *"
+
+jobs:
+  smoke:
+    name: smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Validate Tier A fixtures
+        run: make validate-tier-a
+
+      - name: Run smoke tests
+        run: make test-smoke
+
+  speech-validation:
+    name: speech-validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Validate Tier A fixtures
+        run: make validate-tier-a
+
+      - name: Validate speech backends
+        run: |
+          mkdir -p artifacts
+          python -m natural_features.cli.main speech-validate-backends \
+            --audio-wav tests/stimuli/tier_a/audio_speechlike.wav \
+            --words-ctm tests/stimuli/tier_a/reference_words.ctm \
+            --language en \
+            --execution-mode fallback \
+            --out-json artifacts/speech_backend_validation.json \
+            --json
+
+      - name: Upload speech backend validation report
+        uses: actions/upload-artifact@v4
+        with:
+          name: speech-backend-validation-${{ github.run_id }}
+          path: artifacts/speech_backend_validation.json
+          if-no-files-found: error
+
+  alignment-benchmark:
+    name: alignment-benchmark
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Validate Tier A fixtures
+        run: make validate-tier-a
+
+      - name: Run alignment benchmark
+        run: |
+          mkdir -p artifacts
+          python -m natural_features.cli.main speech-benchmark \
+            --manifest tests/benchmarks/manifests/tier_a_alignment_manifest.json \
+            --backend auto \
+            --execution-mode fallback \
+            --out-json artifacts/alignment_benchmark.json \
+            --json
+
+      - name: Gate alignment benchmark
+        run: |
+          python scripts/check_alignment_benchmark_gate.py \
+            --report artifacts/alignment_benchmark.json \
+            --json
+
+      - name: Upload alignment benchmark report
+        uses: actions/upload-artifact@v4
+        with:
+          name: alignment-benchmark-${{ github.run_id }}
+          path: artifacts/alignment_benchmark.json
+          if-no-files-found: error
+
+  media:
+    name: media
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Validate Tier A fixtures
+        run: make validate-tier-a
+
+      - name: Run media tests
+        run: make test-media
+
+  nightly:
+    name: nightly
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Validate Tier A fixtures
+        run: make validate-tier-a
+
+      - name: Run nightly suite
+        run: make test-nightly
