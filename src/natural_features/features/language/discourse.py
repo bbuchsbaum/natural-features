@@ -79,7 +79,7 @@ def discourse_features(words: EventSeries, *, window_size: int = 5) -> FeatureSe
         vals[i, 4] = float(len(token) >= 4 and token not in _STOP_WORDS)
 
     md = extractor_metadata(
-        "language.discourse.features",
+        "language.discourse",
         params={"window_size": window},
         extra={"extractor_class": "heuristic", "backend": "python_native"},
     )

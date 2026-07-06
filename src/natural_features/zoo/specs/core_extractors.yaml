@@ -311,6 +311,60 @@ extractors:
         schema: FeatureSeries/v1
         kind: features
 
+  - name: vision.optical_flow
+    impl: natural_features.features.vision.motion:optical_flow
+    version: "1.0"
+    label: Dense optical-flow summary
+    modalities: [video]
+    requires: [vision, opencv]
+    dependency_class: optional_python
+    cost_class: moderate
+    tags: [vision, motion, fallback]
+    params:
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: vision.dct
+    impl: natural_features.features.vision.dct:vision_dct_features
+    version: "1.0"
+    label: Spatial DCT features
+    modalities: [video, image]
+    requires: [vision]
+    dependency_class: base_python
+    cost_class: moderate
+    tags: [vision, spatial, baseline]
+    params:
+      k: { type: int, default: 64 }
+      color: { type: str, default: gray }
+      size: { type: int, default: 32 }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: vision.semantic_views
+    impl: natural_features.features.vision.semantic:vision_semantic_views
+    version: "1.0"
+    label: Semantic view events
+    modalities: [video]
+    requires: [vision, api_optional]
+    dependency_class: optional_api
+    cost_class: expensive
+    bundles: [social_vision]
+    tags: [vision, semantic, fallback]
+    params:
+      stride_frames: { type: int, default: 1 }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+    outputs:
+      default:
+        schema: EventSeries/v1
+        kind: events
+
   - name: meta.scene_cuts
     impl: natural_features.features.vision.scene:scene_cuts
     version: "1.0"
@@ -563,6 +617,79 @@ extractors:
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
 
+  - name: speech.hubert
+    impl: natural_features.features.speech.ssl:hubert_hidden_states
+    version: "1.0"
+    label: HuBERT hidden states
+    modalities: [audio]
+    requires: [speech, transformers, torch]
+    dependency_class: optional_python
+    cost_class: expensive
+    bundles: [speech_encoding]
+    tags: [speech, ssl, fallback]
+    params:
+      model: { type: str, default: facebook/hubert-base-ls960 }
+      layers: { type: "list[int]", default: [6, 12] }
+      stride_s: { type: float, default: 0.02 }
+      pooling: { type: str, default: none }
+      local_files_only: { type: bool, default: true }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: speech.neural_vad
+    impl: natural_features.features.speech.vad:neural_vad
+    version: "1.0"
+    label: Neural VAD
+    modalities: [audio]
+    requires: [speech, torch]
+    dependency_class: optional_python
+    cost_class: cheap
+    bundles: [speech_encoding]
+    tags: [speech, vad, fallback]
+    params:
+      hop_s: { type: float, default: 0.02 }
+      win_s: { type: float, default: 0.03 }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: speech.diarization
+    impl: natural_features.features.speech.diarization:speaker_diarization
+    version: "1.0"
+    label: Speaker diarization
+    modalities: [audio]
+    requires: [speech, pyannote]
+    dependency_class: optional_api
+    cost_class: expensive
+    bundles: [speech_encoding]
+    tags: [speech, diarization, fallback]
+    params:
+      hop_s: { type: float, default: 0.02 }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+    outputs:
+      default: { schema: TrackSeries/v1, kind: tracks }
+
+  - name: speech.emotion
+    impl: natural_features.features.speech.emotion:speech_emotion
+    version: "1.0"
+    label: Speech emotion
+    modalities: [audio]
+    requires: [speech, transformers, torch]
+    dependency_class: optional_python
+    cost_class: moderate
+    bundles: [speech_encoding]
+    tags: [speech, affect, fallback]
+    params:
+      hop_s: { type: float, default: 0.02 }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
   - name: speech.phonology.posteriorgrams
     impl: natural_features.features.speech.phonology:phoneme_posteriorgrams
     version: "1.0"
@@ -706,6 +833,38 @@ extractors:
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
 
+  - name: language.discourse
+    impl: natural_features.features.language.discourse:discourse_features
+    version: "1.0"
+    label: Discourse features
+    modalities: [words]
+    requires: [language]
+    dependency_class: base_python
+    cost_class: cheap
+    bundles: [baseline, language_encoding]
+    tags: [language, discourse, baseline]
+    params:
+      window_size: { type: int, default: 5 }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: language.syntax
+    impl: natural_features.features.language.syntax:syntactic_features
+    version: "1.0"
+    label: Syntactic features
+    modalities: [words]
+    requires: [language, spacy_optional]
+    dependency_class: optional_python
+    cost_class: moderate
+    bundles: [language_encoding]
+    tags: [language, syntax, fallback]
+    params:
+      model: { type: str, default: en_core_web_sm }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
   - name: language.surprisal
     impl: natural_features.features.language.predictability:surprisal
     version: "1.0"
@@ -748,6 +907,107 @@ extractors:
     tags: [baseline, audio, opensmile]
     params:
       frame_s: { type: float, default: 0.01 }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: audio.gammatone
+    impl: natural_features.features.audio.cochlear:audio_gammatone
+    version: "1.0"
+    label: Gammatone filterbank
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: moderate
+    tags: [audio, auditory, cochlear]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      win_s: { type: float, default: 0.025 }
+      n_channels: { type: int, default: 32 }
+      fmin: { type: float, default: 50.0 }
+      fmax: { type: float, default: null, nullable: true }
+      log: { type: bool, default: true }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: audio.pitch
+    impl: natural_features.features.audio.prosody:audio_pitch
+    version: "1.0"
+    label: Pitch / F0
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: moderate
+    tags: [audio, prosody, pitch]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      win_s: { type: float, default: 0.04 }
+      fmin: { type: float, default: 50.0 }
+      fmax: { type: float, default: 500.0 }
+      voicing_threshold: { type: float, default: 0.2 }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: audio.prosody
+    impl: natural_features.features.audio.prosody:prosody_features
+    version: "1.0"
+    label: Prosody bundle
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: cheap
+    bundles: [movie_encoding]
+    tags: [audio, prosody]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      win_s: { type: float, default: 0.025 }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: audio.clap
+    impl: natural_features.features.audio.neural:audio_clap_embeddings
+    version: "1.0"
+    label: CLAP audio embeddings
+    modalities: [audio]
+    requires: [audio, transformers, torch]
+    dependency_class: optional_python
+    cost_class: expensive
+    tags: [audio, neural, embeddings, fallback]
+    params:
+      model: { type: str, default: laion/clap-htsat-unfused }
+      stride_s: { type: float, default: 1.0 }
+      dim: { type: int, default: 64 }
+      local_files_only: { type: bool, default: true }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: audio.ast
+    impl: natural_features.features.audio.neural:audio_ast_embeddings
+    version: "1.0"
+    label: Audio Spectrogram Transformer embeddings
+    modalities: [audio]
+    requires: [audio, transformers, torch]
+    dependency_class: optional_python
+    cost_class: expensive
+    tags: [audio, neural, embeddings, fallback]
+    params:
+      model: { type: str, default: MIT/ast-finetuned-audioset-10-10-0.4593 }
+      stride_s: { type: float, default: 1.0 }
+      dim: { type: int, default: 64 }
+      local_files_only: { type: bool, default: true }
       execution_mode: { type: str, default: fallback }
       strict_dependency: { type: bool, default: false }
     outputs:

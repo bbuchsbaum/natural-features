@@ -16,6 +16,7 @@ from natural_features.util.hashing import stable_hash
 def _fallback_ssl(
     stimulus: AudioStimulus,
     *,
+    extractor_name: str,
     layers: list[int],
     stride_s: float,
     execution_mode: str,
@@ -38,7 +39,7 @@ def _fallback_ssl(
         out[:, i, :] = np.tanh(x @ proj)
     md = add_execution_provenance(
         extractor_metadata(
-            "speech.ssl.wavlm",
+            extractor_name,
             params={"layers": layers, "stride_s": stride_s},
             extra={"backend": "fallback"},
         ),
@@ -81,6 +82,7 @@ def wavlm_hidden_states(
             raise RuntimeError("transformers+torch are required for strict speech SSL extraction.")
         return _fallback_ssl(
             stimulus,
+            extractor_name="speech.ssl.wavlm",
             layers=layers,
             stride_s=stride_s,
             execution_mode=mode,
@@ -96,6 +98,7 @@ def wavlm_hidden_states(
             raise RuntimeError(f"Model '{model}' unavailable locally for strict mode.")
         return _fallback_ssl(
             stimulus,
+            extractor_name="speech.ssl.wavlm",
             layers=layers,
             stride_s=stride_s,
             execution_mode=mode,
@@ -118,6 +121,7 @@ def wavlm_hidden_states(
             raise RuntimeError("Speech SSL inference failed in strict mode.") from exc
         return _fallback_ssl(
             stimulus,
+            extractor_name="speech.ssl.wavlm",
             layers=layers,
             stride_s=stride_s,
             execution_mode=mode,
@@ -142,6 +146,104 @@ def wavlm_hidden_states(
     md = add_execution_provenance(
         extractor_metadata(
             "speech.ssl.wavlm",
+            params={"model": model, "layers": layers, "stride_s": stride_s, "pooling": pooling},
+            extra={"backend": "transformers_local"},
+        ),
+        execution_mode=mode,
+        fallback_used=False,
+    )
+    return FeatureSeries(
+        values=stack,
+        times_s=times,
+        dims=("time", "layer", "unit"),
+        coords={"layer": layers, "unit": [f"u{i}" for i in range(stack.shape[2])]},
+        metadata=md,
+        timebase=TimebaseSpec(kind="audio_hop", hop_s=stride_s, sampling_rate_hz=1.0 / stride_s),
+    )
+
+
+def hubert_hidden_states(
+    stimulus: AudioStimulus,
+    *,
+    model: str = "facebook/hubert-base-ls960",
+    layers: list[int] | None = None,
+    stride_s: float = 0.02,
+    pooling: str = "none",
+    execution_mode: str | None = None,
+    strict_dependency: bool | None = None,
+) -> FeatureSeries:
+    """Return HuBERT-style hidden states with the same contract as WavLM."""
+
+    mode, strict_dependency = resolve_execution_mode(
+        execution_mode=execution_mode,
+        strict_dependency=strict_dependency,
+    )
+    layers = layers or [2, 6, 12]
+    if stride_s <= 0:
+        raise ValueError("stride_s must be > 0")
+    try:
+        import torch
+        from transformers import AutoFeatureExtractor, AutoModel  # type: ignore
+    except Exception:
+        if strict_dependency:
+            raise RuntimeError("transformers+torch are required for strict HuBERT extraction.")
+        return _fallback_ssl(
+            stimulus,
+            extractor_name="speech.hubert",
+            layers=layers,
+            stride_s=stride_s,
+            execution_mode=mode,
+            fallback_reason="transformers/torch unavailable",
+        )
+    try:
+        fe = AutoFeatureExtractor.from_pretrained(model, local_files_only=True)
+        net = AutoModel.from_pretrained(model, local_files_only=True)
+    except Exception:
+        if strict_dependency:
+            raise RuntimeError(f"Model '{model}' unavailable locally for strict mode.")
+        return _fallback_ssl(
+            stimulus,
+            extractor_name="speech.hubert",
+            layers=layers,
+            stride_s=stride_s,
+            execution_mode=mode,
+            fallback_reason="local model unavailable",
+        )
+    wav = stimulus.samples.astype(np.float32)
+    if wav.ndim == 2:
+        wav = wav.mean(axis=1)
+    try:
+        inputs = fe(wav, sampling_rate=stimulus.sr_hz, return_tensors="pt")
+        with torch.no_grad():
+            out = net(**inputs, output_hidden_states=True)
+    except Exception as exc:
+        if strict_dependency:
+            raise RuntimeError("HuBERT inference failed in strict mode.") from exc
+        return _fallback_ssl(
+            stimulus,
+            extractor_name="speech.hubert",
+            layers=layers,
+            stride_s=stride_s,
+            execution_mode=mode,
+            fallback_reason=f"model inference failed: {type(exc).__name__}",
+        )
+    hstates = out.hidden_states
+    selected = []
+    for layer in layers:
+        l_idx = max(0, min(int(layer), len(hstates) - 1))
+        selected.append(hstates[l_idx][0].detach().cpu().numpy().astype(np.float32))
+    min_t = min(x.shape[0] for x in selected)
+    stack = np.stack([x[:min_t] for x in selected], axis=1)
+    if pooling == "mean":
+        stack = stack.mean(axis=2, keepdims=True)
+    elif pooling == "max":
+        stack = stack.max(axis=2, keepdims=True)
+    elif pooling != "none":
+        raise ValueError(f"Unsupported pooling: {pooling}")
+    times = times_from_hop(min_t, stride_s, start_offset_s=stimulus.start_offset_s)
+    md = add_execution_provenance(
+        extractor_metadata(
+            "speech.hubert",
             params={"model": model, "layers": layers, "stride_s": stride_s, "pooling": pooling},
             extra={"backend": "transformers_local"},
         ),

@@ -3,6 +3,7 @@
 from .discourse import discourse_features
 from .embed import bert_word_embeddings
 from .predictability import surprisal
+from .syntax import syntactic_features
 from .providers import (
     EmbeddingProvider,
     LocalHashEmbeddingProvider,
@@ -20,4 +21,5 @@ __all__ = [
     "make_embedding_provider",
     "sanitize_provider_config",
     "surprisal",
+    "syntactic_features",
 ]
