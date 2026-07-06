@@ -1,7 +1,7 @@
 """Language feature extractors."""
 
 from .discourse import discourse_features
-from .embed import bert_word_embeddings
+from .embed import bert_word_embeddings, lm_hidden_states
 from .predictability import surprisal
 from .syntax import syntactic_features
 from .providers import (
@@ -18,6 +18,7 @@ __all__ = [
     "OpenAIEmbeddingProvider",
     "bert_word_embeddings",
     "discourse_features",
+    "lm_hidden_states",
     "make_embedding_provider",
     "sanitize_provider_config",
     "surprisal",

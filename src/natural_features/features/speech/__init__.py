@@ -21,7 +21,7 @@ from .phonology import (
     phoneme_posteriorgrams,
 )
 from .ssl import hubert_hidden_states, wavlm_hidden_states
-from .vad import energy_vad, neural_vad
+from .vad import energy_vad, neural_vad, speech_vad
 from .validation import validate_alignment_backends
 from .runtime_pins import runtime_pin_metadata, runtime_version_snapshot
 
@@ -55,6 +55,7 @@ __all__ = [
     "runtime_version_snapshot",
     "speaker_diarization",
     "speech_emotion",
+    "speech_vad",
     "stitch_word_events",
     "validate_alignment_qc",
     "validate_alignment_backends",

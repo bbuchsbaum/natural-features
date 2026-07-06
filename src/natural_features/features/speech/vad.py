@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 
-from natural_features.core.feature_types import FeatureSeries
 from natural_features.core.execution import add_execution_provenance, resolve_execution_mode
+from natural_features.core.feature_types import EventSeries, FeatureSeries
 from natural_features.core.stimulus import AudioStimulus
 from natural_features.core.timebase import TimebaseSpec, times_from_hop
 from natural_features.features.common import extractor_metadata
@@ -40,6 +40,65 @@ def energy_vad(
         coords={"feature": ["speech_probability"]},
         metadata=metadata,
         timebase=TimebaseSpec(kind="audio_hop", hop_s=hop_s, sampling_rate_hz=1.0 / hop_s),
+    )
+
+
+def speech_vad(
+    stimulus: AudioStimulus,
+    *,
+    frame_s: float = 0.02,
+    win_s: float = 0.03,
+    threshold: float = 0.5,
+) -> EventSeries:
+    """Return contiguous speech events from the energy VAD probability series."""
+
+    if frame_s <= 0:
+        raise ValueError("frame_s must be > 0")
+    if win_s <= 0:
+        raise ValueError("win_s must be > 0")
+    if threshold < 0:
+        raise ValueError("threshold must be >= 0")
+    base = energy_vad(stimulus, hop_s=frame_s, win_s=win_s, threshold=threshold)
+    prob = base.values[:, 0]
+    active = prob >= float(threshold)
+    starts: list[int] = []
+    stops: list[int] = []
+    in_run = False
+    for i, flag in enumerate(active):
+        if flag and not in_run:
+            starts.append(i)
+            in_run = True
+        elif not flag and in_run:
+            stops.append(i)
+            in_run = False
+    if in_run:
+        stops.append(len(active))
+
+    onset = []
+    offset = []
+    confidence = []
+    half_win = float(win_s) / 2.0
+    for start, stop in zip(starts, stops, strict=True):
+        onset.append(max(float(stimulus.start_offset_s), float(base.times_s[start]) - half_win))
+        offset.append(float(base.times_s[stop - 1]) + half_win)
+        confidence.append(float(prob[start:stop].mean()))
+
+    md = extractor_metadata(
+        "speech.vad",
+        params={"frame_s": frame_s, "win_s": win_s, "threshold": threshold},
+        extra={"backend": "energy_threshold", "source_extractor": base.metadata.get("extractor_name", "unknown")},
+    )
+    return EventSeries(
+        onset_s=np.asarray(onset, dtype=np.float64),
+        offset_s=np.asarray(offset, dtype=np.float64),
+        label=np.asarray(["speech"] * len(onset), dtype=object),
+        confidence=np.asarray(confidence, dtype=np.float32),
+        extra={
+            "frame_start": np.asarray(starts, dtype=np.int64),
+            "frame_stop": np.asarray(stops, dtype=np.int64),
+        },
+        metadata=md,
+        timebase=TimebaseSpec(kind="events"),
     )
 
 

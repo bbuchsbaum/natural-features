@@ -311,6 +311,24 @@ extractors:
         schema: FeatureSeries/v1
         kind: features
 
+  - name: vision.motion_energy
+    impl: natural_features.features.vision.motion_energy:motion_energy_pymoten
+    version: "1.0"
+    label: Motion energy model
+    modalities: [video]
+    requires: [vision, pymoten]
+    dependency_class: optional_python
+    cost_class: expensive
+    tags: [baseline, vision, motion, fallback, alias]
+    params:
+      fps_downsample: { type: float, default: 0.0 }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
   - name: vision.optical_flow
     impl: natural_features.features.vision.motion:optical_flow
     version: "1.0"
@@ -528,6 +546,24 @@ extractors:
         schema: FeatureSeries/v1
         kind: features
 
+  - name: speech.vad
+    impl: natural_features.features.speech.vad:speech_vad
+    version: "1.0"
+    label: Speech activity events
+    modalities: [audio]
+    requires: [speech]
+    dependency_class: base_python
+    cost_class: cheap
+    tags: [speech, vad, alias]
+    params:
+      frame_s: { type: float, default: 0.02 }
+      win_s: { type: float, default: 0.03 }
+      threshold: { type: float, default: 0.5 }
+    outputs:
+      default:
+        schema: EventSeries/v1
+        kind: events
+
   - name: speech.asr.whisper
     impl: natural_features.features.speech.asr:whisper_transcribe
     version: "1.0"
@@ -607,6 +643,26 @@ extractors:
     modalities: [audio]
     requires: [speech, transformers]
     tags: [speech, ssl]
+    params:
+      model: { type: str, default: microsoft/wavlm-base-plus }
+      layers: { type: "list[int]", default: [2, 6, 12] }
+      stride_s: { type: float, default: 0.02 }
+      pooling: { type: str, default: none }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: speech.wavlm
+    impl: natural_features.features.speech.ssl:wavlm_hidden_states
+    version: "1.0"
+    label: WavLM hidden states
+    modalities: [audio]
+    requires: [speech, transformers, torch]
+    dependency_class: optional_python
+    cost_class: expensive
+    bundles: [speech_encoding]
+    tags: [speech, ssl, fallback, alias]
     params:
       model: { type: str, default: microsoft/wavlm-base-plus }
       layers: { type: "list[int]", default: [2, 6, 12] }
@@ -729,6 +785,25 @@ extractors:
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
 
+  - name: speech.ctc
+    impl: natural_features.features.speech.phonology:ctc_phone_posteriors
+    version: "1.0"
+    label: CTC phone posteriors
+    modalities: [audio]
+    requires: [speech, transformers, torch]
+    dependency_class: optional_python
+    cost_class: expensive
+    bundles: [speech_encoding]
+    tags: [speech, phonology, posterior, ctc, fallback, alias]
+    params:
+      model: { type: str, default: bobboyms/wav2vec2-base-en-phoneme-ctc-41h }
+      local_files_only: { type: bool, default: true }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+      drop_special_tokens: { type: bool, default: true }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
   - name: speech.articulatory.features
     impl: natural_features.features.speech.phonology:articulatory_features
     version: "1.0"
@@ -802,6 +877,26 @@ extractors:
       model: { type: str, default: bert-base-uncased }
       layers: { type: "list[int]", default: [12] }
       pooling: { type: str, default: mean_subwords }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: language.hidden_states
+    impl: natural_features.features.language.embed:lm_hidden_states
+    version: "1.0"
+    label: Causal LM hidden states
+    modalities: [tokens, words]
+    requires: [language, transformers, torch]
+    dependency_class: optional_python
+    cost_class: expensive
+    bundles: [language_encoding]
+    tags: [language, neural, embeddings, fallback]
+    params:
+      model: { type: str, default: gpt2 }
+      layers: { type: "list[int]", default: [6, 12] }
+      pooling: { type: str, default: mean_subwords }
+      local_files_only: { type: bool, default: true }
       execution_mode: { type: str, default: fallback }
       strict_dependency: { type: bool, default: false }
     outputs:
@@ -905,6 +1000,24 @@ extractors:
     modalities: [audio]
     requires: [audio, opensmile]
     tags: [baseline, audio, opensmile]
+    params:
+      frame_s: { type: float, default: 0.01 }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: audio.egemaps
+    impl: natural_features.features.audio.opensmile:egemaps_lld
+    version: "1.0"
+    label: eGeMAPS LLD
+    modalities: [audio]
+    requires: [audio, opensmile]
+    dependency_class: optional_python
+    cost_class: moderate
+    tags: [baseline, audio, opensmile, fallback, alias]
     params:
       frame_s: { type: float, default: 0.01 }
       execution_mode: { type: str, default: fallback }
@@ -1033,6 +1146,20 @@ extractors:
     modalities: [video]
     requires: [affect]
     tags: [affect, visual, social]
+    params: {}
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: vision.social_proxies
+    impl: natural_features.features.affect.visual:social_visual_proxies
+    version: "1.0"
+    label: Social visual proxies
+    modalities: [video]
+    requires: [affect]
+    dependency_class: base_python
+    cost_class: cheap
+    bundles: [social_vision]
+    tags: [affect, visual, social, alias]
     params: {}
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
