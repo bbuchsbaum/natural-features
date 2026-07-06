@@ -1,0 +1,239 @@
+---
+title: "Feature Tour"
+subtitle: "A guided route through inputs, feature families, outputs, and downstream workflows."
+sidebar: tour
+---
+
+This tour is the first pass through `natural_features`: what you can give it, what you can ask for, and what the library returns.
+
+## One route through the library
+
+::: {.tour-route}
+::: {.tour-step}
+#### 1. Bring in a stimulus
+Use text strings, paths, arrays, or typed stimulus wrappers such as `TextStimulus`, `AudioStimulus`, `ImageStimulus`, `VideoStimulus`, and `MultiModalStimulus`.
+:::
+
+::: {.tour-step}
+#### 2. Inspect the catalogue
+`available_features()` reports feature IDs, modalities, output schemas, dependency classes, tags, bundles, and opt-in status.
+:::
+
+::: {.tour-step}
+#### 3. Plan or extract
+`plan_features()` resolves inputs and parameters without running extractors. `extract_features()` executes the plan and returns typed feature objects.
+:::
+
+::: {.tour-step}
+#### 4. Export or query
+Convert outputs to tables, merge feature tables, run recipe DAGs, batch audio files, or query run-aware windows for fMRI models.
+:::
+:::
+
+## What you can bring in
+
+::: {.tour-grid}
+::: {.tour-card}
+#### Text and transcripts
+Plain text can become word events. Existing `EventSeries` objects can feed alignment, language, phonology, and table export workflows.
+:::
+
+::: {.tour-card}
+#### Audio
+WAV files and `AudioStimulus` objects support acoustic summaries, speech routes, voice activity, phonology, and batch extraction.
+:::
+
+::: {.tour-card}
+#### Images and video
+Images and videos can be routed to OCR, low-level visual descriptors, face signals, neural embeddings, frame sampling, and audio extraction.
+:::
+
+::: {.tour-card}
+#### Feature objects
+`FeatureSeries`, `EventSeries`, and `TrackSeries` can be validated, converted to tables, merged, resampled, lagged, convolved, and queried by time.
+:::
+:::
+
+## What you can ask for today
+
+The grid below is generated from the installed Python package when the docs render. It uses `budget="allow_python"` so optional Python-backed routes are visible, while placeholder specs remain hidden.
+
+```{python}
+#| echo: false
+#| output: asis
+from collections import defaultdict
+from natural_features.workflows import available_features
+
+family_notes = {
+    "affect": "Audio and visual proxy features for social or affective structure.",
+    "audio": "RMS, mel, MFCC, spectral summaries, resampling, trimming, and optional openSMILE LLDs.",
+    "events": "Event alignment utilities.",
+    "features": "Resampling, HRF convolution, and lag expansion for FeatureSeries objects.",
+    "image": "OCR routes for still images.",
+    "language": "Surface controls, embedding hooks, BERT-style word embeddings, and surprisal routes.",
+    "meta": "Scene boundary summaries.",
+    "speech": "VAD, ASR word events, alignment, phonology, articulatory features, posteriorgrams, and SSL embeddings.",
+    "text": "Word event tokenization.",
+    "video": "Frame sampling, trimming, OCR, and audio extraction.",
+    "vision": "Frame energy, motion, face signals, CLIP/DINO embeddings, and motion-energy routes.",
+}
+
+groups = defaultdict(list)
+for entry in available_features(budget="allow_python"):
+    groups[entry.feature_id.split(".", 1)[0]].append(entry)
+
+print("::: {.tour-family-grid}")
+for family in sorted(groups):
+    entries = sorted(groups[family], key=lambda item: item.feature_id)
+    shown = ", ".join(f"`{entry.feature_id}`" for entry in entries[:7])
+    if len(entries) > 7:
+        shown += f", +{len(entries) - 7} more"
+    opt_in = sum(1 for entry in entries if entry.requires_opt_in)
+    feature_word = "feature ID" if len(entries) == 1 else "feature IDs"
+    opt_phrase = "1 requires opt-in" if opt_in == 1 else f"{opt_in} require opt-in"
+    note = family_notes.get(family, "Registered extractor family.")
+    print(f"""
+::: {{.tour-family}}
+#### {family}
+{note}
+
+[{len(entries)} {feature_word}; {opt_phrase}.]{{.tour-meta}}
+
+::: {{.tour-feature-list}}
+{shown}
+:::
+:::
+""")
+print(":::")
+```
+
+## First runnable path
+
+Start with text because it needs no optional media backend. `extract_features()` returns an `ExtractFeaturesResult`; the feature you requested is a typed `EventSeries`.
+
+```{python}
+#| echo: false
+#| output: asis
+from natural_features.core.interchange import as_event_table
+from natural_features.workflows import extract_features
+
+result = extract_features(
+    "The scene opens on a quiet room.",
+    features=["text.tokenize"],
+)
+words = result.features["text.tokenize"]
+labels = words.label.tolist()
+
+print(f"""
+::: {{.quick-result .tour-result}}
+::: {{.quick-stat}}
+[request]{{.quick-label}}
+
+`text.tokenize`
+:::
+::: {{.quick-stat}}
+[object]{{.quick-label}}
+
+`{type(words).__name__}` - `{words.schema}`
+:::
+::: {{.quick-stat}}
+[events]{{.quick-label}}
+
+{len(words)} word events
+:::
+::: {{.quick-words}}
+[labels]{{.quick-label}}
+
+{", ".join(f"`{label}`" for label in labels)}
+:::
+:::
+""")
+
+table = as_event_table(words).loc[:, ["onset_s", "offset_s", "label", "schema"]]
+print("| onset_s | offset_s | label | schema |")
+print("|---:|---:|---|---|")
+for row in table.itertuples(index=False):
+    print(f"| {row.onset_s:g} | {row.offset_s:g} | `{row.label}` | `{row.schema}` |")
+```
+
+The object keeps event timing, labels, schema, and provenance metadata together. Table export is a view of the same object, not a separate representation to maintain by hand.
+
+## Plan media before running it
+
+For video, image, speech, and neural embedding routes, planning is often the first useful operation. It tells you what would run and which features require an opt-in budget.
+
+```{python}
+#| echo: false
+#| output: asis
+from natural_features.workflows import plan_features
+
+plan = plan_features(
+    "video",
+    features=["video.audio.extract", "vision.face"],
+    budget="allow_python",
+)
+
+print("| feature | input | output | opt-in |")
+print("|---|---|---|---|")
+for row in plan.rows:
+    opt_in = "yes" if row.requires_opt_in else "no"
+    print(
+        f"| `{row.feature_id}` | `{row.input_token}` | "
+        f"`{row.output_schema}` | {opt_in} |"
+    )
+```
+
+The same plan can become a recipe dictionary, which lets you inspect or store the route before execution.
+
+```{python}
+#| echo: false
+#| output: asis
+import yaml
+
+print("```yaml")
+print(yaml.safe_dump(plan.to_recipe(), sort_keys=False).strip())
+print("```")
+```
+
+## What you can do with the outputs
+
+::: {.tour-grid}
+::: {.tour-card}
+#### Keep temporal objects typed
+Use `FeatureSeries` for sampled arrays, `EventSeries` for labeled intervals, and `TrackSeries` for tracked objects with framewise coordinates.
+:::
+
+::: {.tour-card}
+#### Move into tables
+Use `as_feature_table()`, `as_event_table()`, `as_track_table()`, `as_temporal_table()`, and `merge_feature_tables()` when a modeling or QC step wants tabular data.
+:::
+
+::: {.tour-card}
+#### Compose recipes
+Use recipe specs to express multi-step feature routes, preview them as DAGs, and run them through the local execution engine.
+:::
+
+::: {.tour-card}
+#### Query fMRI windows
+Use `RunGrid`, `ExperimentGrid`, and window queries to collect features by run, TR, and time window without losing stimulus provenance.
+:::
+:::
+
+## Where to go next
+
+::: {.tour-next-grid}
+::: {.tour-next}
+#### Build a first object
+[Start with the five-page path](../start/index.qmd): wrap a stimulus, list features, extract, export, and handle optional media backends.
+:::
+
+::: {.tour-next}
+#### Read the contracts
+[Concepts](../concepts/index.qmd) explains feature objects, planning, execution modes, recipe DAGs, table interchange, and fMRI windows.
+:::
+
+::: {.tour-next}
+#### Copy a task recipe
+[Cookbook](../cookbook/index.qmd) contains runnable examples for text tokenization, media planning, audio batches, table export, and fMRI window queries.
+:::
+:::

@@ -49,7 +49,7 @@ a:hover {
 
 .card {
   border: 1px solid var(--bs-border-color);
-  border-radius: 10px;
+  border-radius: 8px;
   background-color: var(--bs-body-bg);
   color: var(--bs-body-color);
   transition: border-color 120ms ease, transform 120ms ease;
@@ -95,7 +95,7 @@ a:hover {
   display: inline-block;
   font-size: 0.78rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
   text-transform: uppercase;
   color: var(--bs-link-color);
   background: color-mix(in srgb, var(--bs-link-color) 14%, transparent);
@@ -161,7 +161,7 @@ a:hover {
 /* Quick-look code card with a faux editor title bar. */
 .code-card {
   border: 1px solid var(--bs-border-color);
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
   background: var(--bs-tertiary-bg, #101827);
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
@@ -220,7 +220,7 @@ a:hover {
 }
 .promise-card {
   border: 1px solid var(--bs-border-color);
-  border-radius: 12px;
+  border-radius: 8px;
   background: var(--bs-secondary-bg, rgba(255, 255, 255, 0.02));
   padding: 1.5rem 1.4rem 1.3rem 1.4rem;
   transition: border-color 120ms ease, transform 120ms ease;
@@ -277,9 +277,89 @@ a:hover {
   color: var(--bs-secondary-color);
   font-size: 0.72rem;
   font-weight: 650;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   margin-bottom: 0.45rem;
   text-transform: uppercase;
+}
+
+/* ---------------------------------------------------------------------- *
+ * Tour page: a guided route through inputs, catalogue families, planning,
+ * and downstream tables/windows. Layouts use fixed grid constraints so
+ * generated labels cannot shift the page.
+ * ---------------------------------------------------------------------- */
+.tour-route,
+.tour-grid,
+.tour-family-grid,
+.tour-next-grid {
+  display: grid;
+  gap: 1rem;
+  margin: 1.2rem 0 1.8rem;
+}
+.tour-route {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.tour-grid,
+.tour-family-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.tour-next-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.tour-step,
+.tour-card,
+.tour-family,
+.tour-next {
+  border: 1px solid var(--bs-border-color);
+  border-radius: 8px;
+  background: var(--bs-secondary-bg, rgba(255, 255, 255, 0.02));
+  padding: 1rem 1.05rem;
+  min-width: 0;
+}
+.tour-step h4,
+.tour-card h4,
+.tour-family h4,
+.tour-next h4 {
+  font-size: 1.02rem;
+  font-weight: 650;
+  letter-spacing: 0;
+  margin: 0 0 0.5rem;
+}
+.tour-step p,
+.tour-card p,
+.tour-family p,
+.tour-next p {
+  color: var(--bs-secondary-color, #6b7280);
+  line-height: 1.55;
+  margin-bottom: 0.75rem;
+}
+.tour-meta {
+  color: var(--bs-secondary-color, #6b7280);
+  font-size: 0.88rem;
+  margin: 0.4rem 0 0.8rem;
+}
+.tour-feature-list {
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+.tour-result {
+  margin-top: 1rem;
+}
+@media (max-width: 1000px) {
+  .tour-route {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 800px) {
+  .tour-grid,
+  .tour-family-grid,
+  .tour-next-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 560px) {
+  .tour-route {
+    grid-template-columns: 1fr;
+  }
 }
 .quick-words {
   grid-column: 1 / -1;

@@ -3,6 +3,7 @@ project:
   output-dir: _site
   render:
     - "*.qmd"
+    - "tour/*.qmd"
     - "start/*.qmd"
     - "concepts/*.qmd"
     - "cookbook/*.qmd"
@@ -37,6 +38,8 @@ website:
     left:
       - text: "Start"
         href: start/index.qmd
+      - text: "Tour"
+        href: tour/index.qmd
       - text: "Concepts"
         href: concepts/index.qmd
       - text: "Cookbook"
@@ -52,6 +55,12 @@ website:
         href: "https://github.com/bbuchsbaum/natural-features"
         aria-label: GitHub
   sidebar:
+    - id: tour
+      title: "Tour"
+      style: floating
+      align: left
+      contents:
+        - tour/index.qmd
     - id: start
       title: "Start"
       style: floating

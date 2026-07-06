@@ -16,6 +16,7 @@ title-block-style: none
 [Install `natural-features`, import `natural_features`, and keep extracted features tied to stimulus time, provenance, and downstream fMRI windows.]{.lead}
 
 [Start here](start/index.qmd){.btn .btn-primary}
+[Feature tour](tour/index.qmd){.btn .btn-outline-secondary}
 [API reference](reference/index.qmd){.btn .btn-outline-secondary}
 
 [stimuli]{.kicker} [catalogue]{.kicker} [recipes]{.kicker} [fMRI windows]{.kicker}

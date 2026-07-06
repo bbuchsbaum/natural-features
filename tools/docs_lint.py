@@ -33,6 +33,7 @@ DOCS = Path(__file__).resolve().parents[1] / "docs"
 # ── EDIT 1: authored surface (everything comparison-gated except COMPARE_DIR)
 AUTHORED = [
     DOCS / "index.qmd",
+    DOCS / "tour",
     DOCS / "start",
     DOCS / "concepts",
     DOCS / "cookbook",
