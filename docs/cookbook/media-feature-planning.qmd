@@ -1,0 +1,58 @@
+---
+title: "Plan media features without running them"
+subtitle: "Inspect OCR, face, CLIP, DINO, and video-audio routes first."
+sidebar: cookbook
+---
+
+## Use when
+
+You want to know what a media feature would do before installing optional dependencies or touching large files.
+
+```{python}
+from natural_features.workflows import available_features, plan_features
+
+media = available_features(
+    modality=["image", "video"],
+    budget="allow_python",
+)
+[entry.feature_id for entry in media if entry.feature_id in {
+    "video.audio.extract",
+    "image.ocr",
+    "video.ocr",
+    "vision.face",
+    "vision.clip",
+    "vision.dino",
+}]
+```
+
+## Plan a route
+
+```{python}
+plan = plan_features(
+    "video",
+    features=["video.audio.extract", "vision.face"],
+    budget="allow_python",
+)
+plan.to_recipe()
+```
+
+## Boundary it closes
+
+Planning uses modality tokens and extractor specs. It lets you check feature IDs, input routing, and default parameters without decoding a movie or loading a neural model.
+
+## Strict variant
+
+```python
+plan_features(
+    "image",
+    features=["vision.clip"],
+    budget="allow_python",
+    feature_params={
+        "vision.clip": {
+            "execution_mode": "strict",
+            "strict_dependency": True,
+            "local_files_only": True,
+        }
+    },
+)
+```

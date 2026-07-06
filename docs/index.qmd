@@ -1,8 +1,10 @@
 ---
+title: "natural_features"
 pagetitle: "natural_features"
 toc: false
 sidebar: false
 page-layout: full
+title-block-style: none
 ---
 
 ::: {.hero}
@@ -38,9 +40,11 @@ words.label.tolist()
 
 ## In 30 seconds {.promise-heading}
 
-This block uses the installed Python package and returns an `EventSeries` whose word events keep onset, offset, label, and provenance metadata together.
+One request returns a typed event object. The result below is generated when this page renders.
 
 ```{python}
+#| echo: false
+#| output: asis
 from natural_features.workflows import available_features, extract_features
 
 catalog = available_features(modality="text")
@@ -49,13 +53,32 @@ result = extract_features(
     features=["text.tokenize"],
 )
 words = result.features["text.tokenize"]
+labels = words.label.tolist()
 
-{
-    "available_text_features": [entry.feature_id for entry in catalog],
-    "object_type": type(words).__name__,
-    "word_count": len(words),
-    "labels": words.label.tolist(),
-}
+print(f"""
+::: {{.quick-result}}
+::: {{.quick-stat}}
+[request]{{.quick-label}}
+
+`text.tokenize`
+:::
+::: {{.quick-stat}}
+[returns]{{.quick-label}}
+
+`{type(words).__name__}` · `{words.schema}`
+:::
+::: {{.quick-stat}}
+[events]{{.quick-label}}
+
+{len(words)} word events
+:::
+::: {{.quick-words}}
+[labels]{{.quick-label}}
+
+{", ".join(f"`{label}`" for label in labels)}
+:::
+:::
+""")
 ```
 
 ## Three contracts {.promise-heading}

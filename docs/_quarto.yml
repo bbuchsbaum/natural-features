@@ -61,6 +61,8 @@ website:
         - start/01-wrap-a-stimulus.qmd
         - start/02-list-and-plan-features.qmd
         - start/03-extract-features.qmd
+        - start/04-export-tables.qmd
+        - start/05-media-and-optional-backends.qmd
     - id: concepts
       title: "Concepts"
       style: floating
@@ -70,6 +72,8 @@ website:
         - concepts/stimuli.qmd
         - concepts/feature-objects.qmd
         - concepts/catalog-and-planning.qmd
+        - concepts/feature-catalogue.qmd
+        - concepts/execution-modes.qmd
     - id: cookbook
       title: "Cookbook"
       style: floating
@@ -77,6 +81,7 @@ website:
       contents:
         - cookbook/index.qmd
         - cookbook/text-tokenization.qmd
+        - cookbook/media-feature-planning.qmd
     - id: spec
       title: "Spec"
       style: floating

@@ -9,3 +9,5 @@ Start with the object you hold, then move to the system that plans how to create
 - [Stimuli](stimuli.qmd)
 - [Feature objects](feature-objects.qmd)
 - [Catalogue and planning](catalog-and-planning.qmd)
+- [Feature catalogue](feature-catalogue.qmd)
+- [Execution modes](execution-modes.qmd)

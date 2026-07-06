@@ -1,0 +1,60 @@
+---
+title: "Feature Catalogue"
+subtitle: "`available_features()` - feature families, schemas, and opt-in status."
+sidebar: concepts
+---
+
+## What it is
+
+The feature catalogue is generated from registered extractor specs. It is the reader-facing inventory of feature IDs, modalities, output schemas, dependency classes, and opt-in status.
+
+## Current families
+
+```{python}
+#| echo: false
+#| output: asis
+from collections import defaultdict
+from natural_features.workflows import available_features
+
+groups = defaultdict(list)
+for entry in available_features(budget="allow_python"):
+    family = entry.feature_id.split(".", 1)[0]
+    groups[family].append(entry)
+
+print("::: {.catalogue-grid}")
+for family in sorted(groups):
+    entries = sorted(groups[family], key=lambda item: item.feature_id)
+    feature_ids = ", ".join(f"`{entry.feature_id}`" for entry in entries[:8])
+    if len(entries) > 8:
+        feature_ids += f", +{len(entries) - 8} more"
+    opt_in = sum(1 for entry in entries if entry.requires_opt_in)
+    print(f"""
+::: {{.catalogue-card}}
+#### {family}
+{len(entries)} feature IDs · {opt_in} require opt-in
+
+{feature_ids}
+:::
+""")
+print(":::")
+```
+
+## Invariants
+
+- Feature IDs come from extractor specs registered in `Registry.with_builtin_specs()`.
+- `available_features(budget="default")` excludes costly or optional routes unless they are base routes.
+- `available_features(budget="allow_python")` includes optional Python backends but still excludes placeholder entries by default.
+- `available_features(as_dataframe=True)` returns the same entries as a pandas table.
+
+## What it refuses
+
+- Unknown budget names.
+- Placeholder entries unless `include_placeholders=True`.
+
+## What it doesn't do
+
+The catalogue does not execute extractors or install optional dependencies. It tells you what can be planned.
+
+## See also
+
+[List and plan features](../start/02-list-and-plan-features.qmd) · [Execution modes](execution-modes.qmd)

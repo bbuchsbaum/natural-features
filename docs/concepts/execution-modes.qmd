@@ -1,0 +1,44 @@
+---
+title: "Execution Modes"
+subtitle: "`execution_mode`, `strict_dependency`, and `budget` - choose failure behavior deliberately."
+sidebar: concepts
+---
+
+## What it is
+
+Execution settings separate two decisions: whether a feature is allowed into the plan, and what happens if a backend is missing at runtime.
+
+## Planning budgets
+
+| Budget | Planning effect |
+|---|---|
+| `default` | base routes that do not require opt-in |
+| `allow_python` | optional Python-backed routes, excluding placeholders |
+| `all` | all registered routes, including costly routes that still may need dependencies |
+
+## Runtime modes
+
+| Setting | Runtime effect |
+|---|---|
+| `execution_mode="fallback"` | return deterministic fallback/proxy output with provenance when a supported fallback exists |
+| `execution_mode="strict"` | raise if the requested backend is unavailable |
+| `strict_dependency=True` | compatibility flag for strict dependency behavior |
+
+## Invariants
+
+- Budget checks happen during planning.
+- Runtime fallback/strict behavior is represented in extractor parameters.
+- Fallback outputs annotate provenance through metadata where implemented.
+
+## What it refuses
+
+- Unsupported budget names.
+- Strict optional backends without their required packages, models, or system tools.
+
+## What it doesn't do
+
+These settings do not download models automatically. For model-backed extractors, local cache policy is controlled by extractor parameters such as `local_files_only`.
+
+## See also
+
+[Media and optional backends](../start/05-media-and-optional-backends.qmd) · [Feature catalogue](feature-catalogue.qmd)

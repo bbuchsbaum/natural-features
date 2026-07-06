@@ -1,0 +1,47 @@
+---
+title: "Export tables"
+subtitle: "`as_event_table()` turns feature objects into rows."
+sidebar: start
+---
+
+## From object to table
+
+Feature objects are the in-memory contract. Table helpers provide an interchange surface for modeling, inspection, and downstream joins.
+
+```{python}
+from natural_features.core.interchange import as_event_table
+from natural_features.workflows import extract_features
+
+result = extract_features(
+    "The scene opens on a quiet room.",
+    features=["text.tokenize"],
+)
+words = result.features["text.tokenize"]
+
+table = as_event_table(words)
+table.loc[:, ["onset_s", "offset_s", "duration_s", "label", "schema"]]
+```
+
+## What gets added
+
+The table includes event timing, labels, confidence when present, object columns when present, and provenance columns copied from metadata.
+
+```{python}
+sorted(set(table.columns) & {
+    "extractor_id",
+    "extractor_name",
+    "params_hash",
+    "code_version",
+    "model_revision",
+    "schema",
+})
+```
+
+## Refuses to
+
+- Table helpers require pandas through the storage/docs dependency path.
+- Event-level arrays in `extra` must have compatible lengths.
+
+## Read next
+
+[Media and optional backends](05-media-and-optional-backends.qmd)

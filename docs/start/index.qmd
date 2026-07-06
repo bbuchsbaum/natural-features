@@ -9,6 +9,8 @@ Work through these pages in order:
 1. [Wrap a stimulus](01-wrap-a-stimulus.qmd) - create typed inputs from arrays and strings.
 2. [List and plan features](02-list-and-plan-features.qmd) - inspect the catalogue before running extraction.
 3. [Extract features](03-extract-features.qmd) - execute a small feature request and inspect the returned object.
+4. [Export tables](04-export-tables.qmd) - turn event objects into modeling-ready rows.
+5. [Media and optional backends](05-media-and-optional-backends.qmd) - plan OCR, face, CLIP, DINO, and video-audio routes without accidentally running them.
 
 The package name and import name intentionally differ:
 

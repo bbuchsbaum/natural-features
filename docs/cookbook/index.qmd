@@ -7,5 +7,6 @@ sidebar: cookbook
 Current recipes:
 
 - [Tokenize text into word events](text-tokenization.qmd)
+- [Plan media features without running them](media-feature-planning.qmd)
 
 The cookbook should grow by feature family: audio, vision, speech, language, fMRI querying, and media preprocessing.

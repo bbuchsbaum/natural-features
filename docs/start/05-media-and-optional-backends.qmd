@@ -1,0 +1,49 @@
+---
+title: "Media and optional backends"
+subtitle: "Plan heavier extractors before installing or running them."
+sidebar: start
+---
+
+## Why plan first
+
+Media routes can depend on system tools or model packages. Planning lets you inspect the route, dependency class, and default parameters before execution.
+
+```{python}
+from natural_features.workflows import plan_features
+
+plan = plan_features(
+    "image",
+    features=["vision.clip"],
+    budget="allow_python",
+)
+plan.to_recipe()
+```
+
+## Common optional routes
+
+| Feature ID | Input | Dependency | Default behavior |
+|---|---|---|---|
+| `video.audio.extract` | video path | `ffmpeg` | extract mono WAV-like audio at `sr_hz` |
+| `image.ocr` | image | OCR backend | return word events or fallback metadata |
+| `video.ocr` | video | OCR backend | OCR sampled frames into word events |
+| `vision.face` | image or video | MediaPipe | face count and geometry summaries |
+| `vision.clip` | image or video | transformers + torch | frame/image embeddings |
+| `vision.dino` | image or video | transformers + torch | frame/image embeddings |
+
+## Strict execution
+
+Fallback mode is the default for optional extractors. Use strict mode when missing dependencies should fail the run:
+
+```python
+feature_params = {
+    "vision.clip": {
+        "execution_mode": "strict",
+        "strict_dependency": True,
+        "local_files_only": True,
+    }
+}
+```
+
+## Read next
+
+[Feature catalogue](../concepts/feature-catalogue.qmd) · [Execution modes](../concepts/execution-modes.qmd)
