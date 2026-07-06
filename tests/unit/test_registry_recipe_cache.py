@@ -185,7 +185,7 @@ def test_validate_recipe_static_contracts() -> None:
     }
     val = validate_recipe(recipe, registry=reg, input_keys={"audio"})
     assert val.step_ids == ["asr", "art"]
-    assert val.outputs_by_step["asr"] == ["segments", "words"]
+    assert val.outputs_by_step["asr"] == ["qc", "segments", "words"]
 
 
 def test_recipe_dag_outputs_depends_on_input_tokens_and_mermaid() -> None:

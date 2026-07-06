@@ -5,6 +5,7 @@ from __future__ import annotations
 import numpy as np
 
 from natural_features.core.feature_types import FeatureSeries
+from natural_features.core.execution import add_execution_provenance, resolve_execution_mode
 from natural_features.core.stimulus import AudioStimulus
 from natural_features.core.timebase import TimebaseSpec, times_from_hop
 from natural_features.features.audio.lowlevel import _frames, _mono, rms, spectral_stats
@@ -19,9 +20,12 @@ def audio_pitch(
     fmin: float = 50.0,
     fmax: float = 500.0,
     voicing_threshold: float = 0.2,
+    execution_mode: str | None = None,
+    strict_dependency: bool | None = None,
 ) -> FeatureSeries:
     """Estimate framewise F0 with a lightweight autocorrelation method."""
 
+    mode, _strict = resolve_execution_mode(execution_mode=execution_mode, strict_dependency=strict_dependency)
     if fmin <= 0 or fmax <= 0 or fmax <= fmin:
         raise ValueError("Require 0 < fmin < fmax")
     x = _mono(stimulus.samples)
@@ -46,10 +50,20 @@ def audio_pitch(
             f0[i] = float(stimulus.sr_hz / (min_lag + best))
     values = np.column_stack([f0, voicing]).astype(np.float32)
     times = times_from_hop(values.shape[0], hop_s, start_offset_s=stimulus.start_offset_s, center=True, window_s=win_s)
-    md = extractor_metadata(
-        "audio.pitch",
-        params={"hop_s": hop_s, "win_s": win_s, "fmin": fmin, "fmax": fmax, "voicing_threshold": voicing_threshold},
-        extra={"backend": "autocorrelation"},
+    md = add_execution_provenance(
+        extractor_metadata(
+            "audio.pitch",
+            params={
+                "hop_s": hop_s,
+                "win_s": win_s,
+                "fmin": fmin,
+                "fmax": fmax,
+                "voicing_threshold": voicing_threshold,
+            },
+            extra={"backend": "autocorrelation"},
+        ),
+        execution_mode=mode,
+        fallback_used=False,
     )
     return FeatureSeries(
         values=values,

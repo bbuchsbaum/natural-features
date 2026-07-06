@@ -105,6 +105,7 @@ def speech_vad(
 def neural_vad(
     stimulus: AudioStimulus,
     *,
+    model: str = "silero_vad",
     hop_s: float = 0.02,
     win_s: float = 0.03,
     execution_mode: str | None = None,
@@ -128,7 +129,11 @@ def neural_vad(
     smooth = np.convolve(prob, np.ones(3, dtype=np.float32) / 3.0, mode="same") if prob.size else prob
     values = smooth[:, None].astype(np.float32)
     md = add_execution_provenance(
-        extractor_metadata("speech.neural_vad", params={"hop_s": hop_s, "win_s": win_s}, extra={"backend": "energy_proxy"}),
+        extractor_metadata(
+            "speech.neural_vad",
+            params={"model": model, "hop_s": hop_s, "win_s": win_s},
+            extra={"backend": "energy_proxy"},
+        ),
         execution_mode=mode,
         fallback_used=True,
         fallback_reason="neural VAD backend unavailable",

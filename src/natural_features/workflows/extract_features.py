@@ -196,6 +196,8 @@ def _infer_cost_class(spec: ExtractorSpec) -> str:
 def _infer_bundles(spec: ExtractorSpec) -> list[str]:
     if spec.bundles:
         return list(spec.bundles)
+    if not spec.infer_bundles:
+        return []
     bundles: list[str] = []
     tags = set(spec.tags)
     if "baseline" in tags:

@@ -51,7 +51,8 @@ def test_plan_features_routes_image_features_to_image_input() -> None:
 def test_plan_features_bundle_prefers_public_aliases() -> None:
     plan = plan_features("audio", bundle="baseline")
     ids = [row.feature_id for row in plan.rows]
-    assert {"audio.rms", "audio.mel", "audio.mfcc", "audio.spectral_stats"} <= set(ids)
+    assert {"audio.rms", "audio.mel", "audio.spectral_stats"} <= set(ids)
+    assert "audio.mfcc" not in ids
     assert not any(feature_id.startswith("audio.lowlevel.") for feature_id in ids)
 
 

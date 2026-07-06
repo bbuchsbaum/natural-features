@@ -319,6 +319,7 @@ extractors:
     requires: [vision, pymoten]
     dependency_class: optional_python
     cost_class: expensive
+    infer_bundles: false
     tags: [baseline, vision, motion, fallback, alias]
     params:
       fps_downsample: { type: float, default: 0.0 }
@@ -354,6 +355,7 @@ extractors:
     requires: [vision]
     dependency_class: base_python
     cost_class: moderate
+    infer_bundles: false
     tags: [vision, spatial, baseline]
     params:
       k: { type: int, default: 64 }
@@ -440,6 +442,9 @@ extractors:
       hop_s: { type: float, default: 0.01 }
       win_s: { type: float, default: 0.025 }
       n_mels: { type: int, default: 64 }
+      fmin: { type: float, default: 50.0 }
+      fmax: { type: float, default: null, nullable: true }
+      log: { type: bool, default: true }
     outputs:
       default:
         schema: FeatureSeries/v1
@@ -459,6 +464,9 @@ extractors:
       hop_s: { type: float, default: 0.01 }
       win_s: { type: float, default: 0.025 }
       n_mels: { type: int, default: 64 }
+      fmin: { type: float, default: 50.0 }
+      fmax: { type: float, default: null, nullable: true }
+      log: { type: bool, default: true }
     outputs:
       default:
         schema: FeatureSeries/v1
@@ -488,12 +496,13 @@ extractors:
     requires: [audio]
     dependency_class: base_python
     cost_class: cheap
+    infer_bundles: false
     tags: [baseline, audio, alias]
     params:
       hop_s: { type: float, default: 0.01 }
       win_s: { type: float, default: 0.025 }
-      n_mfcc: { type: int, default: 40 }
-      n_mels: { type: int, default: 64 }
+      n_mfcc: { type: int, default: 13 }
+      n_mels: { type: int, default: 40 }
     outputs:
       default:
         schema: FeatureSeries/v1
@@ -554,6 +563,7 @@ extractors:
     requires: [speech]
     dependency_class: base_python
     cost_class: cheap
+    infer_bundles: false
     tags: [speech, vad, alias]
     params:
       frame_s: { type: float, default: 0.02 }
@@ -579,6 +589,7 @@ extractors:
     outputs:
       segments: { schema: EventSeries/v1, kind: events }
       words: { schema: EventSeries/v1, kind: events }
+      qc: { schema: dict, kind: qc }
 
   - name: speech.words
     impl: natural_features.features.speech.asr:whisper_transcribe
@@ -599,6 +610,7 @@ extractors:
     outputs:
       segments: { schema: EventSeries/v1, kind: events }
       words: { schema: EventSeries/v1, kind: words }
+      qc: { schema: dict, kind: qc }
 
   - name: speech.asr.whisper_chunked
     impl: natural_features.features.speech.asr:whisper_transcribe_chunked
@@ -618,6 +630,7 @@ extractors:
     outputs:
       segments: { schema: EventSeries/v1, kind: events }
       words: { schema: EventSeries/v1, kind: events }
+      qc: { schema: dict, kind: qc }
 
   - name: speech.align.whisperx
     impl: natural_features.features.speech.align:whisperx_align
@@ -681,7 +694,7 @@ extractors:
     requires: [speech, transformers, torch]
     dependency_class: optional_python
     cost_class: expensive
-    bundles: [speech_encoding]
+    infer_bundles: false
     tags: [speech, ssl, fallback]
     params:
       model: { type: str, default: facebook/hubert-base-ls960 }
@@ -702,9 +715,10 @@ extractors:
     requires: [speech, torch]
     dependency_class: optional_python
     cost_class: cheap
-    bundles: [speech_encoding]
+    infer_bundles: false
     tags: [speech, vad, fallback]
     params:
+      model: { type: str, default: silero_vad }
       hop_s: { type: float, default: 0.02 }
       win_s: { type: float, default: 0.03 }
       execution_mode: { type: str, default: fallback }
@@ -720,7 +734,7 @@ extractors:
     requires: [speech, pyannote]
     dependency_class: optional_api
     cost_class: expensive
-    bundles: [speech_encoding]
+    infer_bundles: false
     tags: [speech, diarization, fallback]
     params:
       hop_s: { type: float, default: 0.02 }
@@ -737,7 +751,7 @@ extractors:
     requires: [speech, transformers, torch]
     dependency_class: optional_python
     cost_class: moderate
-    bundles: [speech_encoding]
+    infer_bundles: false
     tags: [speech, affect, fallback]
     params:
       hop_s: { type: float, default: 0.02 }
@@ -778,6 +792,7 @@ extractors:
     tags: [speech, phonology, posterior, ctc]
     params:
       model: { type: str, default: bobboyms/wav2vec2-base-en-phoneme-ctc-41h }
+      stride_s: { type: float, default: 0.02 }
       local_files_only: { type: bool, default: true }
       execution_mode: { type: str, default: fallback }
       strict_dependency: { type: bool, default: false }
@@ -793,10 +808,11 @@ extractors:
     requires: [speech, transformers, torch]
     dependency_class: optional_python
     cost_class: expensive
-    bundles: [speech_encoding]
+    infer_bundles: false
     tags: [speech, phonology, posterior, ctc, fallback, alias]
     params:
       model: { type: str, default: bobboyms/wav2vec2-base-en-phoneme-ctc-41h }
+      stride_s: { type: float, default: 0.02 }
       local_files_only: { type: bool, default: true }
       execution_mode: { type: str, default: fallback }
       strict_dependency: { type: bool, default: false }
@@ -890,7 +906,7 @@ extractors:
     requires: [language, transformers, torch]
     dependency_class: optional_python
     cost_class: expensive
-    bundles: [language_encoding]
+    infer_bundles: false
     tags: [language, neural, embeddings, fallback]
     params:
       model: { type: str, default: gpt2 }
@@ -910,6 +926,8 @@ extractors:
     tags: [language, predictability]
     params:
       model: { type: str, default: gpt2 }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
 
@@ -921,7 +939,7 @@ extractors:
     requires: [language]
     dependency_class: base_python
     cost_class: cheap
-    bundles: [baseline, language_encoding]
+    bundles: [baseline]
     tags: [language, baseline, surface, alias]
     params:
       window_size: { type: int, default: 5 }
@@ -936,7 +954,7 @@ extractors:
     requires: [language]
     dependency_class: base_python
     cost_class: cheap
-    bundles: [baseline, language_encoding]
+    bundles: [language_encoding]
     tags: [language, discourse, baseline]
     params:
       window_size: { type: int, default: 5 }
@@ -972,6 +990,8 @@ extractors:
     tags: [language, predictability, fallback, alias]
     params:
       model: { type: str, default: gpt2 }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
 
@@ -1017,6 +1037,7 @@ extractors:
     requires: [audio, opensmile]
     dependency_class: optional_python
     cost_class: moderate
+    infer_bundles: false
     tags: [baseline, audio, opensmile, fallback, alias]
     params:
       frame_s: { type: float, default: 0.01 }
@@ -1063,6 +1084,8 @@ extractors:
       fmin: { type: float, default: 50.0 }
       fmax: { type: float, default: 500.0 }
       voicing_threshold: { type: float, default: 0.2 }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
     outputs:
       default:
         schema: FeatureSeries/v1

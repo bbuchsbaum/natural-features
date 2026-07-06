@@ -542,6 +542,7 @@ def ctc_phone_posteriors(
     stimulus: AudioStimulus,
     *,
     model: str = "bobboyms/wav2vec2-base-en-phoneme-ctc-41h",
+    stride_s: float = 0.02,
     local_files_only: bool = True,
     execution_mode: str | None = None,
     strict_dependency: bool | None = None,
@@ -553,6 +554,7 @@ def ctc_phone_posteriors(
     )
     params = {
         "model": model,
+        "stride_s": stride_s,
         "local_files_only": local_files_only,
         "drop_special_tokens": drop_special_tokens,
     }
@@ -562,7 +564,7 @@ def ctc_phone_posteriors(
     except Exception:
         if strict_dependency:
             raise RuntimeError("transformers+torch are required for CTC phoneme posterior extraction.")
-        fallback = acoustic_phone_posteriors(stimulus)
+        fallback = acoustic_phone_posteriors(stimulus, hop_s=stride_s)
         md = add_execution_provenance(
             extractor_metadata(
                 "speech.phonology.ctc_posteriors",
@@ -588,7 +590,7 @@ def ctc_phone_posteriors(
     except Exception:
         if strict_dependency:
             raise RuntimeError(f"CTC model '{model}' unavailable. Install/download model and retry.")
-        fallback = acoustic_phone_posteriors(stimulus)
+        fallback = acoustic_phone_posteriors(stimulus, hop_s=stride_s)
         md = add_execution_provenance(
             extractor_metadata(
                 "speech.phonology.ctc_posteriors",
@@ -640,7 +642,7 @@ def ctc_phone_posteriors(
     except Exception:
         if strict_dependency:
             raise
-        fallback = acoustic_phone_posteriors(stimulus)
+        fallback = acoustic_phone_posteriors(stimulus, hop_s=stride_s)
         md = add_execution_provenance(
             extractor_metadata(
                 "speech.phonology.ctc_posteriors",

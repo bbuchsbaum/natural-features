@@ -25,6 +25,7 @@ class ExtractorSpec:
     dependency_class: str | None = None
     cost_class: str | None = None
     bundles: list[str] = field(default_factory=list)
+    infer_bundles: bool = True
     tags: list[str] = field(default_factory=list)
     params: dict[str, Any] = field(default_factory=dict)
     outputs: dict[str, Any] = field(default_factory=dict)
