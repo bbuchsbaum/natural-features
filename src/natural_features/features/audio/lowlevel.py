@@ -53,16 +53,16 @@ def _mel_filterbank(sr_hz: int, n_fft: int, n_mels: int, fmin: float, fmax: floa
     bin_edges = np.floor((n_fft + 1) * hz_edges / sr_hz).astype(int)
     fb = np.zeros((n_mels, (n_fft // 2) + 1), dtype=np.float32)
     for m in range(1, n_mels + 1):
-        l = bin_edges[m - 1]
+        left = bin_edges[m - 1]
         c = bin_edges[m]
         r = bin_edges[m + 1]
-        if c <= l:
-            c = l + 1
+        if c <= left:
+            c = left + 1
         if r <= c:
             r = c + 1
-        for k in range(l, c):
+        for k in range(left, c):
             if 0 <= k < fb.shape[1]:
-                fb[m - 1, k] = (k - l) / max(1, (c - l))
+                fb[m - 1, k] = (k - left) / max(1, (c - left))
         for k in range(c, r):
             if 0 <= k < fb.shape[1]:
                 fb[m - 1, k] = (r - k) / max(1, (r - c))

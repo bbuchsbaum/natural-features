@@ -19,8 +19,12 @@ class ExtractorSpec:
     name: str
     impl: str
     version: str = "1.0"
+    label: str | None = None
     modalities: list[str] = field(default_factory=list)
     requires: list[str] = field(default_factory=list)
+    dependency_class: str | None = None
+    cost_class: str | None = None
+    bundles: list[str] = field(default_factory=list)
     tags: list[str] = field(default_factory=list)
     params: dict[str, Any] = field(default_factory=dict)
     outputs: dict[str, Any] = field(default_factory=dict)

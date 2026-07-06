@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 import numpy as np
 
 from natural_features.core.execution import add_execution_provenance, resolve_execution_mode
@@ -107,12 +105,12 @@ def wavlm_hidden_states(
     wav = stimulus.samples.astype(np.float32)
     if wav.ndim == 2:
         wav = wav.mean(axis=1)
-    inputs = fe(
-        wav,
-        sampling_rate=stimulus.sr_hz,
-        return_tensors="pt",
-    )
     try:
+        inputs = fe(
+            wav,
+            sampling_rate=stimulus.sr_hz,
+            return_tensors="pt",
+        )
         with torch.no_grad():
             out = net(**inputs, output_hidden_states=True)
     except Exception as exc:
@@ -127,8 +125,8 @@ def wavlm_hidden_states(
         )
     hstates = out.hidden_states
     selected = []
-    for l in layers:
-        l_idx = max(0, min(int(l), len(hstates) - 1))
+    for layer in layers:
+        l_idx = max(0, min(int(layer), len(hstates) - 1))
         arr = hstates[l_idx][0].detach().cpu().numpy().astype(np.float32)
         selected.append(arr)
     min_t = min(x.shape[0] for x in selected)

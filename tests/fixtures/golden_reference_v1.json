@@ -37,7 +37,7 @@
     }
   },
   "mfcc": {
-    "fingerprint": "bb381cdaee4cfe44a985",
+    "fingerprint": "467d59b0b3da8ec29f3a",
     "shape": [
       598,
       26
@@ -75,6 +75,13 @@
     }
   },
   "reference_version": 1,
+  "runtime": {
+    "librosa": "0.11.0",
+    "numpy": "2.4.2",
+    "platform": "macOS-14.3-arm64-arm-64bit",
+    "python": "3.12.11",
+    "scipy": "1.17.0"
+  },
   "stimulus": {
     "audio": "tests/stimuli/tier_a/audio_speechlike.wav",
     "video": "tests/stimuli/tier_a/video_scene_cut.npy"

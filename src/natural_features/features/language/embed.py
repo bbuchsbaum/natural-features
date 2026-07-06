@@ -93,8 +93,8 @@ def bert_word_embeddings(
                 out = net(**toks, output_hidden_states=True)
             hidden = out.hidden_states
             layer_vecs = []
-            for l in layers:
-                l_idx = max(0, min(int(l), len(hidden) - 1))
+            for layer in layers:
+                l_idx = max(0, min(int(layer), len(hidden) - 1))
                 arr = hidden[l_idx][0].detach().cpu().numpy().astype(np.float32)
                 if pooling in {"mean_subwords", "token"}:
                     vec = arr.mean(axis=0)

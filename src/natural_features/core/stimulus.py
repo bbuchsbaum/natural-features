@@ -12,6 +12,99 @@ import numpy as np
 from .timebase import times_from_rate
 
 
+def _normalize_image_array(image: np.ndarray) -> np.ndarray:
+    arr = np.asarray(image)
+    if not np.issubdtype(arr.dtype, np.number):
+        raise ValueError("image must be numeric")
+    if arr.ndim not in (2, 3):
+        raise ValueError("image must be shape (H,W) or (H,W,C)")
+    if any(dim <= 0 for dim in arr.shape):
+        raise ValueError("image dimensions must be positive")
+    out = arr.astype(np.float32, copy=False)
+    if out.size and np.nanmax(out) > 1.0:
+        out = out / 255.0
+    return np.clip(out, 0.0, 1.0)
+
+
+@dataclass(frozen=True)
+class ImageStimulus:
+    image: np.ndarray
+    onset_s: float | None = 0.0
+    duration_s: float | None = None
+    source: str | None = None
+
+    def __post_init__(self) -> None:
+        image = _normalize_image_array(self.image)
+        if self.onset_s is not None and not np.isfinite(float(self.onset_s)):
+            raise ValueError("onset_s must be finite or None")
+        if self.duration_s is not None:
+            duration = float(self.duration_s)
+            if not np.isfinite(duration) or duration < 0:
+                raise ValueError("duration_s must be a finite non-negative value or None")
+        object.__setattr__(self, "image", image)
+        if self.onset_s is not None:
+            object.__setattr__(self, "onset_s", float(self.onset_s))
+        if self.duration_s is not None:
+            object.__setattr__(self, "duration_s", float(self.duration_s))
+
+    @classmethod
+    def from_array(
+        cls,
+        image: np.ndarray,
+        *,
+        onset_s: float | None = 0.0,
+        duration_s: float | None = None,
+    ) -> "ImageStimulus":
+        return cls(image=np.asarray(image), onset_s=onset_s, duration_s=duration_s)
+
+    @classmethod
+    def from_file(
+        cls,
+        path: str | Path,
+        *,
+        onset_s: float | None = 0.0,
+        duration_s: float | None = None,
+    ) -> "ImageStimulus":
+        try:
+            from PIL import Image  # type: ignore
+        except ImportError as exc:
+            raise RuntimeError("Pillow is required to read image files: pip install natural-features[vision]") from exc
+
+        p = Path(path)
+        with Image.open(p) as img:
+            if img.mode not in {"L", "RGB", "RGBA"}:
+                img = img.convert("RGB")
+            data = np.asarray(img)
+        return cls(image=data, onset_s=onset_s, duration_s=duration_s, source=str(p.resolve()))
+
+    @property
+    def frame_times_s(self) -> np.ndarray:
+        return np.array([np.nan if self.onset_s is None else float(self.onset_s)], dtype=np.float64)
+
+    def as_frames(self) -> np.ndarray:
+        if self.image.ndim == 2:
+            return self.image[None, :, :]
+        return self.image[None, :, :, :]
+
+
+def image_from_array(
+    image: np.ndarray,
+    *,
+    onset_s: float | None = 0.0,
+    duration_s: float | None = None,
+) -> ImageStimulus:
+    return ImageStimulus.from_array(image, onset_s=onset_s, duration_s=duration_s)
+
+
+def image_from_file(
+    path: str | Path,
+    *,
+    onset_s: float | None = 0.0,
+    duration_s: float | None = None,
+) -> ImageStimulus:
+    return ImageStimulus.from_file(path, onset_s=onset_s, duration_s=duration_s)
+
+
 @dataclass(frozen=True)
 class VideoStimulus:
     frames: np.ndarray
@@ -148,11 +241,12 @@ class TextStimulus:
 @dataclass(frozen=True)
 class MultiModalStimulus:
     video: VideoStimulus | None = None
+    image: ImageStimulus | None = None
     audio: AudioStimulus | None = None
     text: TextStimulus | None = None
 
     def __post_init__(self) -> None:
-        if self.video is None and self.audio is None and self.text is None:
+        if self.video is None and self.image is None and self.audio is None and self.text is None:
             raise ValueError("At least one modality must be provided")
 
     @property
@@ -160,6 +254,8 @@ class MultiModalStimulus:
         offsets: list[float] = []
         if self.video is not None:
             offsets.append(self.video.start_offset_s)
+        if self.image is not None and self.image.onset_s is not None:
+            offsets.append(self.image.onset_s)
         if self.audio is not None:
             offsets.append(self.audio.start_offset_s)
         return min(offsets) if offsets else 0.0

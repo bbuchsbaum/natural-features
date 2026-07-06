@@ -15,6 +15,8 @@ def test_tier_a_golden_reference_matches() -> None:
     assert observed["reference_version"] == expected["reference_version"]
     assert observed["tier"] == expected["tier"]
     assert observed["stimulus"] == expected["stimulus"]
+    assert expected["runtime"]["numpy"]
+    assert expected["runtime"]["python"]
 
     assert observed["visual_energy"] == expected["visual_energy"]
     assert observed["mfcc"] == expected["mfcc"]

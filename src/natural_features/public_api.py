@@ -3,6 +3,8 @@
 Only symbols exported from this module are covered by the compatibility policy.
 """
 
+# ruff: noqa: F401
+
 from __future__ import annotations
 
 from .core.feature_types import EventSeries, FeatureSeries, TrackSeries
@@ -42,6 +44,7 @@ EXPERIMENTAL_NAMESPACES = [
     "natural_features.flow",
     "natural_features.core.recipe",
     "natural_features.core.registry",
+    "natural_features.workflows.extract_features",
 ]
 
 __all__ = [

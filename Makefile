@@ -3,11 +3,11 @@ PIP ?= pip
 
 .PHONY: install test test-smoke test-media test-nightly test-external import-snl \
 	generate-tier-a validate-tier-a fetch-tier-b prepare-tier-b generate-golden \
-	release-check ci-smoke ci-media ci-nightly setup-mfa-conda \
+	lint release-check ci-smoke ci-media ci-nightly setup-mfa-conda \
 	benchmark-tier-a benchmark-gate
 
 install:
-	$(PIP) install -e ".[dev]"
+	$(PIP) install -e ".[dev,storage,vision]"
 
 test:
 	pytest -q
@@ -39,6 +39,9 @@ prepare-tier-b:
 
 generate-golden:
 	$(PYTHON) scripts/generate_golden_references.py
+
+lint:
+	ruff check src tests scripts
 
 release-check:
 	$(PYTHON) scripts/release_check.py

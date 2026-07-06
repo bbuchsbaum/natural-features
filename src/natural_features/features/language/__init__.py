@@ -1,5 +1,6 @@
 """Language feature extractors."""
 
+from .discourse import discourse_features
 from .embed import bert_word_embeddings
 from .predictability import surprisal
 from .providers import (
@@ -15,6 +16,7 @@ __all__ = [
     "LocalHashEmbeddingProvider",
     "OpenAIEmbeddingProvider",
     "bert_word_embeddings",
+    "discourse_features",
     "make_embedding_provider",
     "sanitize_provider_config",
     "surprisal",

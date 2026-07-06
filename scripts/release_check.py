@@ -53,6 +53,22 @@ def _check_changelog(root: Path, problems: list[str]) -> None:
         problems.append("CHANGELOG.md must contain an [Unreleased] section")
 
 
+def _check_ruff(root: Path, problems: list[str]) -> None:
+    cmd = [
+        sys.executable,
+        "-m",
+        "ruff",
+        "check",
+        "src",
+        "tests",
+        "scripts",
+    ]
+    proc = subprocess.run(cmd, cwd=root, capture_output=True, text=True)
+    if proc.returncode != 0:
+        diagnostics = proc.stdout.strip() or proc.stderr.strip() or "no diagnostics"
+        problems.append("Ruff check failed:\n" + diagnostics)
+
+
 def _check_alignment_gate(root: Path, report_path: Path, problems: list[str]) -> None:
     gate_script = root / "scripts" / "check_alignment_benchmark_gate.py"
     if not gate_script.exists():
@@ -95,6 +111,7 @@ def main() -> int:
         _check_api_compat(root, problems)
         _check_golden(root, problems)
         _check_changelog(root, problems)
+        _check_ruff(root, problems)
         report_arg = args.alignment_report
         report_env = os.environ.get("NF_ALIGNMENT_BENCHMARK_REPORT", "").strip()
         report_path = report_arg or (Path(report_env) if report_env else None)

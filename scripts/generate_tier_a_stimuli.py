@@ -41,7 +41,6 @@ def _write_wav(path: Path, samples: np.ndarray, sr_hz: int) -> None:
 
 def _make_video() -> Path:
     rng = np.random.default_rng(1337)
-    fps = 10
     n_frames = 60
     h, w = 64, 64
     frames = np.zeros((n_frames, h, w, 3), dtype=np.uint8)

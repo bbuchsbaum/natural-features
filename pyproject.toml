@@ -23,6 +23,9 @@ storage = [
   "pandas>=2.0",
   "pyarrow>=14.0",
 ]
+vision = [
+  "Pillow>=10.0",
+]
 speech = [
   "torch>=2.2",
   "transformers>=4.40",
@@ -42,6 +45,11 @@ llm = [
 ]
 dev = [
   "pytest>=8.0",
+  "librosa>=0.11.0",
+  "pandas>=2.0",
+  "pyarrow>=14.0",
+  "Pillow>=10.0",
+  "ruff>=0.8",
 ]
 
 [project.scripts]
@@ -61,5 +69,10 @@ packages = ["src/natural_features"]
 
 [dependency-groups]
 dev = [
+    "pytest>=8.0",
     "librosa>=0.11.0",
+    "pandas>=2.0",
+    "pyarrow>=14.0",
+    "Pillow>=10.0",
+    "ruff>=0.8",
 ]

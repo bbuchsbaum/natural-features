@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+from importlib import metadata
 from pathlib import Path
+import platform
+import sys
 from typing import Any
 
 import numpy as np
@@ -51,6 +54,13 @@ def _feature_summary(values: np.ndarray, times_s: np.ndarray) -> dict[str, Any]:
     }
 
 
+def _package_version(name: str) -> str | None:
+    try:
+        return metadata.version(name)
+    except metadata.PackageNotFoundError:
+        return None
+
+
 def build_tier_a_golden_reference(base_dir: str | Path) -> dict[str, Any]:
     base = Path(base_dir)
     tier_a = base / "tests" / "stimuli" / "tier_a"
@@ -96,6 +106,13 @@ def build_tier_a_golden_reference(base_dir: str | Path) -> dict[str, Any]:
         "stimulus": {
             "audio": str(wav.relative_to(base)),
             "video": str(vid_npy.relative_to(base)),
+        },
+        "runtime": {
+            "python": sys.version.split()[0],
+            "platform": platform.platform(),
+            "numpy": np.__version__,
+            "librosa": _package_version("librosa"),
+            "scipy": _package_version("scipy"),
         },
         "visual_energy": _feature_summary(ve.values, ve.times_s),
         "mfcc": _feature_summary(m.values, m.times_s),

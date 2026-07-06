@@ -5,9 +5,9 @@ from __future__ import annotations
 import numpy as np
 
 from natural_features.core.feature_types import FeatureSeries
-from natural_features.core.stimulus import VideoStimulus
 from natural_features.core.timebase import TimebaseSpec
 from natural_features.features.common import extractor_metadata
+from natural_features.features.vision.common import VisualStimulus, ensure_frames, frame_sampling_rate_hz, frame_times_s
 
 
 def _to_gray(frames: np.ndarray) -> np.ndarray:
@@ -38,11 +38,11 @@ def _edge_energy(gray_frames: np.ndarray) -> np.ndarray:
 
 
 def visual_energy(
-    stimulus: VideoStimulus,
+    stimulus: VisualStimulus,
     *,
     include_deltas: bool = True,
 ) -> FeatureSeries:
-    frames = stimulus.frames.astype(np.float32)
+    frames = ensure_frames(stimulus).astype(np.float32)
     gray = _to_gray(frames)
 
     luminance = gray.reshape(gray.shape[0], -1).mean(axis=1)
@@ -61,10 +61,9 @@ def visual_energy(
     metadata = extractor_metadata("vision.lowlevel.visual_energy", params=params)
     return FeatureSeries(
         values=base,
-        times_s=stimulus.frame_times_s,
+        times_s=frame_times_s(stimulus),
         dims=("time", "feature"),
         coords={"feature": names},
         metadata=metadata,
-        timebase=TimebaseSpec(kind="frames", sampling_rate_hz=stimulus.fps),
+        timebase=TimebaseSpec(kind="frames", sampling_rate_hz=frame_sampling_rate_hz(stimulus)),
     )
-

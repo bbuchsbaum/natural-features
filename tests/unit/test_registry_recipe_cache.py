@@ -9,9 +9,9 @@ import pytest
 
 from natural_features.cli.main import main as cli_main
 from natural_features.core.feature_types import EventSeries
-from natural_features.core.recipe import execute_recipe, validate_recipe
+from natural_features.core.recipe import as_mermaid, execute_recipe, plan_dag, validate_recipe
 from natural_features.core.registry import Registry
-from natural_features.core.stimulus import VideoStimulus
+from natural_features.core.stimulus import AudioStimulus, ImageStimulus, VideoStimulus
 from natural_features.flow.cache import cache_fingerprint, invalidation_reasons
 
 
@@ -19,6 +19,9 @@ def test_builtin_registry_loads_specs() -> None:
     reg = Registry.with_builtin_specs()
     names = [s.name for s in reg.list()]
     assert "vision.lowlevel.visual_energy" in names
+    assert "vision.energy" in names
+    assert "vision.face" in names
+    assert "vision.clip" in names
     assert "audio.lowlevel.rms" in names
     assert "speech.phonology.ctc_posteriors" in names
     assert "speech.articulatory.from_phoneme_events" in names
@@ -77,6 +80,22 @@ def test_recipe_ref_wiring_with_custom_registry() -> None:
     out = execute_recipe(recipe, registry=reg, inputs={"video": VideoStimulus.from_array(frames, fps=5.0)})
     assert "a" in out.steps and "b" in out.steps
     assert out.steps["b"]["default"].values.shape[1] == out.steps["a"]["default"].values.shape[1]
+
+
+def test_builtin_registry_executes_image_vision_aliases() -> None:
+    reg = Registry.with_builtin_specs()
+    img = ImageStimulus.from_array(np.ones((4, 5, 3), dtype=np.float32), onset_s=0.25)
+    recipe = {
+        "features": [
+            {"id": "energy", "use": "vision.energy", "inputs": {"image": "input:image"}},
+            {"id": "face", "use": "vision.face", "inputs": {"image": "input:image"}},
+            {"id": "clip", "use": "vision.clip", "inputs": {"image": "input:image"}, "params": {"dim": 8}},
+        ]
+    }
+    out = execute_recipe(recipe, registry=reg, inputs={"image": img})
+    assert out.steps["energy"]["default"].values.shape[0] == 1
+    assert out.steps["face"]["default"].values.shape[0] == 1
+    assert out.steps["clip"]["default"].values.shape == (1, 8)
 
 
 def test_recipe_rejects_unknown_params() -> None:
@@ -167,6 +186,73 @@ def test_validate_recipe_static_contracts() -> None:
     val = validate_recipe(recipe, registry=reg, input_keys={"audio"})
     assert val.step_ids == ["asr", "art"]
     assert val.outputs_by_step["asr"] == ["segments", "words"]
+
+
+def test_recipe_dag_outputs_depends_on_input_tokens_and_mermaid() -> None:
+    reg = Registry.with_builtin_specs()
+    recipe = {
+        "features": [
+            {
+                "id": "rms",
+                "use": "audio.lowlevel.rms",
+                "inputs": {"audio": "input:audio"},
+                "outputs": {"default": {"schema": "FeatureSeries/v1", "kind": "features"}},
+            },
+            {
+                "id": "mel",
+                "use": "audio.lowlevel.mel",
+                "inputs": {"audio": "input:audio"},
+                "depends_on": "rms",
+            },
+        ]
+    }
+    val = validate_recipe(recipe, registry=reg, input_keys={"audio"})
+    assert val.step_ids == ["rms", "mel"]
+    assert val.outputs_by_step["rms"] == ["default"]
+    dag = plan_dag(recipe, registry=reg, input_keys={"audio"})
+    assert any(node["id"] == "merge" for node in dag.nodes)
+    assert any(edge["from"] == "rms" and edge["to"] == "mel" for edge in dag.edges)
+    mermaid = as_mermaid(dag)
+    assert "flowchart TD" in mermaid
+    assert "audio.lowlevel.rms" in mermaid
+
+
+def test_execute_recipe_honors_depends_on_execution_order() -> None:
+    reg = Registry.with_builtin_specs()
+    audio = AudioStimulus.from_array(np.linspace(-1.0, 1.0, 1000, dtype=np.float32), sr_hz=1000)
+    recipe = {
+        "features": [
+            {
+                "id": "mel",
+                "use": "audio.lowlevel.mel",
+                "inputs": {"audio": "input:audio"},
+                "depends_on": "rms",
+                "params": {"n_mels": 8},
+            },
+            {
+                "id": "rms",
+                "use": "audio.lowlevel.rms",
+                "inputs": {"audio": "input:audio"},
+            },
+        ]
+    }
+
+    out = execute_recipe(recipe, registry=reg, inputs={"audio": audio})
+
+    assert list(out.steps) == ["input", "rms", "mel"]
+    assert out.steps["mel"]["default"].values.shape[1] == 8
+
+
+def test_recipe_dag_detects_depends_on_cycles() -> None:
+    reg = Registry.with_builtin_specs()
+    recipe = {
+        "features": [
+            {"id": "a", "use": "audio.lowlevel.rms", "depends_on": "b"},
+            {"id": "b", "use": "audio.lowlevel.mel", "depends_on": "a"},
+        ]
+    }
+    with pytest.raises(ValueError, match="cycle"):
+        validate_recipe(recipe, registry=reg, input_keys={"audio"})
 
 
 def test_cache_fingerprint_and_invalidation() -> None:

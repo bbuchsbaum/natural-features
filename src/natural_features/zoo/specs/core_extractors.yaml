@@ -1,15 +1,217 @@
 api_version: 1
 extractors:
+  - name: video.frames.sample
+    impl: natural_features.features.preprocess:video_sample_frames
+    version: "1.0"
+    modalities: [video, image]
+    requires: [vision]
+    tags: [preprocess, video, frames]
+    params:
+      stride_frames: { type: int, default: 2 }
+      target_fps: { type: float, default: null, nullable: true }
+    outputs:
+      default: { schema: VideoStimulus/v1, kind: video }
+
+  - name: video.trim
+    impl: natural_features.features.preprocess:video_trim
+    version: "1.0"
+    modalities: [video, image]
+    requires: [vision]
+    tags: [preprocess, video, trim]
+    params:
+      start_s: { type: float, default: 0.0 }
+      end_s: { type: float, default: null, nullable: true }
+    outputs:
+      default: { schema: VideoStimulus/v1, kind: video }
+
+  - name: video.audio.extract
+    impl: natural_features.features.preprocess:video_audio_extract
+    version: "1.0"
+    modalities: [video]
+    requires: [ffmpeg]
+    tags: [preprocess, video, audio, placeholder]
+    params: {}
+    outputs:
+      default: { schema: AudioStimulus/v1, kind: audio }
+
+  - name: audio.trim
+    impl: natural_features.features.preprocess:audio_trim
+    version: "1.0"
+    modalities: [audio]
+    requires: [audio]
+    tags: [preprocess, audio, trim]
+    params:
+      start_s: { type: float, default: 0.0 }
+      end_s: { type: float, default: null, nullable: true }
+    outputs:
+      default: { schema: AudioStimulus/v1, kind: audio }
+
+  - name: audio.resample
+    impl: natural_features.features.preprocess:audio_resample
+    version: "1.0"
+    modalities: [audio]
+    requires: [audio]
+    tags: [preprocess, audio, resample]
+    params:
+      target_sr_hz: { type: int, default: 16000 }
+    outputs:
+      default: { schema: AudioStimulus/v1, kind: audio }
+
+  - name: text.tokenize
+    impl: natural_features.features.preprocess:text_tokenize
+    version: "1.0"
+    modalities: [text]
+    requires: [text]
+    tags: [preprocess, text, words]
+    params:
+      duration_s: { type: float, default: null, nullable: true }
+    outputs:
+      default: { schema: EventSeries/v1, kind: words }
+
+  - name: image.ocr
+    impl: natural_features.features.preprocess:image_ocr
+    version: "1.0"
+    modalities: [image]
+    requires: [ocr]
+    tags: [preprocess, image, ocr, placeholder]
+    params: {}
+    outputs:
+      default: { schema: EventSeries/v1, kind: words }
+
+  - name: video.ocr
+    impl: natural_features.features.preprocess:video_ocr
+    version: "1.0"
+    modalities: [video]
+    requires: [ocr]
+    tags: [preprocess, video, ocr, placeholder]
+    params: {}
+    outputs:
+      default: { schema: EventSeries/v1, kind: words }
+
+  - name: events.align
+    impl: natural_features.features.preprocess:events_align
+    version: "1.0"
+    modalities: [events, words]
+    requires: [events]
+    tags: [preprocess, events, align]
+    params:
+      mode: { type: str, default: passthrough }
+    outputs:
+      default: { schema: EventSeries/v1, kind: events }
+
+  - name: features.resample
+    impl: natural_features.features.preprocess:features_resample
+    version: "1.0"
+    modalities: [features]
+    requires: [features]
+    tags: [preprocess, features, resample]
+    params:
+      tr_s: { type: float, default: null, nullable: true }
+      step_s: { type: float, default: 1.0 }
+      duration_s: { type: float, default: null, nullable: true }
+      method: { type: str, default: mean }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: features.hrf
+    impl: natural_features.features.preprocess:features_hrf
+    version: "1.0"
+    modalities: [features]
+    requires: [features]
+    tags: [preprocess, features, hrf]
+    params:
+      tr_s: { type: float, default: null, nullable: true }
+      kind: { type: str, default: glover }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: features.lag
+    impl: natural_features.features.preprocess:features_lag
+    version: "1.0"
+    modalities: [features]
+    requires: [features]
+    tags: [preprocess, features, lag]
+    params:
+      lags: { type: "list[int]", default: [0, 1] }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
   - name: vision.lowlevel.visual_energy
     impl: natural_features.features.vision.lowlevel:visual_energy
     version: "1.0"
-    modalities: [video]
+    modalities: [video, image]
     requires: [vision]
     tags: [baseline, vision]
     params:
       include_deltas:
         type: bool
         default: true
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+        dims: [time, feature]
+
+  - name: vision.energy
+    impl: natural_features.features.vision.lowlevel:visual_energy
+    version: "1.0"
+    modalities: [video, image]
+    requires: [vision]
+    tags: [baseline, vision, alias]
+    params:
+      include_deltas: { type: bool, default: true }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+        dims: [time, feature]
+
+  - name: vision.face
+    impl: natural_features.features.vision.face:face_detection
+    version: "1.0"
+    modalities: [video, image]
+    requires: [vision, mediapipe]
+    tags: [vision, face, fallback]
+    params:
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+        dims: [time, feature]
+
+  - name: vision.clip
+    impl: natural_features.features.vision.neural:vision_clip_embeddings
+    version: "1.0"
+    modalities: [video, image]
+    requires: [vision, transformers, torch]
+    tags: [vision, embedding, fallback]
+    params:
+      model: { type: str, default: openai/clip-vit-base-patch32 }
+      stride_frames: { type: int, default: 1 }
+      dim: { type: int, default: 64 }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+        dims: [time, feature]
+
+  - name: vision.dino
+    impl: natural_features.features.vision.neural:vision_dino_embeddings
+    version: "1.0"
+    modalities: [video, image]
+    requires: [vision, transformers, torch]
+    tags: [vision, embedding, fallback]
+    params:
+      model: { type: str, default: facebook/dinov2-base }
+      stride_frames: { type: int, default: 1 }
+      layers: { type: "list[int]", default: [6, 12] }
+      dim: { type: int, default: 64 }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
     outputs:
       default:
         schema: FeatureSeries/v1
@@ -27,6 +229,22 @@ extractors:
       default:
         schema: FeatureSeries/v1
         kind: features
+
+  - name: vision.frame_diffs
+    impl: natural_features.features.vision.dynamics:frame_diffs
+    version: "1.0"
+    label: Frame differences
+    modalities: [video]
+    requires: [vision]
+    dependency_class: base_python
+    cost_class: cheap
+    bundles: [baseline]
+    tags: [baseline, vision, motion, alias]
+    params: {}
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
         dims: [time, feature]
 
   - name: vision.motion.optical_flow_mag
@@ -35,6 +253,22 @@ extractors:
     modalities: [video]
     requires: [vision]
     tags: [baseline, vision, motion]
+    params: {}
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: vision.motion
+    impl: natural_features.features.vision.motion:optical_flow_mag
+    version: "1.0"
+    label: Optical-flow magnitude proxy
+    modalities: [video]
+    requires: [vision]
+    dependency_class: base_python
+    cost_class: cheap
+    bundles: [movie_encoding]
+    tags: [baseline, vision, motion, alias]
     params: {}
     outputs:
       default:
@@ -86,12 +320,49 @@ extractors:
         schema: FeatureSeries/v1
         kind: features
 
+  - name: audio.rms
+    impl: natural_features.features.audio.lowlevel:rms
+    version: "1.0"
+    label: RMS energy
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: cheap
+    bundles: [baseline]
+    tags: [baseline, audio, alias]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      win_s: { type: float, default: 0.025 }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
   - name: audio.lowlevel.mel
     impl: natural_features.features.audio.lowlevel:mel
     version: "1.0"
     modalities: [audio]
     requires: [audio]
     tags: [baseline, audio]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      win_s: { type: float, default: 0.025 }
+      n_mels: { type: int, default: 64 }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: audio.mel
+    impl: natural_features.features.audio.lowlevel:mel
+    version: "1.0"
+    label: Mel spectrogram
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: cheap
+    bundles: [baseline, movie_encoding]
+    tags: [baseline, audio, alias]
     params:
       hop_s: { type: float, default: 0.01 }
       win_s: { type: float, default: 0.025 }
@@ -117,12 +388,49 @@ extractors:
         schema: FeatureSeries/v1
         kind: features
 
+  - name: audio.mfcc
+    impl: natural_features.features.audio.lowlevel:mfcc
+    version: "1.0"
+    label: MFCCs
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: cheap
+    tags: [baseline, audio, alias]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      win_s: { type: float, default: 0.025 }
+      n_mfcc: { type: int, default: 40 }
+      n_mels: { type: int, default: 64 }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
   - name: audio.lowlevel.spectral_stats
     impl: natural_features.features.audio.lowlevel:spectral_stats
     version: "1.0"
     modalities: [audio]
     requires: [audio]
     tags: [baseline, audio]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      win_s: { type: float, default: 0.025 }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: audio.spectral_stats
+    impl: natural_features.features.audio.lowlevel:spectral_stats
+    version: "1.0"
+    label: Spectral summary statistics
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: cheap
+    bundles: [baseline]
+    tags: [baseline, audio, alias]
     params:
       hop_s: { type: float, default: 0.01 }
       win_s: { type: float, default: 0.025 }
@@ -161,6 +469,26 @@ extractors:
     outputs:
       segments: { schema: EventSeries/v1, kind: events }
       words: { schema: EventSeries/v1, kind: events }
+
+  - name: speech.words
+    impl: natural_features.features.speech.asr:whisper_transcribe
+    version: "1.0"
+    label: Whisper word events
+    modalities: [audio]
+    requires: [speech_asr]
+    dependency_class: optional_python
+    cost_class: expensive
+    bundles: [speech_encoding, movie_encoding]
+    tags: [speech, asr, words, alias]
+    params:
+      model: { type: str, default: small }
+      language: { type: str, default: auto }
+      word_timestamps: { type: bool, default: true }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+    outputs:
+      segments: { schema: EventSeries/v1, kind: events }
+      words: { schema: EventSeries/v1, kind: words }
 
   - name: speech.asr.whisper_chunked
     impl: natural_features.features.speech.asr:whisper_transcribe_chunked
@@ -257,9 +585,39 @@ extractors:
   - name: speech.articulatory.features
     impl: natural_features.features.speech.phonology:articulatory_features
     version: "1.0"
-    modalities: [tokens]
+    modalities: [tokens, words]
     requires: [speech]
     tags: [speech, articulatory]
+    params: {}
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: speech.phonemes
+    impl: natural_features.features.speech.phonology:phoneme_events_from_words
+    version: "1.0"
+    label: Phoneme events from words
+    modalities: [words]
+    requires: [speech]
+    dependency_class: base_python
+    cost_class: cheap
+    bundles: [speech_encoding]
+    tags: [speech, phonology, phoneme, alias]
+    params:
+      label_namespace: { type: str, default: arpabet }
+      namespace_version: { type: str, default: v1 }
+    outputs:
+      default: { schema: EventSeries/v1, kind: phonemes }
+
+  - name: speech.articulatory
+    impl: natural_features.features.speech.phonology:articulatory_features
+    version: "1.0"
+    label: Articulatory features
+    modalities: [words]
+    requires: [speech]
+    dependency_class: base_python
+    cost_class: cheap
+    bundles: [speech_encoding]
+    tags: [speech, articulatory, alias]
     params: {}
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
@@ -290,7 +648,7 @@ extractors:
   - name: language.embed.bert_words
     impl: natural_features.features.language.embed:bert_word_embeddings
     version: "1.0"
-    modalities: [tokens]
+    modalities: [tokens, words]
     requires: [language, transformers]
     tags: [language, embedding]
     params:
@@ -305,11 +663,60 @@ extractors:
   - name: language.predict.surprisal
     impl: natural_features.features.language.predictability:surprisal
     version: "1.0"
-    modalities: [tokens]
+    modalities: [tokens, words]
     requires: [language]
     tags: [language, predictability]
     params:
       model: { type: str, default: gpt2 }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: language.surface
+    impl: natural_features.features.language.discourse:discourse_features
+    version: "1.0"
+    label: Surface discourse features
+    modalities: [words]
+    requires: [language]
+    dependency_class: base_python
+    cost_class: cheap
+    bundles: [baseline, language_encoding]
+    tags: [language, baseline, surface, alias]
+    params:
+      window_size: { type: int, default: 5 }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: language.surprisal
+    impl: natural_features.features.language.predictability:surprisal
+    version: "1.0"
+    label: Surprisal proxy
+    modalities: [words]
+    requires: [language]
+    dependency_class: optional_python
+    cost_class: moderate
+    bundles: [speech_encoding, language_encoding]
+    tags: [language, predictability, fallback, alias]
+    params:
+      model: { type: str, default: gpt2 }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: language.bert
+    impl: natural_features.features.language.embed:bert_word_embeddings
+    version: "1.0"
+    label: BERT word embeddings
+    modalities: [words]
+    requires: [language, transformers, torch]
+    dependency_class: optional_python
+    cost_class: expensive
+    bundles: [movie_encoding, language_encoding]
+    tags: [language, embedding, fallback, alias]
+    params:
+      model: { type: str, default: bert-base-uncased }
+      layers: { type: "list[int]", default: [12] }
+      pooling: { type: str, default: mean_subwords }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
 
