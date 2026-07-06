@@ -1,0 +1,39 @@
+---
+title: "Audio Batch Workflows"
+subtitle: "`extract_audio_files()` and `extract_audio_dir()` - clip matrices and collapsed summaries."
+sidebar: concepts
+---
+
+## What it is
+
+Audio batch workflows are ergonomic wrappers for short WAV clips. They read files, extract selected low-level features, resample each feature space to a shared resolution, and optionally collapse each file to summary statistics.
+
+## Invariants
+
+- `resolution_s` must be positive.
+- Unknown feature names raise before extraction.
+- Selected feature names are prefixed in output columns.
+- `collapse` supports `mean`, `sd`, `min`, and `max`.
+- `as_dataframe=True` requires pandas.
+
+## What it refuses
+
+- Unsupported collapse statistics.
+- Unknown selected feature names.
+- Non-WAV paths passed to `AudioStimulus.from_wav()`.
+
+## What it doesn't do
+
+The batch workflow is not a general media decoder. It expects WAV files and delegates feature computation to registered low-level audio helpers.
+
+## Available batch feature names
+
+```{python}
+from natural_features.workflows.audio_batch import _FEATURES
+
+sorted(_FEATURES)
+```
+
+## See also
+
+[Extract audio features from WAV files](../cookbook/audio-batch-from-wav.qmd)

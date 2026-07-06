@@ -1,0 +1,39 @@
+---
+title: "Table Interchange"
+subtitle: "`as_feature_table()`, `as_event_table()`, `as_object_table()`, `merge_feature_tables()`."
+sidebar: concepts
+---
+
+## What it is
+
+Table interchange turns typed feature objects into pandas tables for inspection, modeling, and joins. The object remains the in-memory contract; the table is the rectangular exchange form.
+
+## Invariants
+
+- `as_feature_table()` emits one row per time-by-feature value.
+- `as_event_table()` emits one row per event.
+- `as_object_table()` normalizes event or track objects to object-centric columns such as `object_id`, `object_type`, `onset_s`, and geometry fields.
+- `as_temporal_table()` dispatches by object type.
+- `merge_feature_tables(format="wide")` accepts only `FeatureSeries` outputs.
+
+## What it refuses
+
+- Missing pandas when table output is requested.
+- Wide merges that include `EventSeries` or `TrackSeries` outputs.
+- Event or track extra columns whose lengths do not match the object row count.
+
+## What it doesn't do
+
+Table helpers do not resample or align features. They expose the rows implied by the object they receive.
+
+## Canonical event columns
+
+```{python}
+from natural_features.core.interchange import OBJECT_CANONICAL_COLUMNS
+
+OBJECT_CANONICAL_COLUMNS[:10]
+```
+
+## See also
+
+[Export events to a table](../cookbook/event-table-export.qmd) · [Merge feature tables](../cookbook/feature-table-merge.qmd)

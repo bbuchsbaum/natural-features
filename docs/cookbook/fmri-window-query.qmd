@@ -1,0 +1,57 @@
+---
+title: "Query a run-aware fMRI window"
+subtitle: "Sample a `FeatureSeries` on a run TR grid."
+sidebar: cookbook
+---
+
+## Use when
+
+You have stimulus-time features and need the rows corresponding to a particular run window.
+
+```{python}
+import numpy as np
+
+from natural_features.core.feature_types import FeatureSeries
+from natural_features.features.common import extractor_metadata
+from natural_features.fmri import build_experiment_grid, query_feature_window_tr
+
+features = FeatureSeries(
+    values=np.arange(20, dtype=np.float32).reshape(10, 2),
+    times_s=np.arange(10, dtype=np.float64),
+    coords={"feature": ["brightness", "motion"]},
+    metadata=extractor_metadata("demo.features", params={"n": 10}),
+)
+
+grid = build_experiment_grid(
+    tr_s=2.0,
+    n_trs_by_run=[4],
+    run_starts_s=[0.0],
+)
+
+sampled = query_feature_window_tr(
+    features,
+    grid,
+    run_index=1,
+    t_start_s=0.0,
+    t_end_s=8.0,
+    output_time="run_relative",
+)
+```
+
+## Inspect sampled rows
+
+```{python}
+{
+    "times_s": sampled.times_s.tolist(),
+    "values": sampled.values.tolist(),
+    "features": sampled.coords["feature"],
+}
+```
+
+## Boundary it closes
+
+The query uses the run clock for window selection while preserving the feature object contract in the returned `FeatureSeries`.
+
+## See also
+
+[fMRI windowing](../concepts/fmri-windowing.qmd)

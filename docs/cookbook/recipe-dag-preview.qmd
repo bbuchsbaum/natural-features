@@ -1,0 +1,35 @@
+---
+title: "Preview a recipe DAG"
+subtitle: "Turn a plan into a recipe and inspect its graph before execution."
+sidebar: cookbook
+---
+
+## Use when
+
+You want to review feature routing before running an extractor chain.
+
+```{python}
+from natural_features.core.recipe import as_mermaid
+from natural_features.workflows import plan_features
+
+plan = plan_features(
+    "The scene opens on a quiet room.",
+    features=["text.tokenize"],
+)
+recipe = plan.to_recipe()
+recipe
+```
+
+## Render the graph
+
+```{python}
+print(as_mermaid(recipe))
+```
+
+## Boundary it closes
+
+The graph shows where values enter as `input:` tokens and where step outputs become downstream references. That makes routing review separate from runtime execution.
+
+## See also
+
+[Recipes and DAGs](../concepts/recipes-and-dags.qmd)

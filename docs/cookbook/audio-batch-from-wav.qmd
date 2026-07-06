@@ -1,0 +1,62 @@
+---
+title: "Extract audio features from WAV files"
+subtitle: "Create a small WAV, extract RMS/VAD, and collapse per-file summaries."
+sidebar: cookbook
+---
+
+## Use when
+
+You have a directory of short WAV clips and need one matrix per clip plus optional file-level summaries.
+
+```{python}
+import tempfile
+import wave
+from pathlib import Path
+
+import numpy as np
+
+from natural_features.workflows.audio_batch import extract_audio_files
+
+with tempfile.TemporaryDirectory() as tmp:
+    path = Path(tmp) / "tone.wav"
+    sr_hz = 8000
+    t = np.arange(sr_hz // 2) / sr_hz
+    samples = 0.2 * np.sin(2 * np.pi * 220 * t)
+    pcm = np.asarray(np.clip(samples, -1.0, 1.0) * 32767, dtype="<i2")
+
+    with wave.open(str(path), "wb") as wav:
+        wav.setnchannels(1)
+        wav.setsampwidth(2)
+        wav.setframerate(sr_hz)
+        wav.writeframes(pcm.tobytes())
+
+    result = extract_audio_files(
+        [path],
+        resolution_s=0.25,
+        selected_features=["rms", "vad"],
+        collapse="mean+sd",
+    )
+
+    long_table = result.long_dataframe
+    collapsed = result.collapsed_dataframe
+```
+
+## Inspect frame rows
+
+```{python}
+long_table
+```
+
+## Inspect collapsed rows
+
+```{python}
+collapsed
+```
+
+## Boundary it closes
+
+The workflow gives each file a stable `file_id`, keeps time-sampled rows separate from collapsed summaries, and prefixes feature names by extractor family.
+
+## See also
+
+[Audio batch workflows](../concepts/audio-batch-workflows.qmd)

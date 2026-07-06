@@ -8,5 +8,10 @@ Current recipes:
 
 - [Tokenize text into word events](text-tokenization.qmd)
 - [Plan media features without running them](media-feature-planning.qmd)
+- [Extract audio features from WAV files](audio-batch-from-wav.qmd)
+- [Preview a recipe DAG](recipe-dag-preview.qmd)
+- [Export events to a table](event-table-export.qmd)
+- [Merge feature tables](feature-table-merge.qmd)
+- [Query a run-aware fMRI window](fmri-window-query.qmd)
 
-The cookbook should grow by feature family: audio, vision, speech, language, fMRI querying, and media preprocessing.
+Recipes use synthetic or in-memory inputs where possible so the site can execute without external datasets.

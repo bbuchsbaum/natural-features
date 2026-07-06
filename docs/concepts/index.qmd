@@ -11,3 +11,7 @@ Start with the object you hold, then move to the system that plans how to create
 - [Catalogue and planning](catalog-and-planning.qmd)
 - [Feature catalogue](feature-catalogue.qmd)
 - [Execution modes](execution-modes.qmd)
+- [Recipes and DAGs](recipes-and-dags.qmd)
+- [Table interchange](table-interchange.qmd)
+- [fMRI windowing](fmri-windowing.qmd)
+- [Audio batch workflows](audio-batch-workflows.qmd)

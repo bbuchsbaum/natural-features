@@ -1,0 +1,39 @@
+---
+title: "Export events to a table"
+subtitle: "Convert an `EventSeries` to rectangular rows with provenance columns."
+sidebar: cookbook
+---
+
+## Use when
+
+You need word, OCR, ASR, or object events as rows for joining, inspection, or modeling.
+
+```{python}
+from natural_features.core.interchange import as_event_table
+from natural_features.workflows import extract_features
+
+result = extract_features(
+    "The scene opens on a quiet room.",
+    features=["text.tokenize"],
+)
+words = result.features["text.tokenize"]
+table = as_event_table(words)
+
+table.loc[:, ["onset_s", "offset_s", "duration_s", "label", "extractor_name"]]
+```
+
+## Keep the object too
+
+The table is an interchange view. Keep the `EventSeries` when you need schema, object methods, or exact metadata.
+
+```{python}
+{
+    "object": type(words).__name__,
+    "schema": words.schema,
+    "metadata_keys": sorted(words.metadata),
+}
+```
+
+## See also
+
+[Table interchange](../concepts/table-interchange.qmd)

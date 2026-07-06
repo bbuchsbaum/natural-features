@@ -1,0 +1,55 @@
+---
+title: "Merge feature tables"
+subtitle: "Combine dense feature spaces into long or wide tables."
+sidebar: cookbook
+---
+
+## Use when
+
+You have several `FeatureSeries` outputs sampled on compatible time axes and want a modeling table.
+
+```{python}
+import numpy as np
+
+from natural_features.core.feature_types import FeatureSeries
+from natural_features.core.interchange import merge_feature_tables
+from natural_features.features.common import extractor_metadata
+
+audio = FeatureSeries(
+    values=np.array([[1.0], [2.0]], dtype=np.float32),
+    times_s=np.array([0.0, 1.0]),
+    coords={"feature": ["rms"]},
+    metadata=extractor_metadata("demo.rms", params={}),
+)
+motion = FeatureSeries(
+    values=np.array([[0.1], [0.3]], dtype=np.float32),
+    times_s=np.array([0.0, 1.0]),
+    coords={"feature": ["motion"]},
+    metadata=extractor_metadata("demo.motion", params={}),
+)
+
+features = {
+    "audio.rms": audio,
+    "vision.motion": motion,
+}
+```
+
+## Wide format
+
+```{python}
+merge_feature_tables(features, format="wide")
+```
+
+## Long format
+
+```{python}
+merge_feature_tables(features, format="long").loc[:, ["time_s", "feature", "value", "output_name"]]
+```
+
+## Boundary it closes
+
+Wide output is intentionally restricted to dense `FeatureSeries` values. Event and track outputs need long/object tables because they do not share a single dense feature axis.
+
+## See also
+
+[Table interchange](../concepts/table-interchange.qmd)

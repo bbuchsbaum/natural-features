@@ -1,0 +1,33 @@
+---
+title: "fMRI Windowing"
+subtitle: "`RunGrid`, `ExperimentGrid`, `query_feature_window_tr()` - stimulus features on run clocks."
+sidebar: concepts
+---
+
+## What it is
+
+fMRI windowing helpers describe run timing separately from feature timing. A `RunGrid` stores the TR, run start, run length, and feature-time offset. Query helpers slice feature objects by run and optionally resample to the run TR grid.
+
+## Invariants
+
+- `tr_s` must be positive.
+- `n_trs_by_run` must contain positive integers.
+- `run_starts_s`, when supplied, must match the number of runs.
+- `feature_t0_by_run`, when supplied, must match the number of runs.
+- Query windows require `t_end_s > t_start_s`.
+- Output time can be `absolute`, `run_relative`, or `feature`.
+
+## What it refuses
+
+- Unknown run indices.
+- Empty or non-positive run definitions.
+- Invalid output-time modes.
+- Windows whose end is not later than their start.
+
+## What it doesn't do
+
+Windowing does not estimate an HRF model. It slices and samples feature objects so modeling code can consume run-aware feature matrices.
+
+## See also
+
+[Query a run-aware fMRI window](../cookbook/fmri-window-query.qmd) · [fMRI querying reference](../reference/query_feature_window_tr.qmd)

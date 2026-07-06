@@ -1,0 +1,47 @@
+---
+title: "Recipes and DAGs"
+subtitle: "`FeaturePlan.to_recipe()`, `execute_recipe()`, `as_mermaid()` - explicit execution graphs."
+sidebar: concepts
+---
+
+## What it is
+
+A recipe is a dictionary with a `features` list. Each step names an extractor in `use`, an optional stable `id`, an input mapping, and parameter overrides. A DAG is the resolved dependency graph implied by `input:` tokens, `ref:` tokens, and `depends_on`.
+
+## Invariants
+
+- A recipe must contain `features`, and `features` must be a list.
+- Every enabled step must have a non-empty `use` value.
+- Step IDs must be unique.
+- `params`, `inputs`, `outputs`, and `postprocess` fields must be mappings when present.
+- `ref:<step>.<output>` inputs must refer to previous known outputs.
+- Declared output schemas are checked against returned object types during execution.
+
+## What it refuses
+
+- Unknown step keys.
+- Duplicate step IDs.
+- Unknown extractor names.
+- Unknown `input:` keys or `ref:` targets.
+- Output objects that do not match declared `FeatureSeries`, `EventSeries`, or `TrackSeries` schemas.
+
+## What it doesn't do
+
+Recipes do not install optional backends or download models. They record the execution contract for registered extractors.
+
+## Minimal graph
+
+```{python}
+from natural_features.core.recipe import as_mermaid
+from natural_features.workflows import plan_features
+
+plan = plan_features(
+    "The scene opens.",
+    features=["text.tokenize"],
+)
+print(as_mermaid(plan.to_recipe()))
+```
+
+## See also
+
+[Preview a recipe DAG](../cookbook/recipe-dag-preview.qmd) · [Catalogue and planning](catalog-and-planning.qmd)
