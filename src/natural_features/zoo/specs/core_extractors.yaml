@@ -29,8 +29,14 @@ extractors:
     version: "1.0"
     modalities: [video]
     requires: [ffmpeg]
-    tags: [preprocess, video, audio, placeholder]
-    params: {}
+    tags: [preprocess, video, audio]
+    params:
+      sr_hz: { type: int, default: 16000 }
+      start_s: { type: float, default: 0.0 }
+      duration_s: { type: float, default: null, nullable: true }
+      ffmpeg_path: { type: str, default: ffmpeg }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
     outputs:
       default: { schema: AudioStimulus/v1, kind: audio }
 
@@ -73,8 +79,12 @@ extractors:
     version: "1.0"
     modalities: [image]
     requires: [ocr]
-    tags: [preprocess, image, ocr, placeholder]
-    params: {}
+    tags: [preprocess, image, ocr]
+    params:
+      min_confidence: { type: float, default: 0.0 }
+      duration_s: { type: float, default: null, nullable: true }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
     outputs:
       default: { schema: EventSeries/v1, kind: words }
 
@@ -83,8 +93,12 @@ extractors:
     version: "1.0"
     modalities: [video]
     requires: [ocr]
-    tags: [preprocess, video, ocr, placeholder]
-    params: {}
+    tags: [preprocess, video, ocr]
+    params:
+      stride_frames: { type: int, default: 1 }
+      min_confidence: { type: float, default: 0.0 }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
     outputs:
       default: { schema: EventSeries/v1, kind: words }
 
@@ -173,6 +187,7 @@ extractors:
     requires: [vision, mediapipe]
     tags: [vision, face, fallback]
     params:
+      min_detection_confidence: { type: float, default: 0.5 }
       execution_mode: { type: str, default: fallback }
       strict_dependency: { type: bool, default: false }
     outputs:
@@ -191,6 +206,8 @@ extractors:
       model: { type: str, default: openai/clip-vit-base-patch32 }
       stride_frames: { type: int, default: 1 }
       dim: { type: int, default: 64 }
+      batch_size: { type: int, default: 32 }
+      local_files_only: { type: bool, default: true }
       execution_mode: { type: str, default: fallback }
       strict_dependency: { type: bool, default: false }
     outputs:
@@ -209,7 +226,10 @@ extractors:
       model: { type: str, default: facebook/dinov2-base }
       stride_frames: { type: int, default: 1 }
       layers: { type: "list[int]", default: [6, 12] }
+      pooling: { type: str, default: cls }
       dim: { type: int, default: 64 }
+      batch_size: { type: int, default: 32 }
+      local_files_only: { type: bool, default: true }
       execution_mode: { type: str, default: fallback }
       strict_dependency: { type: bool, default: false }
     outputs:

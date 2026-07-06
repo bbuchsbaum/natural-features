@@ -19,6 +19,7 @@ from natural_features.core.stimulus import (
 )
 
 _IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".webp"}
+_VIDEO_SUFFIXES = {".mp4", ".mov", ".m4v", ".avi", ".mkv", ".webm"}
 _KNOWN_MODALITIES = {
     "audio",
     "video",
@@ -319,6 +320,8 @@ def _input_modalities(stimulus: Any) -> set[str]:
                 return {"audio"}
             if suffix == ".npy":
                 return {"video"}
+            if suffix in _VIDEO_SUFFIXES:
+                return {"video"}
             if suffix in _IMAGE_SUFFIXES:
                 return {"image"}
             if suffix in {".txt", ".text"}:
@@ -335,6 +338,8 @@ def _coerce_path(path: str | Path, *, video_fps: float) -> Any:
             return AudioStimulus.from_wav(p)
         if suffix == ".npy":
             return VideoStimulus.from_npy(p, fps=video_fps)
+        if suffix in _VIDEO_SUFFIXES:
+            return p
         if suffix in _IMAGE_SUFFIXES:
             return ImageStimulus.from_file(p)
         if suffix in {".txt", ".text"}:

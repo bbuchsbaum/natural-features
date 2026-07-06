@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import subprocess
+import sys
+import wave
+
 import numpy as np
 import pytest
 
@@ -7,6 +11,7 @@ from natural_features.core.feature_types import FeatureSeries
 from natural_features.core.recipe import execute_recipe, validate_recipe
 from natural_features.core.registry import Registry
 from natural_features.core.stimulus import AudioStimulus, ImageStimulus, TextStimulus, VideoStimulus
+from natural_features.features.preprocess import image_ocr, video_audio_extract
 from natural_features.features.common import extractor_metadata
 
 
@@ -85,16 +90,81 @@ def test_text_tokenize_and_feature_preprocessing_chain() -> None:
     assert out.steps["lag"]["default"].values.shape[1] == 4
 
 
-def test_ocr_and_video_audio_placeholders_fail_clearly() -> None:
+def test_ocr_missing_dependency_returns_empty_fallback() -> None:
     reg = Registry.with_builtin_specs()
     image = ImageStimulus.from_array(np.ones((3, 3), dtype=np.float32))
-    with pytest.raises(NotImplementedError, match="image.ocr"):
-        execute_recipe({"features": [{"id": "ocr", "use": "image.ocr", "inputs": {"image": "input:image"}}]}, registry=reg, inputs={"image": image})
+    out = execute_recipe(
+        {"features": [{"id": "ocr", "use": "image.ocr", "inputs": {"image": "input:image"}}]},
+        registry=reg,
+        inputs={"image": image},
+    )
+    words = out.steps["ocr"]["default"]
+    assert len(words) >= 0
+    assert words.metadata["extractor_id"]
 
+
+def test_video_audio_extract_requires_source_path() -> None:
     video = VideoStimulus.from_array(np.ones((2, 3, 3), dtype=np.float32), fps=1.0)
-    with pytest.raises(NotImplementedError, match="video.audio.extract"):
-        execute_recipe(
-            {"features": [{"id": "audio", "use": "video.audio.extract", "inputs": {"video": "input:video"}}]},
-            registry=reg,
-            inputs={"video": video},
-        )
+    with pytest.raises(RuntimeError, match="requires a video file path"):
+        video_audio_extract(video)
+
+
+def test_video_audio_extract_runs_ffmpeg_command(monkeypatch, tmp_path) -> None:
+    video_path = tmp_path / "clip.mp4"
+    video_path.write_bytes(b"not-real-video")
+
+    def fake_which(name: str) -> str:
+        assert name == "ffmpeg"
+        return "/usr/bin/ffmpeg"
+
+    def fake_run(cmd, capture_output, text):  # noqa: ANN001, ANN202
+        assert "-vn" in cmd
+        wav_path = cmd[-1]
+        with wave.open(wav_path, "wb") as w:
+            w.setnchannels(1)
+            w.setsampwidth(2)
+            w.setframerate(8000)
+            w.writeframes(np.zeros(16, dtype=np.int16).tobytes())
+        return subprocess.CompletedProcess(cmd, 0, "", "")
+
+    monkeypatch.setattr("natural_features.features.preprocess.shutil.which", fake_which)
+    monkeypatch.setattr("natural_features.features.preprocess.subprocess.run", fake_run)
+
+    audio = video_audio_extract(video_path, sr_hz=8000)
+
+    assert audio.sr_hz == 8000
+    assert audio.samples.shape[0] == 16
+    assert audio.source == str(video_path)
+
+
+def test_image_ocr_with_fake_pytesseract(monkeypatch) -> None:
+    pytest.importorskip("PIL.Image")
+
+    class FakeOutput:
+        DICT = "dict"
+
+    class FakeTesseract:
+        Output = FakeOutput
+
+        @staticmethod
+        def image_to_data(_image, output_type):  # noqa: ANN001, ANN202
+            assert output_type == FakeOutput.DICT
+            return {
+                "text": ["", "Hello", "world"],
+                "conf": ["-1", "95", "80"],
+                "left": [0, 1, 4],
+                "top": [0, 2, 2],
+                "width": [0, 3, 4],
+                "height": [0, 2, 2],
+            }
+
+    monkeypatch.setitem(sys.modules, "pytesseract", FakeTesseract)
+    image = ImageStimulus.from_array(np.ones((10, 20, 3), dtype=np.float32), onset_s=2.0, duration_s=1.0)
+
+    words = image_ocr(image, min_confidence=50.0, execution_mode="strict", strict_dependency=True)
+
+    assert list(words.label) == ["Hello", "world"]
+    np.testing.assert_allclose(words.onset_s, np.array([2.0, 2.0]))
+    np.testing.assert_allclose(words.offset_s, np.array([3.0, 3.0]))
+    assert list(words.extra["object_type"]) == ["word", "word"]
+    assert words.metadata["backend"] == "pytesseract"

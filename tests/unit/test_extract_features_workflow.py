@@ -112,13 +112,12 @@ def test_extract_features_table_output_includes_features_and_objects() -> None:
     ]
 
 
-def test_recipe_format_plans_placeholder_chain_without_executing() -> None:
+def test_recipe_format_plans_ocr_chain_without_executing() -> None:
     image = ImageStimulus.from_array(np.ones((3, 3), dtype=np.float32))
     recipe = extract_features(
         image,
         features=["image.ocr", "language.surface"],
         budget="all",
-        include_placeholders=True,
         format="recipe",
     )
 

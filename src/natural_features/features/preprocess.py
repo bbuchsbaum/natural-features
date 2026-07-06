@@ -2,10 +2,16 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 import re
+import shutil
+import subprocess
+import tempfile
+from typing import Any
 
 import numpy as np
 
+from natural_features.core.execution import add_execution_provenance, resolve_execution_mode
 from natural_features.core.feature_types import EventSeries, FeatureSeries
 from natural_features.core.stimulus import AudioStimulus, ImageStimulus, TextStimulus, VideoStimulus
 from natural_features.features.common import extractor_metadata
@@ -64,11 +70,57 @@ def video_trim(stimulus: VisualStimulus, *, start_s: float = 0.0, end_s: float |
     )
 
 
-def video_audio_extract(stimulus: VideoStimulus, **_: object) -> AudioStimulus:
-    raise NotImplementedError(
-        "video.audio.extract is plan-visible but not implemented yet. "
-        "Provide an AudioStimulus explicitly or add an ffmpeg-backed extractor."
-    )
+def _video_source_path(stimulus: VideoStimulus | str | Path) -> Path:
+    if isinstance(stimulus, (str, Path)):
+        path = Path(stimulus)
+    elif isinstance(stimulus, VideoStimulus) and stimulus.source:
+        path = Path(stimulus.source)
+    else:
+        raise RuntimeError("video.audio.extract requires a video file path or VideoStimulus.source")
+    if not path.exists():
+        raise FileNotFoundError(f"Video source not found: {path}")
+    return path
+
+
+def video_audio_extract(
+    stimulus: VideoStimulus | str | Path,
+    *,
+    sr_hz: int = 16000,
+    start_s: float = 0.0,
+    duration_s: float | None = None,
+    ffmpeg_path: str = "ffmpeg",
+    execution_mode: str | None = None,
+    strict_dependency: bool | None = None,
+) -> AudioStimulus:
+    _mode, strict = resolve_execution_mode(execution_mode=execution_mode, strict_dependency=strict_dependency)
+    source = _video_source_path(stimulus)
+    if sr_hz <= 0:
+        raise ValueError("sr_hz must be > 0")
+    if start_s < 0:
+        raise ValueError("start_s must be >= 0")
+    if duration_s is not None and duration_s <= 0:
+        raise ValueError("duration_s must be > 0 when provided")
+    ffmpeg = shutil.which(ffmpeg_path)
+    if ffmpeg is None:
+        msg = f"ffmpeg executable not found: {ffmpeg_path}"
+        if strict:
+            raise RuntimeError(msg)
+        raise RuntimeError(msg + ". Install ffmpeg or provide an AudioStimulus explicitly.")
+
+    with tempfile.TemporaryDirectory(prefix="nf-audio-") as tmp:
+        wav_path = Path(tmp) / "audio.wav"
+        cmd = [ffmpeg, "-v", "error", "-y"]
+        if start_s > 0:
+            cmd.extend(["-ss", str(float(start_s))])
+        if duration_s is not None:
+            cmd.extend(["-t", str(float(duration_s))])
+        cmd.extend(["-i", str(source), "-vn", "-ac", "1", "-ar", str(int(sr_hz)), "-f", "wav", str(wav_path)])
+        proc = subprocess.run(cmd, capture_output=True, text=True)
+        if proc.returncode != 0:
+            diagnostics = proc.stderr.strip() or proc.stdout.strip() or "no ffmpeg diagnostics"
+            raise RuntimeError(f"ffmpeg audio extraction failed: {diagnostics}")
+        audio = AudioStimulus.from_wav(wav_path, start_offset_s=float(start_s))
+    return AudioStimulus(samples=audio.samples, sr_hz=audio.sr_hz, start_offset_s=audio.start_offset_s, source=str(source))
 
 
 def audio_trim(stimulus: AudioStimulus, *, start_s: float = 0.0, end_s: float | None = None) -> AudioStimulus:
@@ -143,12 +195,210 @@ def text_tokenize(stimulus: TextStimulus | str, *, duration_s: float | None = No
     )
 
 
-def image_ocr(stimulus: ImageStimulus, **_: object) -> EventSeries:
-    raise NotImplementedError("image.ocr is plan-visible but not implemented yet. Provide word EventSeries explicitly.")
+def _empty_ocr_events(extractor_name: str, *, execution_mode: str, reason: str) -> EventSeries:
+    md = add_execution_provenance(
+        extractor_metadata(extractor_name, params={}, extra={"backend": "empty_fallback"}),
+        execution_mode=execution_mode,
+        fallback_used=True,
+        fallback_reason=reason,
+    )
+    return EventSeries(
+        onset_s=np.array([], dtype=np.float64),
+        offset_s=np.array([], dtype=np.float64),
+        label=np.array([], dtype=object),
+        confidence=np.array([], dtype=np.float32),
+        extra={
+            "object_type": np.array([], dtype=object),
+            "x": np.array([], dtype=np.float32),
+            "y": np.array([], dtype=np.float32),
+            "width": np.array([], dtype=np.float32),
+            "height": np.array([], dtype=np.float32),
+            "coordinate_space": np.array([], dtype=object),
+        },
+        metadata=md,
+    )
 
 
-def video_ocr(stimulus: VideoStimulus, **_: object) -> EventSeries:
-    raise NotImplementedError("video.ocr is plan-visible but not implemented yet. Provide word EventSeries explicitly.")
+def _image_to_uint8(image: np.ndarray) -> np.ndarray:
+    arr = np.asarray(image, dtype=np.float32)
+    arr = np.clip(arr, 0.0, 1.0)
+    out = np.rint(arr * 255.0).astype(np.uint8)
+    if out.ndim == 2:
+        return out
+    if out.shape[-1] == 1:
+        return out[..., 0]
+    return out[..., :3]
+
+
+def _image_ocr_backend(
+    stimulus: ImageStimulus,
+    *,
+    min_confidence: float,
+    duration_s: float | None,
+    extractor_name: str,
+    execution_mode: str,
+) -> EventSeries:
+    try:
+        from PIL import Image  # type: ignore
+        import pytesseract  # type: ignore
+        from pytesseract import Output  # type: ignore
+    except Exception as exc:
+        raise RuntimeError("pytesseract and Pillow are required for OCR extraction") from exc
+
+    arr = _image_to_uint8(stimulus.image)
+    pil = Image.fromarray(arr)
+    data = pytesseract.image_to_data(pil, output_type=Output.DICT)
+    labels: list[str] = []
+    conf: list[float] = []
+    x: list[float] = []
+    y: list[float] = []
+    width: list[float] = []
+    height: list[float] = []
+    h, w = stimulus.image.shape[:2]
+    n = len(data.get("text", []))
+    for i in range(n):
+        text = str(data.get("text", [""])[i]).strip()
+        if not text:
+            continue
+        try:
+            confidence = float(data.get("conf", [-1])[i])
+        except (TypeError, ValueError):
+            confidence = -1.0
+        if confidence < min_confidence:
+            continue
+        labels.append(text)
+        conf.append(confidence / 100.0 if confidence > 1.0 else confidence)
+        left = float(data.get("left", [0])[i])
+        top = float(data.get("top", [0])[i])
+        bw = float(data.get("width", [0])[i])
+        bh = float(data.get("height", [0])[i])
+        x.append(left / max(float(w), 1.0))
+        y.append(top / max(float(h), 1.0))
+        width.append(bw / max(float(w), 1.0))
+        height.append(bh / max(float(h), 1.0))
+
+    onset = 0.0 if stimulus.onset_s is None else float(stimulus.onset_s)
+    duration = float(duration_s if duration_s is not None else (stimulus.duration_s or 0.0))
+    count = len(labels)
+    md = add_execution_provenance(
+        extractor_metadata(extractor_name, params={"min_confidence": min_confidence}, extra={"backend": "pytesseract"}),
+        execution_mode=execution_mode,
+        fallback_used=False,
+    )
+    return EventSeries(
+        onset_s=np.full(count, onset, dtype=np.float64),
+        offset_s=np.full(count, onset + duration, dtype=np.float64),
+        label=np.asarray(labels, dtype=object),
+        confidence=np.asarray(conf, dtype=np.float32),
+        extra={
+            "object_type": np.asarray(["word"] * count, dtype=object),
+            "x": np.asarray(x, dtype=np.float32),
+            "y": np.asarray(y, dtype=np.float32),
+            "width": np.asarray(width, dtype=np.float32),
+            "height": np.asarray(height, dtype=np.float32),
+            "coordinate_space": np.asarray(["relative"] * count, dtype=object),
+        },
+        metadata=md,
+    )
+
+
+def image_ocr(
+    stimulus: ImageStimulus,
+    *,
+    min_confidence: float = 0.0,
+    duration_s: float | None = None,
+    execution_mode: str | None = None,
+    strict_dependency: bool | None = None,
+) -> EventSeries:
+    mode, strict = resolve_execution_mode(execution_mode=execution_mode, strict_dependency=strict_dependency)
+    if not isinstance(stimulus, ImageStimulus):
+        raise TypeError("image_ocr requires an ImageStimulus")
+    try:
+        return _image_ocr_backend(
+            stimulus,
+            min_confidence=float(min_confidence),
+            duration_s=duration_s,
+            extractor_name="image.ocr",
+            execution_mode=mode,
+        )
+    except Exception as exc:
+        if strict:
+            raise RuntimeError("image.ocr failed in strict mode") from exc
+        return _empty_ocr_events("image.ocr", execution_mode=mode, reason=str(exc))
+
+
+def _concat_event_series(events: list[EventSeries], *, extractor_name: str, execution_mode: str) -> EventSeries:
+    if not events:
+        return _empty_ocr_events(extractor_name, execution_mode=execution_mode, reason="no frames")
+    onset = np.concatenate([ev.onset_s for ev in events])
+    offset = np.concatenate([ev.offset_s for ev in events])
+    labels = np.concatenate([ev.label if ev.label is not None else np.array([], dtype=object) for ev in events])
+    confidence = np.concatenate(
+        [ev.confidence if ev.confidence is not None else np.full(len(ev), np.nan, dtype=np.float32) for ev in events]
+    )
+    extra: dict[str, Any] = {}
+    keys = sorted({key for ev in events for key in ev.extra.keys()})
+    for key in keys:
+        chunks = []
+        for ev in events:
+            value = ev.extra.get(key)
+            if value is None:
+                chunks.append(np.full(len(ev), np.nan, dtype=object))
+            else:
+                chunks.append(np.asarray(value))
+        extra[key] = np.concatenate(chunks)
+    md = add_execution_provenance(
+        extractor_metadata(extractor_name, params={}, extra={"backend": "pytesseract"}),
+        execution_mode=execution_mode,
+        fallback_used=False,
+    )
+    return EventSeries(onset_s=onset, offset_s=offset, label=labels, confidence=confidence, extra=extra, metadata=md)
+
+
+def video_ocr(
+    stimulus: VideoStimulus,
+    *,
+    stride_frames: int = 1,
+    min_confidence: float = 0.0,
+    execution_mode: str | None = None,
+    strict_dependency: bool | None = None,
+) -> EventSeries:
+    mode, strict = resolve_execution_mode(execution_mode=execution_mode, strict_dependency=strict_dependency)
+    if not isinstance(stimulus, VideoStimulus):
+        raise TypeError("video_ocr requires a VideoStimulus")
+    stride = max(1, int(stride_frames))
+    events: list[EventSeries] = []
+    frame_duration = 1.0 / float(stimulus.fps)
+    for frame_index in range(0, stimulus.frames.shape[0], stride):
+        image = ImageStimulus.from_array(
+            stimulus.frames[frame_index],
+            onset_s=float(stimulus.frame_times_s[frame_index]),
+            duration_s=frame_duration,
+        )
+        ev = image_ocr(
+            image,
+            min_confidence=min_confidence,
+            duration_s=frame_duration,
+            execution_mode=mode,
+            strict_dependency=strict,
+        )
+        if len(ev):
+            ev_extra = dict(ev.extra)
+            ev_extra["frame_index"] = np.full(len(ev), frame_index, dtype=np.int64)
+            ev = EventSeries(
+                onset_s=ev.onset_s,
+                offset_s=ev.offset_s,
+                label=ev.label,
+                confidence=ev.confidence,
+                extra=ev_extra,
+                metadata=ev.metadata,
+                schema=ev.schema,
+                timebase=ev.timebase,
+            )
+            events.append(ev)
+    if strict and not events:
+        return _empty_ocr_events("video.ocr", execution_mode=mode, reason="no OCR text detected")
+    return _concat_event_series(events, extractor_name="video.ocr", execution_mode=mode)
 
 
 def events_align(events: EventSeries, *, mode: str = "passthrough", **_: object) -> EventSeries:
