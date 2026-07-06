@@ -6,7 +6,7 @@ sidebar: start
 
 ## Catalogue rows
 
-The high-level workflow catalogue reports feature IDs, supported modalities, required dependencies, output schemas, and whether a feature needs explicit opt-in.
+The high-level workflow catalogue reports public feature IDs, supported modalities, required dependencies, output schemas, and whether a feature needs explicit opt-in. Use `public_only=False` when you need to inspect every registered extractor, including internal aliases used by older recipes and implementation tests.
 
 ```{python}
 from natural_features.workflows import available_features
@@ -18,6 +18,7 @@ rows = available_features(modality="text")
         "modalities": row.modalities,
         "output_schema": row.output_schema,
         "requires_opt_in": row.requires_opt_in,
+        "is_public": row.is_public,
     }
     for row in rows
 ]

@@ -67,6 +67,57 @@ _PREFERRED_FEATURE_IDS = {
     "language.embed.bert_words": "language.bert",
     "language.predict.surprisal": "language.surprisal",
 }
+_PUBLIC_FEATURE_IDS = {
+    "audio.ast",
+    "audio.clap",
+    "audio.egemaps",
+    "audio.gammatone",
+    "audio.mel",
+    "audio.mfcc",
+    "audio.pitch",
+    "audio.prosody",
+    "audio.resample",
+    "audio.rms",
+    "audio.spectral_stats",
+    "audio.trim",
+    "events.align",
+    "features.hrf",
+    "features.lag",
+    "features.resample",
+    "image.ocr",
+    "language.bert",
+    "language.discourse",
+    "language.hidden_states",
+    "language.surface",
+    "language.surprisal",
+    "language.syntax",
+    "speech.articulatory",
+    "speech.ctc",
+    "speech.diarization",
+    "speech.emotion",
+    "speech.hubert",
+    "speech.neural_vad",
+    "speech.phonemes",
+    "speech.vad",
+    "speech.wavlm",
+    "speech.words",
+    "text.tokenize",
+    "video.audio.extract",
+    "video.frames.sample",
+    "video.ocr",
+    "video.trim",
+    "vision.clip",
+    "vision.dct",
+    "vision.dino",
+    "vision.energy",
+    "vision.face",
+    "vision.frame_diffs",
+    "vision.motion",
+    "vision.motion_energy",
+    "vision.optical_flow",
+    "vision.semantic_views",
+    "vision.social_proxies",
+}
 
 
 @dataclass(frozen=True)
@@ -82,6 +133,7 @@ class FeatureCatalogEntry:
     tags: list[str]
     default_params: dict[str, Any]
     requires_opt_in: bool
+    is_public: bool
 
 
 @dataclass(frozen=True)
@@ -238,6 +290,7 @@ def _entry_from_spec(spec: ExtractorSpec) -> FeatureCatalogEntry:
         tags=list(spec.tags),
         default_params=_param_defaults(spec),
         requires_opt_in=_requires_opt_in(spec, dependency_class, cost_class),
+        is_public=spec.name in _PUBLIC_FEATURE_IDS,
     )
 
 
@@ -264,6 +317,7 @@ def available_features(
     bundle: str | None = None,
     tags: str | Iterable[str] | None = None,
     include_placeholders: bool = False,
+    public_only: bool = True,
     as_dataframe: bool = False,
     registry: Registry | None = None,
 ) -> list[FeatureCatalogEntry] | Any:
@@ -275,6 +329,8 @@ def available_features(
     for entry in feature_catalog(registry=registry):
         entry_tags = set(entry.tags)
         if not include_placeholders and "placeholder" in entry_tags:
+            continue
+        if public_only and not entry.is_public:
             continue
         if modalities and not (set(entry.modalities) & modalities):
             continue

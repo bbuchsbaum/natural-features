@@ -8,6 +8,8 @@ sidebar: concepts
 
 The feature catalogue is generated from registered extractor specs. It is the reader-facing inventory of feature IDs, modalities, output schemas, dependency classes, and opt-in status.
 
+By default, `available_features()` returns the public catalogue: the stable feature IDs that match the R package compatibility surface. Internal extractor IDs remain registered for recipes, debugging, and lower-level workflows, but they are hidden from the high-level catalogue unless you request them with `public_only=False`.
+
 ## Current families
 
 ```{python}
@@ -42,6 +44,8 @@ print(":::")
 ## Invariants
 
 - Feature IDs come from extractor specs registered in `Registry.with_builtin_specs()`.
+- `available_features()` lists public feature IDs by default.
+- `available_features(public_only=False)` includes internal and legacy extractor IDs such as implementation-level aliases.
 - `available_features(budget="default")` excludes costly or optional routes unless they are base routes.
 - `available_features(budget="allow_python")` includes optional Python backends but still excludes placeholder entries by default.
 - `available_features(as_dataframe=True)` returns the same entries as a pandas table.

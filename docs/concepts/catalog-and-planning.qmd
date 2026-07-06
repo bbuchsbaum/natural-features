@@ -8,9 +8,12 @@ sidebar: concepts
 
 The workflow catalogue is built from extractor specs. A plan chooses a route from available input modalities to requested feature IDs and records the extractor, input token, parameters, output schema, and opt-in status for each step.
 
+The catalogue separates the stable public surface from implementation-level extractor IDs. `available_features()` reports public IDs by default, while `available_features(public_only=False)` exposes every registered spec. Explicit planning can still target a registered internal ID when you need to reproduce a recipe or test a lower-level extractor.
+
 ## Invariants
 
 - `available_features()` returns `FeatureCatalogEntry` rows derived from registered extractor specs.
+- Public catalogue rows have `is_public=True`.
 - `plan_features()` returns a `FeaturePlan` unless `as_dataframe=True`.
 - `FeaturePlan.to_recipe()` emits a recipe dictionary with a `features` list.
 - Path inputs with image, audio, video, text, or NumPy suffixes are coerced to the matching stimulus or path contract.

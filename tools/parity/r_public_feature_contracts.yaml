@@ -1,0 +1,256 @@
+version: 1
+source: "~/code/natfeatures/R/extract_features.R"
+notes:
+  - "R public feature IDs are the compatibility surface for natural-features."
+  - "expected_python_schema records the Python contract; r_catalog_schema records the R catalog value when useful for drift audits."
+  - "speech.neural_vad is intentionally FeatureSeries in Python and implementation behavior, despite an older R catalog entry advertising EventSeries."
+features:
+  audio.ast:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: []
+    required_default_keys: ["execution_mode", "stride_s"]
+    allowed_python_default_extras: ["dim", "local_files_only", "model", "strict_dependency"]
+  audio.clap:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: []
+    required_default_keys: ["execution_mode", "stride_s"]
+    allowed_python_default_extras: ["dim", "local_files_only", "model", "strict_dependency"]
+  audio.egemaps:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: []
+    required_default_keys: ["execution_mode", "frame_s"]
+    allowed_python_default_extras: ["strict_dependency"]
+  audio.gammatone:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: []
+    required_default_keys: ["hop_s", "n_channels", "win_s"]
+    allowed_python_default_extras: ["fmax", "fmin", "log"]
+  audio.mel:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: ["baseline", "movie_encoding"]
+    required_default_keys: ["fmin", "hop_s", "log", "n_mels", "win_s"]
+    allowed_python_default_extras: ["fmax"]
+  audio.mfcc:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: []
+    required_default_keys: ["hop_s", "n_mels", "n_mfcc", "win_s"]
+    allowed_python_default_extras: []
+  audio.pitch:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: []
+    required_default_keys: ["execution_mode", "hop_s"]
+    allowed_python_default_extras: ["fmax", "fmin", "strict_dependency", "voicing_threshold", "win_s"]
+  audio.prosody:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: ["movie_encoding"]
+    required_default_keys: ["hop_s", "win_s"]
+    allowed_python_default_extras: []
+  audio.resample:
+    expected_python_schema: "AudioStimulus/v1"
+    bundles: []
+    required_default_keys: ["target_sr_hz"]
+    allowed_python_default_extras: []
+  audio.rms:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: ["baseline"]
+    required_default_keys: ["hop_s", "win_s"]
+    allowed_python_default_extras: []
+  audio.spectral_stats:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: ["baseline"]
+    required_default_keys: ["hop_s", "win_s"]
+    allowed_python_default_extras: []
+  audio.trim:
+    expected_python_schema: "AudioStimulus/v1"
+    bundles: []
+    required_default_keys: ["end_s", "start_s"]
+    allowed_python_default_extras: []
+  events.align:
+    expected_python_schema: "EventSeries/v1"
+    bundles: []
+    required_default_keys: ["mode"]
+    allowed_python_default_extras: []
+  features.hrf:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: []
+    required_default_keys: ["kind", "tr_s"]
+    allowed_python_default_extras: []
+  features.lag:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: []
+    required_default_keys: ["lags"]
+    allowed_python_default_extras: []
+  features.resample:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: []
+    required_default_keys: ["method", "step_s"]
+    allowed_python_default_extras: ["duration_s", "tr_s"]
+  image.ocr:
+    expected_python_schema: "EventSeries/v1"
+    bundles: []
+    required_default_keys: []
+    allowed_python_default_extras: ["duration_s", "execution_mode", "min_confidence", "strict_dependency"]
+  language.bert:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: ["language_encoding", "movie_encoding"]
+    required_default_keys: ["execution_mode"]
+    allowed_python_default_extras: ["layers", "model", "pooling", "strict_dependency"]
+  language.discourse:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: ["language_encoding"]
+    required_default_keys: ["window_size"]
+    allowed_python_default_extras: []
+  language.hidden_states:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: []
+    required_default_keys: ["execution_mode"]
+    allowed_python_default_extras: ["layers", "local_files_only", "model", "pooling", "strict_dependency"]
+  language.surface:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: ["baseline"]
+    required_default_keys: ["window_size"]
+    allowed_python_default_extras: []
+  language.surprisal:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: ["language_encoding", "speech_encoding"]
+    required_default_keys: ["execution_mode", "model"]
+    allowed_python_default_extras: ["strict_dependency"]
+  language.syntax:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: ["language_encoding"]
+    required_default_keys: ["execution_mode"]
+    allowed_python_default_extras: ["model", "strict_dependency"]
+  speech.articulatory:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: ["speech_encoding"]
+    required_default_keys: []
+    allowed_python_default_extras: []
+  speech.ctc:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: []
+    required_default_keys: ["execution_mode", "stride_s"]
+    allowed_python_default_extras: ["drop_special_tokens", "local_files_only", "model", "strict_dependency"]
+  speech.diarization:
+    expected_python_schema: "TrackSeries/v1"
+    bundles: []
+    required_default_keys: ["execution_mode"]
+    allowed_python_default_extras: ["hop_s", "strict_dependency"]
+  speech.emotion:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: []
+    required_default_keys: ["execution_mode"]
+    allowed_python_default_extras: ["hop_s", "strict_dependency"]
+  speech.hubert:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: []
+    required_default_keys: ["execution_mode", "stride_s"]
+    allowed_python_default_extras: ["layers", "local_files_only", "model", "pooling", "strict_dependency"]
+  speech.neural_vad:
+    expected_python_schema: "FeatureSeries/v1"
+    r_catalog_schema: "EventSeries"
+    bundles: []
+    required_default_keys: ["execution_mode"]
+    allowed_python_default_extras: ["hop_s", "model", "strict_dependency", "win_s"]
+    decision: "Python keeps neural VAD as framewise speech_probability FeatureSeries; speech.vad is the event wrapper."
+  speech.phonemes:
+    expected_python_schema: "EventSeries/v1"
+    bundles: ["speech_encoding"]
+    required_default_keys: []
+    allowed_python_default_extras: ["label_namespace", "namespace_version"]
+  speech.vad:
+    expected_python_schema: "EventSeries/v1"
+    bundles: []
+    required_default_keys: ["frame_s"]
+    allowed_python_default_extras: ["threshold", "win_s"]
+  speech.wavlm:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: ["speech_encoding"]
+    required_default_keys: ["execution_mode", "stride_s"]
+    allowed_python_default_extras: ["layers", "model", "pooling", "strict_dependency"]
+  speech.words:
+    expected_python_schema: "EventSeries/v1,EventSeries/v1,dict"
+    r_catalog_schema: "list(words=EventSeries,segments=EventSeries,qc=list)"
+    bundles: ["movie_encoding", "speech_encoding"]
+    required_default_keys: ["execution_mode"]
+    allowed_python_default_extras: ["language", "model", "strict_dependency", "word_timestamps"]
+    decision: "Python declares segments, words, and qc outputs explicitly."
+  text.tokenize:
+    expected_python_schema: "EventSeries/v1"
+    bundles: []
+    required_default_keys: ["duration_s"]
+    allowed_python_default_extras: []
+  video.audio.extract:
+    expected_python_schema: "AudioStimulus/v1"
+    bundles: []
+    required_default_keys: []
+    allowed_python_default_extras: ["duration_s", "execution_mode", "ffmpeg_path", "sr_hz", "start_s", "strict_dependency"]
+  video.frames.sample:
+    expected_python_schema: "VideoStimulus/v1"
+    bundles: []
+    required_default_keys: ["stride_frames"]
+    allowed_python_default_extras: ["target_fps"]
+  video.ocr:
+    expected_python_schema: "EventSeries/v1"
+    bundles: []
+    required_default_keys: []
+    allowed_python_default_extras: ["execution_mode", "min_confidence", "strict_dependency", "stride_frames"]
+  video.trim:
+    expected_python_schema: "VideoStimulus/v1"
+    bundles: []
+    required_default_keys: ["end_s", "start_s"]
+    allowed_python_default_extras: []
+  vision.clip:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: ["movie_encoding", "social_vision"]
+    required_default_keys: ["execution_mode", "stride_frames"]
+    allowed_python_default_extras: ["batch_size", "dim", "local_files_only", "model", "strict_dependency"]
+  vision.dct:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: []
+    required_default_keys: ["color", "k"]
+    allowed_python_default_extras: ["size"]
+  vision.dino:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: []
+    required_default_keys: ["execution_mode", "stride_frames"]
+    allowed_python_default_extras: ["batch_size", "dim", "layers", "local_files_only", "model", "pooling", "strict_dependency"]
+  vision.energy:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: ["baseline", "movie_encoding"]
+    required_default_keys: ["include_deltas"]
+    allowed_python_default_extras: []
+  vision.face:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: ["social_vision"]
+    required_default_keys: ["execution_mode"]
+    allowed_python_default_extras: ["min_detection_confidence", "strict_dependency"]
+  vision.frame_diffs:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: ["baseline"]
+    required_default_keys: []
+    allowed_python_default_extras: []
+  vision.motion:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: ["movie_encoding"]
+    required_default_keys: []
+    allowed_python_default_extras: []
+  vision.motion_energy:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: []
+    required_default_keys: ["execution_mode"]
+    allowed_python_default_extras: ["fps_downsample", "strict_dependency"]
+  vision.optical_flow:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: []
+    required_default_keys: ["execution_mode"]
+    allowed_python_default_extras: ["strict_dependency"]
+  vision.semantic_views:
+    expected_python_schema: "EventSeries/v1"
+    bundles: ["social_vision"]
+    required_default_keys: ["execution_mode"]
+    allowed_python_default_extras: ["strict_dependency", "stride_frames"]
+  vision.social_proxies:
+    expected_python_schema: "FeatureSeries/v1"
+    bundles: ["social_vision"]
+    required_default_keys: []
+    allowed_python_default_extras: []

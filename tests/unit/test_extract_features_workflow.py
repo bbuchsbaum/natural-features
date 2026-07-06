@@ -28,8 +28,20 @@ def test_available_features_filters_by_budget_and_modality() -> None:
 def test_available_features_dataframe_output() -> None:
     pytest.importorskip("pandas")
     table = available_features(modality="audio", as_dataframe=True)
-    assert {"feature_id", "default_params", "requires_opt_in"} <= set(table.columns)
+    assert {"feature_id", "default_params", "requires_opt_in", "is_public"} <= set(table.columns)
     assert "audio.rms" in set(table["feature_id"])
+
+
+def test_available_features_defaults_to_public_catalog_surface() -> None:
+    public_entries = available_features(modality="audio", budget="all")
+    public_ids = {entry.feature_id for entry in public_entries}
+    all_ids = {entry.feature_id for entry in available_features(modality="audio", budget="all", public_only=False)}
+
+    assert all(entry.is_public for entry in public_entries)
+    assert "audio.rms" in public_ids
+    assert "audio.lowlevel.rms" not in public_ids
+    assert "audio.lowlevel.rms" in all_ids
+    assert public_ids < all_ids
 
 
 def test_plan_features_routes_image_features_to_image_input() -> None:

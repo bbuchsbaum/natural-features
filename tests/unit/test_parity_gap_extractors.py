@@ -1,6 +1,12 @@
 from __future__ import annotations
 
+from pathlib import Path
+import subprocess
+import sys
+from typing import Any
+
 import numpy as np
+import yaml
 
 from natural_features.core.feature_types import EventSeries, FeatureSeries, TrackSeries
 from natural_features.core.registry import Registry
@@ -39,158 +45,25 @@ GAP_FEATURE_IDS = {
     "vision.semantic_views",
 }
 
-R_PUBLIC_FEATURE_IDS = {
-    "audio.ast",
-    "audio.clap",
-    "audio.egemaps",
-    "audio.gammatone",
-    "audio.mel",
-    "audio.mfcc",
-    "audio.pitch",
-    "audio.prosody",
-    "audio.resample",
-    "audio.rms",
-    "audio.spectral_stats",
-    "audio.trim",
-    "events.align",
-    "features.hrf",
-    "features.lag",
-    "features.resample",
-    "image.ocr",
-    "language.bert",
-    "language.discourse",
-    "language.hidden_states",
-    "language.surface",
-    "language.surprisal",
-    "language.syntax",
-    "speech.articulatory",
-    "speech.ctc",
-    "speech.diarization",
-    "speech.emotion",
-    "speech.hubert",
-    "speech.neural_vad",
-    "speech.phonemes",
-    "speech.vad",
-    "speech.wavlm",
-    "speech.words",
-    "text.tokenize",
-    "video.audio.extract",
-    "video.frames.sample",
-    "video.ocr",
-    "video.trim",
-    "vision.clip",
-    "vision.dct",
-    "vision.dino",
-    "vision.energy",
-    "vision.face",
-    "vision.frame_diffs",
-    "vision.motion",
-    "vision.motion_energy",
-    "vision.optical_flow",
-    "vision.semantic_views",
-    "vision.social_proxies",
-}
+ROOT = Path(__file__).resolve().parents[2]
+PARITY_MANIFEST_PATH = ROOT / "tools" / "parity" / "r_public_feature_contracts.yaml"
 
-R_PUBLIC_BUNDLES = {
-    "audio.mel": {"baseline", "movie_encoding"},
-    "audio.prosody": {"movie_encoding"},
-    "audio.rms": {"baseline"},
-    "audio.spectral_stats": {"baseline"},
-    "language.bert": {"movie_encoding", "language_encoding"},
-    "language.discourse": {"language_encoding"},
-    "language.surface": {"baseline"},
-    "language.surprisal": {"speech_encoding", "language_encoding"},
-    "language.syntax": {"language_encoding"},
-    "speech.articulatory": {"speech_encoding"},
-    "speech.phonemes": {"speech_encoding"},
-    "speech.wavlm": {"speech_encoding"},
-    "speech.words": {"speech_encoding", "movie_encoding"},
-    "vision.clip": {"movie_encoding", "social_vision"},
-    "vision.energy": {"baseline", "movie_encoding"},
-    "vision.face": {"social_vision"},
-    "vision.frame_diffs": {"baseline"},
-    "vision.motion": {"movie_encoding"},
-    "vision.semantic_views": {"social_vision"},
-    "vision.social_proxies": {"social_vision"},
-}
 
-R_PUBLIC_DEFAULT_KEYS = {
-    "audio.ast": {"stride_s", "execution_mode"},
-    "audio.clap": {"stride_s", "execution_mode"},
-    "audio.egemaps": {"frame_s", "execution_mode"},
-    "audio.gammatone": {"hop_s", "win_s", "n_channels"},
-    "audio.mel": {"hop_s", "win_s", "n_mels", "fmin", "log"},
-    "audio.mfcc": {"hop_s", "win_s", "n_mfcc", "n_mels"},
-    "audio.pitch": {"hop_s", "execution_mode"},
-    "audio.prosody": {"hop_s", "win_s"},
-    "audio.resample": {"target_sr_hz"},
-    "audio.rms": {"hop_s", "win_s"},
-    "audio.spectral_stats": {"hop_s", "win_s"},
-    "audio.trim": {"start_s", "end_s"},
-    "events.align": {"mode"},
-    "features.hrf": {"tr_s", "kind"},
-    "features.lag": {"lags"},
-    "features.resample": {"step_s", "method"},
-    "language.bert": {"execution_mode"},
-    "language.discourse": {"window_size"},
-    "language.hidden_states": {"execution_mode"},
-    "language.surface": {"window_size"},
-    "language.surprisal": {"model", "execution_mode"},
-    "language.syntax": {"execution_mode"},
-    "speech.ctc": {"stride_s", "execution_mode"},
-    "speech.diarization": {"execution_mode"},
-    "speech.emotion": {"execution_mode"},
-    "speech.hubert": {"stride_s", "execution_mode"},
-    "speech.neural_vad": {"execution_mode"},
-    "speech.vad": {"frame_s"},
-    "speech.wavlm": {"stride_s", "execution_mode"},
-    "speech.words": {"execution_mode"},
-    "text.tokenize": {"duration_s"},
-    "video.frames.sample": {"stride_frames"},
-    "video.trim": {"start_s", "end_s"},
-    "vision.clip": {"stride_frames", "execution_mode"},
-    "vision.dct": {"k", "color"},
-    "vision.dino": {"stride_frames", "execution_mode"},
-    "vision.energy": {"include_deltas"},
-    "vision.face": {"execution_mode"},
-    "vision.motion_energy": {"execution_mode"},
-    "vision.optical_flow": {"execution_mode"},
-    "vision.semantic_views": {"execution_mode"},
-}
+def _load_parity_features() -> dict[str, dict[str, Any]]:
+    payload = yaml.safe_load(PARITY_MANIFEST_PATH.read_text(encoding="utf-8"))
+    assert isinstance(payload, dict)
+    features = payload["features"]
+    assert isinstance(features, dict)
+    return features
 
-PYTHON_ALLOWED_EXTRA_DEFAULT_KEYS = {
-    "audio.ast": {"dim", "local_files_only", "model", "strict_dependency"},
-    "audio.clap": {"dim", "local_files_only", "model", "strict_dependency"},
-    "audio.egemaps": {"strict_dependency"},
-    "audio.gammatone": {"fmax", "fmin", "log"},
-    "audio.mel": {"fmax"},
-    "audio.pitch": {"fmax", "fmin", "strict_dependency", "voicing_threshold", "win_s"},
-    "features.resample": {"duration_s", "tr_s"},
-    "image.ocr": {"duration_s", "execution_mode", "min_confidence", "strict_dependency"},
-    "language.bert": {"layers", "model", "pooling", "strict_dependency"},
-    "language.hidden_states": {"layers", "local_files_only", "model", "pooling", "strict_dependency"},
-    "language.surprisal": {"strict_dependency"},
-    "language.syntax": {"model", "strict_dependency"},
-    "speech.ctc": {"drop_special_tokens", "local_files_only", "model", "strict_dependency"},
-    "speech.diarization": {"hop_s", "strict_dependency"},
-    "speech.emotion": {"hop_s", "strict_dependency"},
-    "speech.hubert": {"layers", "local_files_only", "model", "pooling", "strict_dependency"},
-    "speech.neural_vad": {"hop_s", "model", "strict_dependency", "win_s"},
-    "speech.phonemes": {"label_namespace", "namespace_version"},
-    "speech.vad": {"threshold", "win_s"},
-    "speech.wavlm": {"layers", "model", "pooling", "strict_dependency"},
-    "speech.words": {"language", "model", "strict_dependency", "word_timestamps"},
-    "video.audio.extract": {"duration_s", "execution_mode", "ffmpeg_path", "sr_hz", "start_s", "strict_dependency"},
-    "video.frames.sample": {"target_fps"},
-    "video.ocr": {"execution_mode", "min_confidence", "strict_dependency", "stride_frames"},
-    "vision.clip": {"batch_size", "dim", "local_files_only", "model", "strict_dependency"},
-    "vision.dct": {"size"},
-    "vision.dino": {"batch_size", "dim", "layers", "local_files_only", "model", "pooling", "strict_dependency"},
-    "vision.face": {"min_detection_confidence", "strict_dependency"},
-    "vision.motion_energy": {"fps_downsample", "strict_dependency"},
-    "vision.optical_flow": {"strict_dependency"},
-    "vision.semantic_views": {"strict_dependency", "stride_frames"},
-}
+
+PARITY_FEATURES = _load_parity_features()
+R_PUBLIC_FEATURE_IDS = set(PARITY_FEATURES)
+
+
+def _manifest_set(feature_id: str, key: str) -> set[str]:
+    values = PARITY_FEATURES[feature_id].get(key) or []
+    return {str(value) for value in values}
 
 
 def _audio() -> AudioStimulus:
@@ -243,7 +116,7 @@ def test_r_public_feature_bundles_match_catalog_contract() -> None:
     entries = {entry.feature_id: entry for entry in available_features(budget="all")}
 
     for feature_id in R_PUBLIC_FEATURE_IDS:
-        assert set(entries[feature_id].bundles) == R_PUBLIC_BUNDLES.get(feature_id, set())
+        assert set(entries[feature_id].bundles) == _manifest_set(feature_id, "bundles")
 
 
 def test_r_public_defaults_are_present_with_only_allowed_python_extras() -> None:
@@ -251,9 +124,26 @@ def test_r_public_defaults_are_present_with_only_allowed_python_extras() -> None
 
     for feature_id in R_PUBLIC_FEATURE_IDS:
         actual = set(entries[feature_id].default_params)
-        expected = R_PUBLIC_DEFAULT_KEYS.get(feature_id, set())
+        expected = _manifest_set(feature_id, "required_default_keys")
+        allowed_extra = _manifest_set(feature_id, "allowed_python_default_extras")
         assert expected <= actual, feature_id
-        assert actual - expected <= PYTHON_ALLOWED_EXTRA_DEFAULT_KEYS.get(feature_id, set()), feature_id
+        assert actual - expected <= allowed_extra, feature_id
+
+
+def test_parity_manifest_audit_passes_against_python_catalog() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "tools" / "parity" / "check_r_catalog_parity.py"),
+            "--no-r-compare",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "parity-check: OK" in result.stdout
 
 
 def test_asr_and_vad_output_contracts_are_explicit() -> None:
