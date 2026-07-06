@@ -1,0 +1,20 @@
+# query_feature_window { #natural_features.query_feature_window }
+
+```python
+query_feature_window(
+    feature,
+    grid,
+    *,
+    run_index,
+    t_start_s,
+    t_end_s,
+    relative_to_run=True,
+    output_time='absolute',
+)
+```
+
+Slice a raw feature window for one run.
+
+`output_time`:
+- `"absolute"`: keep stimulus/global time.
+- `"run_relative"`: subtract run start from output times.

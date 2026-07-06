@@ -1,0 +1,20 @@
+# extract_multiscale_language { #natural_features.extract_multiscale_language }
+
+```python
+extract_multiscale_language(
+    input_data,
+    *,
+    scales_s=(2.0, 4.0, 16.0),
+    feature_families=None,
+    provider_config=None,
+    transcript_text=None,
+    execution_mode=None,
+    strict_dependency=None,
+    aggregation='mean',
+    window_policy='centered',
+    standardize=True,
+    add_intercept=False,
+    as_dataframe=False,
+    cache_dir='.nf_cache/language_embeddings',
+)
+```

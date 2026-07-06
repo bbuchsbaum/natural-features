@@ -1,0 +1,33 @@
+---
+title: "Tokenize text into word events"
+subtitle: "A base extractor that returns an `EventSeries`."
+sidebar: cookbook
+---
+
+## Use when
+
+You have transcript text and need word-like events for language or alignment workflows.
+
+```{python}
+from natural_features.workflows import extract_features
+
+result = extract_features(
+    "The scene opens on a quiet room.",
+    features=["text.tokenize"],
+)
+words = result.features["text.tokenize"]
+
+list(zip(words.label.tolist(), words.onset_s.tolist(), words.offset_s.tolist()))
+```
+
+## Boundary it closes
+
+The returned object has explicit onset and offset arrays even when the input is untimed text. That keeps later event-processing code on the same `EventSeries` contract as ASR or OCR outputs.
+
+## Related feature IDs
+
+- `text.tokenize`
+- `language.surface`
+- `speech.words`
+- `image.ocr`
+- `video.ocr`

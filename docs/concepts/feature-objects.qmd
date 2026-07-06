@@ -1,0 +1,33 @@
+---
+title: "Feature Objects"
+subtitle: "`FeatureSeries`, `EventSeries`, `TrackSeries` - time-aligned outputs."
+sidebar: concepts
+---
+
+## What it is
+
+Feature objects are immutable dataclasses for extracted stimulus features. Dense features use `FeatureSeries`, bounded events use `EventSeries`, and tracked objects use `TrackSeries`.
+
+## Invariants
+
+- `FeatureSeries.values` has at least two dimensions and its first axis matches `times_s`.
+- `FeatureSeries.dims[0]` is `time`.
+- `EventSeries.onset_s` and `offset_s` have the same shape.
+- `EventSeries.offset_s` is greater than or equal to `onset_s` for every event.
+- `TrackSeries.values` uses time on the first axis and track on the second axis.
+- All three object types require `extractor_id` and `params_hash` in `metadata`.
+
+## What it refuses
+
+- Non-monotonic time arrays.
+- Missing required metadata fields.
+- Event labels or confidence arrays with lengths that do not match events.
+- Track values whose time or track axes do not match `times_s` and `track_id`.
+
+## What it doesn't do
+
+These objects do not choose a storage backend, feature extractor, or fMRI model. They define the container contract those layers consume.
+
+## See also
+
+[Extract features](../start/03-extract-features.qmd) · [Feature object schemas](../spec/feature-object-schemas.qmd) · [API reference](../reference/index.qmd)

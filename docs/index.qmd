@@ -1,0 +1,84 @@
+---
+pagetitle: "natural_features"
+toc: false
+sidebar: false
+page-layout: full
+---
+
+::: {.hero}
+::: {.hero-copy}
+[Naturalistic stimulus features]{.eyebrow}
+
+# natural_features turns media and transcripts into time-aligned feature objects.
+
+[Install `natural-features`, import `natural_features`, and keep extracted features tied to stimulus time, provenance, and downstream fMRI windows.]{.lead}
+
+[Start here](start/index.qmd){.btn .btn-primary}
+[API reference](reference/index.qmd){.btn .btn-outline-secondary}
+
+[stimuli]{.kicker} [catalogue]{.kicker} [recipes]{.kicker} [fMRI windows]{.kicker}
+:::
+::: {.hero-code}
+::: {.code-card}
+[quickstart.py]{.code-card-title}
+```python
+from natural_features.workflows import extract_features
+
+result = extract_features(
+    "The scene opens on a quiet room.",
+    features=["text.tokenize"],
+)
+
+words = result.features["text.tokenize"]
+words.label.tolist()
+```
+:::
+:::
+:::
+
+## In 30 seconds {.promise-heading}
+
+This block uses the installed Python package and returns an `EventSeries` whose word events keep onset, offset, label, and provenance metadata together.
+
+```{python}
+from natural_features.workflows import available_features, extract_features
+
+catalog = available_features(modality="text")
+result = extract_features(
+    "The scene opens on a quiet room.",
+    features=["text.tokenize"],
+)
+words = result.features["text.tokenize"]
+
+{
+    "available_text_features": [entry.feature_id for entry in catalog],
+    "object_type": type(words).__name__,
+    "word_count": len(words),
+    "labels": words.label.tolist(),
+}
+```
+
+## Three contracts {.promise-heading}
+
+::: {.promise-grid}
+::: {.promise-card}
+#### Stimulus wrappers keep time attached
+Audio, video, image, and text inputs enter through typed wrappers before extraction. [Concept](concepts/stimuli.qmd)
+
+[`AudioStimulus`]{.promise-tag}
+:::
+
+::: {.promise-card}
+#### Feature objects carry schema and provenance
+Dense features, events, and tracks have explicit time arrays and required metadata. [Concept](concepts/feature-objects.qmd)
+
+[`FeatureSeries`]{.promise-tag}
+:::
+
+::: {.promise-card}
+#### Plans expose what will run
+The catalogue and planner show feature IDs, required inputs, parameters, and opt-in status before execution. [Concept](concepts/catalog-and-planning.qmd)
+
+[`plan_features`]{.promise-tag}
+:::
+:::

@@ -1,0 +1,57 @@
+---
+title: "Extract features"
+subtitle: "`extract_features()` returns feature objects, plans, recipes, and step outputs."
+sidebar: start
+---
+
+## Run one feature
+
+`extract_features()` builds a plan, converts it to a recipe, executes it, and returns an `ExtractFeaturesResult`.
+
+```{python}
+from natural_features.workflows import extract_features
+
+result = extract_features(
+    "The scene opens on a quiet room.",
+    features=["text.tokenize"],
+)
+
+words = result.features["text.tokenize"]
+{
+    "result_type": type(result).__name__,
+    "feature_keys": sorted(result.features),
+    "recipe": result.recipe,
+    "event_count": len(words),
+}
+```
+
+## Inspect the event object
+
+```{python}
+{
+    "schema": words.schema,
+    "metadata": words.metadata,
+    "onsets": words.onset_s.tolist(),
+    "offsets": words.offset_s.tolist(),
+    "labels": words.label.tolist(),
+}
+```
+
+## Return a recipe instead
+
+```{python}
+extract_features(
+    "The scene opens on a quiet room.",
+    features=["text.tokenize"],
+    format="recipe",
+)
+```
+
+## Refuses to
+
+- `format` must be one of `features`, `result`, `recipe`, `plan`, or `table`.
+- Table output requires the storage extra because it uses pandas.
+
+## Read next
+
+[Feature objects](../concepts/feature-objects.qmd)

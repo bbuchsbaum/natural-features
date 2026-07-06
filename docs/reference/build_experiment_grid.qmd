@@ -1,0 +1,15 @@
+# build_experiment_grid { #natural_features.build_experiment_grid }
+
+```python
+build_experiment_grid(
+    tr_s,
+    n_trs_by_run,
+    run_starts_s=None,
+    feature_t0_s=0.0,
+    feature_t0_by_run=None,
+    start_s=0.0,
+    run_gap_s=0.0,
+)
+```
+
+Build simple experiment grid with per-run TR clocks.

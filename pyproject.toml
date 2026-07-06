@@ -51,6 +51,13 @@ dev = [
   "Pillow>=10.0",
   "ruff>=0.8",
 ]
+docs = [
+  "griffe<2",
+  "ipykernel>=6.29",
+  "jupyter-cache>=1.0",
+  "pandas>=2.0",
+  "quartodoc>=0.9",
+]
 
 [project.scripts]
 nf = "natural_features.cli.main:main"
@@ -75,4 +82,11 @@ dev = [
     "pyarrow>=14.0",
     "Pillow>=10.0",
     "ruff>=0.8",
+]
+docs = [
+    "griffe<2",
+    "ipykernel>=6.29",
+    "jupyter-cache>=1.0",
+    "pandas>=2.0",
+    "quartodoc>=0.9",
 ]

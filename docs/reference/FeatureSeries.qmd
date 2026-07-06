@@ -1,0 +1,13 @@
+# FeatureSeries { #natural_features.FeatureSeries }
+
+```python
+FeatureSeries(
+    values,
+    times_s,
+    dims=('time', 'feature'),
+    coords=dict(),
+    metadata=dict(),
+    schema='FeatureSeries/v1',
+    timebase=(lambda: TimebaseSpec(kind='frames'))(),
+)
+```

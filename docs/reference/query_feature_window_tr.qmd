@@ -1,0 +1,17 @@
+# query_feature_window_tr { #natural_features.query_feature_window_tr }
+
+```python
+query_feature_window_tr(
+    feature,
+    grid,
+    *,
+    run_index,
+    t_start_s,
+    t_end_s,
+    relative_to_run=True,
+    method='mean',
+    output_time='absolute',
+)
+```
+
+Slice a feature window and sample on the run TR grid.

@@ -1,0 +1,35 @@
+# extract_acoustic_phonetics { #natural_features.extract_acoustic_phonetics }
+
+```python
+extract_acoustic_phonetics(
+    audio,
+    *,
+    hop_s=0.02,
+    posterior_backend='ctc',
+    ctc_model='bobboyms/wav2vec2-base-en-phoneme-ctc-41h',
+    ctc_local_files_only=True,
+    execution_mode=None,
+    ctc_strict_dependency=None,
+    resolution_s=None,
+    resample_method='mean',
+    include_uncertainty=True,
+    renormalize_posteriors=True,
+)
+```
+
+Extract time-aligned phone-like posteriors and articulatory probabilities.
+
+## Parameters {.doc-section .doc-section-parameters}
+
+| Name                   | Type                                                                                                      | Description                                                                                                                        | Default                                       |
+|------------------------|-----------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------|
+| audio                  | [AudioStimulus](`natural_features.core.stimulus.AudioStimulus`) \| [str](`str`) \| [Path](`pathlib.Path`) | ``AudioStimulus`` instance or a path to a wav file.                                                                                | _required_                                    |
+| hop_s                  | [float](`float`)                                                                                          | Base posterior hop in seconds (used by ``acoustic`` backend).                                                                      | `0.02`                                        |
+| posterior_backend      | [str](`str`)                                                                                              | ``"ctc"`` (preferred strict backend) or ``"acoustic"`` (lightweight fallback).                                                     | `'ctc'`                                       |
+| ctc_model              | [str](`str`)                                                                                              | Hugging Face CTC model id for posterior extraction.                                                                                | `'bobboyms/wav2vec2-base-en-phoneme-ctc-41h'` |
+| ctc_local_files_only   | [bool](`bool`)                                                                                            | If true, only load local model files (no download attempts).                                                                       | `True`                                        |
+| ctc_strict_dependency  | [bool](`bool`) \| None                                                                                    | If true, fail when transformers/torch/model is unavailable.                                                                        | `None`                                        |
+| resolution_s           | [float](`float`) \| None                                                                                  | Optional output sampling resolution in seconds (for example 0.5, 1.0, 2.0). If omitted, features stay on the native posterior hop. | `None`                                        |
+| resample_method        | [str](`str`)                                                                                              | Resampling method when ``resolution_s`` is provided.                                                                               | `'mean'`                                      |
+| include_uncertainty    | [bool](`bool`)                                                                                            | Include ``posterior_entropy`` and ``posterior_peak`` in articulatory output.                                                       | `True`                                        |
+| renormalize_posteriors | [bool](`bool`)                                                                                            | Renormalize posterior rows to sum to one before articulatory mapping.                                                              | `True`                                        |

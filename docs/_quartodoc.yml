@@ -1,0 +1,32 @@
+quartodoc:
+  package: natural_features
+  style: pkgdown
+  dir: reference
+  title: "API reference"
+  render_interlinks: true
+  options:
+    include_inherited: false
+  sidebar: reference/_sidebar.yml
+  sections:
+    - title: "Feature objects"
+      desc: "Typed time-aligned containers. Concept: [Feature objects](../concepts/feature-objects.qmd)."
+      contents:
+        - FeatureSeries
+        - EventSeries
+        - TrackSeries
+    - title: "Audio and language workflows"
+      desc: "Stable workflow entry points for extracted feature bundles."
+      contents:
+        - extract_audio_files
+        - extract_audio_dir
+        - extract_acoustic_phonetics
+        - extract_multiscale_language
+    - title: "fMRI querying"
+      desc: "Run-aware feature queries and TR windows."
+      contents:
+        - RunGrid
+        - ExperimentGrid
+        - build_experiment_grid
+        - query_feature_window
+        - query_feature_window_tr
+        - query_feature_zoo_window_tr

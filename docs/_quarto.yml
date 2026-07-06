@@ -1,0 +1,136 @@
+project:
+  type: website
+  output-dir: _site
+  render:
+    - "*.qmd"
+    - "start/*.qmd"
+    - "concepts/*.qmd"
+    - "cookbook/*.qmd"
+    - "spec/*.qmd"
+    - "evidence/*.qmd"
+    - "reference/*.qmd"
+    - "!_archive/**"
+    - "!_plan/**"
+    - "!_includes/**"
+  preview:
+    port: 4200
+    browser: false
+  resources:
+    - "prd/**"
+
+website:
+  title: "natural_features"
+  description: "Time-aligned feature extraction primitives for naturalistic stimuli."
+  site-url: "https://bbuchsbaum.github.io/natural-features/"
+  repo-url: "https://github.com/bbuchsbaum/natural-features"
+  repo-actions: [edit, issue]
+  repo-branch: main
+  page-navigation: true
+  back-to-top-navigation: true
+  bread-crumbs: false
+  search:
+    location: navbar
+    type: overlay
+    copy-button: true
+  navbar:
+    pinned: true
+    left:
+      - text: "Start"
+        href: start/index.qmd
+      - text: "Concepts"
+        href: concepts/index.qmd
+      - text: "Cookbook"
+        href: cookbook/index.qmd
+      - text: "Spec"
+        href: spec/index.qmd
+      - text: "Evidence"
+        href: evidence/index.qmd
+      - text: "Reference"
+        href: reference/index.qmd
+    right:
+      - icon: github
+        href: "https://github.com/bbuchsbaum/natural-features"
+        aria-label: GitHub
+  sidebar:
+    - id: start
+      title: "Start"
+      style: floating
+      align: left
+      contents:
+        - start/index.qmd
+        - start/01-wrap-a-stimulus.qmd
+        - start/02-list-and-plan-features.qmd
+        - start/03-extract-features.qmd
+    - id: concepts
+      title: "Concepts"
+      style: floating
+      align: left
+      contents:
+        - concepts/index.qmd
+        - concepts/stimuli.qmd
+        - concepts/feature-objects.qmd
+        - concepts/catalog-and-planning.qmd
+    - id: cookbook
+      title: "Cookbook"
+      style: floating
+      align: left
+      contents:
+        - cookbook/index.qmd
+        - cookbook/text-tokenization.qmd
+    - id: spec
+      title: "Spec"
+      style: floating
+      align: left
+      contents:
+        - spec/index.qmd
+        - spec/feature-object-schemas.qmd
+    - id: reference
+      title: "Reference"
+      style: floating
+      contents:
+        - reference/index.qmd
+        - auto: "reference/*.qmd"
+  page-footer:
+    border: false
+    left: "Copyright 2026 natural_features maintainers"
+    right:
+      - icon: github
+        href: "https://github.com/bbuchsbaum/natural-features"
+
+format:
+  html:
+    theme: [darkly, _variables.scss, _variables-dark.scss]
+    css: styles.css
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    toc-title: "On this page"
+    number-sections: false
+    anchor-sections: true
+    code-copy: true
+    code-overflow: wrap
+    code-link: true
+    code-annotations: hover
+    highlight-style: github-dark
+    fig-align: center
+    fig-format: retina
+    fig-dpi: 200
+    smooth-scroll: true
+    link-external-icon: false
+    link-external-newwindow: true
+    grid:
+      sidebar-width: 260px
+      body-width: 860px
+      margin-width: 220px
+      gutter-width: 1.5rem
+
+execute:
+  freeze: auto
+  cache: true
+  warning: false
+  message: false
+
+jupyter: python3
+
+metadata-files:
+  - _quartodoc.yml

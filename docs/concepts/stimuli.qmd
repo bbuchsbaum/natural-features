@@ -1,0 +1,33 @@
+---
+title: "Stimuli"
+subtitle: "`ImageStimulus`, `VideoStimulus`, `AudioStimulus`, `TextStimulus` - typed media inputs."
+sidebar: concepts
+---
+
+## What it is
+
+Stimulus wrappers are dataclasses that put media arrays or text behind a small validation contract. They carry timing fields such as frame rate, onset, duration, sample rate, or start offset before extraction begins.
+
+## Invariants
+
+- `ImageStimulus.image` is numeric and normalized to floating values clipped to `[0, 1]`.
+- `VideoStimulus.frames` has a time axis first and a positive `fps`.
+- `AudioStimulus.samples` is one- or two-dimensional and has a positive sample rate.
+- `TextStimulus.text` is a Python string.
+- `MultiModalStimulus` contains at least one non-empty modality.
+
+## What it refuses
+
+- Empty images, videos, or audio arrays.
+- Invalid image, video, or audio ranks.
+- Non-finite image onset values.
+- Negative image duration values.
+- Multi-modal inputs with no modalities.
+
+## What it doesn't do
+
+The wrappers do not decode arbitrary video containers by themselves. Path coercion and media preparation live in workflow and preprocessing helpers.
+
+## See also
+
+[Wrap a stimulus](../start/01-wrap-a-stimulus.qmd) · [Feature objects](feature-objects.qmd) · [Feature object schemas](../spec/feature-object-schemas.qmd)

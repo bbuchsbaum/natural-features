@@ -1,0 +1,40 @@
+---
+title: "Feature Object Schemas"
+subtitle: "Required fields for `FeatureSeries/v1`, `EventSeries/v1`, and `TrackSeries/v1`."
+sidebar: spec
+---
+
+## `FeatureSeries/v1`
+
+Required fields:
+
+- `values`: array with time on axis 0 and at least one feature axis.
+- `times_s`: one-dimensional floating array with the same length as `values.shape[0]`.
+- `dims`: tuple whose first entry is `time` and whose length matches `values.ndim`.
+- `coords`: dictionary of coordinate labels.
+- `metadata`: dictionary containing `extractor_id` and `params_hash`.
+- `schema`: string, currently `FeatureSeries/v1`.
+
+## `EventSeries/v1`
+
+Required fields:
+
+- `onset_s`: one-dimensional floating array.
+- `offset_s`: one-dimensional floating array with the same shape as `onset_s`.
+- `label`: optional array with one label per event.
+- `confidence`: optional array with one confidence value per event.
+- `extra`: dictionary of event-level arrays.
+- `metadata`: dictionary containing `extractor_id` and `params_hash`.
+- `schema`: string, currently `EventSeries/v1`.
+
+## `TrackSeries/v1`
+
+Required fields:
+
+- `times_s`: one-dimensional floating array.
+- `track_id`: one-dimensional array of track identifiers.
+- `values`: array with time on axis 0 and track on axis 1.
+- `dims`: tuple whose first entries are `time` and `track`.
+- `coords`: dictionary of coordinate labels.
+- `metadata`: dictionary containing `extractor_id` and `params_hash`.
+- `schema`: string, currently `TrackSeries/v1`.

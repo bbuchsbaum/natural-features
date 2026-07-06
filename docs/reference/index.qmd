@@ -1,0 +1,35 @@
+# API reference {.doc .doc-index}
+
+## Feature objects
+
+Typed time-aligned containers. Concept: [Feature objects](../concepts/feature-objects.qmd).
+
+| | |
+| --- | --- |
+| [FeatureSeries](FeatureSeries.qmd#natural_features.FeatureSeries) |  |
+| [EventSeries](EventSeries.qmd#natural_features.EventSeries) |  |
+| [TrackSeries](TrackSeries.qmd#natural_features.TrackSeries) |  |
+
+## Audio and language workflows
+
+Stable workflow entry points for extracted feature bundles.
+
+| | |
+| --- | --- |
+| [extract_audio_files](extract_audio_files.qmd#natural_features.extract_audio_files) |  |
+| [extract_audio_dir](extract_audio_dir.qmd#natural_features.extract_audio_dir) |  |
+| [extract_acoustic_phonetics](extract_acoustic_phonetics.qmd#natural_features.extract_acoustic_phonetics) | Extract time-aligned phone-like posteriors and articulatory probabilities. |
+| [extract_multiscale_language](extract_multiscale_language.qmd#natural_features.extract_multiscale_language) |  |
+
+## fMRI querying
+
+Run-aware feature queries and TR windows.
+
+| | |
+| --- | --- |
+| [RunGrid](RunGrid.qmd#natural_features.RunGrid) |  |
+| [ExperimentGrid](ExperimentGrid.qmd#natural_features.ExperimentGrid) |  |
+| [build_experiment_grid](build_experiment_grid.qmd#natural_features.build_experiment_grid) | Build simple experiment grid with per-run TR clocks. |
+| [query_feature_window](query_feature_window.qmd#natural_features.query_feature_window) | Slice a raw feature window for one run. |
+| [query_feature_window_tr](query_feature_window_tr.qmd#natural_features.query_feature_window_tr) | Slice a feature window and sample on the run TR grid. |
+| [query_feature_zoo_window_tr](query_feature_zoo_window_tr.qmd#natural_features.query_feature_zoo_window_tr) | Apply run-aware TR query to every feature in a collection. |

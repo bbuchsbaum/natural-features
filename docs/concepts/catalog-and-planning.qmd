@@ -1,0 +1,32 @@
+---
+title: "Catalogue and Planning"
+subtitle: "`available_features()`, `plan_features()`, `extract_features()` - choose before running."
+sidebar: concepts
+---
+
+## What it is
+
+The workflow catalogue is built from extractor specs. A plan chooses a route from available input modalities to requested feature IDs and records the extractor, input token, parameters, output schema, and opt-in status for each step.
+
+## Invariants
+
+- `available_features()` returns `FeatureCatalogEntry` rows derived from registered extractor specs.
+- `plan_features()` returns a `FeaturePlan` unless `as_dataframe=True`.
+- `FeaturePlan.to_recipe()` emits a recipe dictionary with a `features` list.
+- Path inputs with image, audio, video, text, or NumPy suffixes are coerced to the matching stimulus or path contract.
+- A stimulus named `movie` expands to audio and video modality planning.
+
+## What it refuses
+
+- Feature IDs that are not registered.
+- Requests whose input modality cannot be routed.
+- Optional or costly feature requests under the default budget.
+- Placeholder features unless explicitly included.
+
+## What it doesn't do
+
+Planning does not run the extractor. Execution begins when the plan is converted to a recipe and passed through the recipe executor.
+
+## See also
+
+[List and plan features](../start/02-list-and-plan-features.qmd) · [Extract features](../start/03-extract-features.qmd) · [Evidence](../evidence/index.qmd)

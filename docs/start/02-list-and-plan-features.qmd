@@ -1,0 +1,57 @@
+---
+title: "List and plan features"
+subtitle: "`available_features()` and `plan_features()` expose the route before execution."
+sidebar: start
+---
+
+## Catalogue rows
+
+The high-level workflow catalogue reports feature IDs, supported modalities, required dependencies, output schemas, and whether a feature needs explicit opt-in.
+
+```{python}
+from natural_features.workflows import available_features
+
+rows = available_features(modality="text")
+[
+    {
+        "feature_id": row.feature_id,
+        "modalities": row.modalities,
+        "output_schema": row.output_schema,
+        "requires_opt_in": row.requires_opt_in,
+    }
+    for row in rows
+]
+```
+
+## Plan rows
+
+Planning resolves a requested feature to the extractor name, input token, default parameters, and output schema. Nothing has run yet.
+
+```{python}
+from natural_features.workflows import plan_features
+
+plan = plan_features(
+    "The scene opens on a quiet room.",
+    features=["text.tokenize"],
+)
+[
+    {
+        "feature_id": row.feature_id,
+        "step_id": row.step_id,
+        "use": row.use,
+        "input_token": row.input_token,
+        "params": row.params,
+    }
+    for row in plan.rows
+]
+```
+
+## Refuses to
+
+- Unknown feature IDs raise `KeyError`.
+- Features whose modality cannot be routed from available inputs raise `ValueError`.
+- Optional or costly features require an explicit budget opt-in.
+
+## Read next
+
+[Extract features](03-extract-features.qmd)

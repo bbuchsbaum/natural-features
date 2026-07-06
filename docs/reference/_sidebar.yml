@@ -1,0 +1,25 @@
+website:
+  sidebar:
+  - contents:
+    - reference/index.qmd
+    - contents:
+      - reference/FeatureSeries.qmd
+      - reference/EventSeries.qmd
+      - reference/TrackSeries.qmd
+      section: Feature objects
+    - contents:
+      - reference/extract_audio_files.qmd
+      - reference/extract_audio_dir.qmd
+      - reference/extract_acoustic_phonetics.qmd
+      - reference/extract_multiscale_language.qmd
+      section: Audio and language workflows
+    - contents:
+      - reference/RunGrid.qmd
+      - reference/ExperimentGrid.qmd
+      - reference/build_experiment_grid.qmd
+      - reference/query_feature_window.qmd
+      - reference/query_feature_window_tr.qmd
+      - reference/query_feature_zoo_window_tr.qmd
+      section: fMRI querying
+    id: reference
+  - id: dummy-sidebar

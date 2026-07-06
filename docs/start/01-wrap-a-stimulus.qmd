@@ -1,0 +1,43 @@
+---
+title: "Wrap a stimulus"
+subtitle: "`ImageStimulus`, `VideoStimulus`, `AudioStimulus`, `TextStimulus` - typed inputs with time."
+sidebar: start
+---
+
+## What this page covers
+
+Extraction starts from a stimulus object or from an input that can be coerced into one. The wrapper validates shape and timing before any feature code runs.
+
+```{python}
+import numpy as np
+
+from natural_features.core.stimulus import (
+    AudioStimulus,
+    ImageStimulus,
+    TextStimulus,
+    VideoStimulus,
+)
+
+image = ImageStimulus.from_array(np.zeros((8, 8, 3)), onset_s=0.5, duration_s=1.0)
+video = VideoStimulus.from_array(np.zeros((4, 8, 8, 3)), fps=2.0)
+audio = AudioStimulus.from_array(np.zeros(1600), sr_hz=16000)
+text = TextStimulus("The scene opens on a quiet room.")
+
+{
+    "image_shape": image.image.shape,
+    "video_times": video.frame_times_s.tolist(),
+    "audio_samples": audio.samples.shape[0],
+    "text": text.text,
+}
+```
+
+## Refuses to
+
+- `ImageStimulus` rejects non-numeric arrays, empty dimensions, and arrays outside `(H, W)` or `(H, W, C)`.
+- `VideoStimulus` rejects arrays that are not `(T, H, W)` or `(T, H, W, C)`.
+- `AudioStimulus` rejects arrays that are not one- or two-dimensional.
+- `TextStimulus` rejects non-string text.
+
+## Read next
+
+[List and plan features](02-list-and-plan-features.qmd)

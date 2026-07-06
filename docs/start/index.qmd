@@ -1,0 +1,21 @@
+---
+title: "Start"
+subtitle: "A short path through the package contracts."
+sidebar: start
+---
+
+Work through these pages in order:
+
+1. [Wrap a stimulus](01-wrap-a-stimulus.qmd) - create typed inputs from arrays and strings.
+2. [List and plan features](02-list-and-plan-features.qmd) - inspect the catalogue before running extraction.
+3. [Extract features](03-extract-features.qmd) - execute a small feature request and inspect the returned object.
+
+The package name and import name intentionally differ:
+
+```bash
+pip install natural-features
+```
+
+```python
+import natural_features as nf
+```

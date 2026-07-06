@@ -1,0 +1,17 @@
+# query_feature_zoo_window_tr { #natural_features.query_feature_zoo_window_tr }
+
+```python
+query_feature_zoo_window_tr(
+    zoo,
+    grid,
+    *,
+    run_index,
+    t_start_s,
+    t_end_s,
+    relative_to_run=True,
+    method='mean',
+    output_time='absolute',
+)
+```
+
+Apply run-aware TR query to every feature in a collection.

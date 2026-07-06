@@ -1,0 +1,57 @@
+---
+title: "Evidence"
+subtitle: "A render-time summary of checked-in validation artifacts."
+sidebar: false
+---
+
+The table below is generated when the site renders. It reads checked-in fixtures and manifests instead of repeating their status by hand.
+
+```{python}
+#| echo: false
+#| output: asis
+from pathlib import Path
+import json
+
+cwd = Path.cwd()
+if (cwd / "pyproject.toml").exists():
+    root = cwd
+elif (cwd.parent / "pyproject.toml").exists():
+    root = cwd.parent
+else:
+    root = cwd
+
+artifacts = [
+    ("Golden reference", root / "tests" / "fixtures" / "golden_reference_v1.json"),
+    ("Tier A stimulus manifest", root / "tests" / "stimuli" / "tier_a" / "manifest.json"),
+    ("Tier A alignment manifest", root / "tests" / "benchmarks" / "manifests" / "tier_a_alignment_manifest.json"),
+    ("Alignment quality gate", root / "tests" / "benchmarks" / "thresholds" / "alignment_quality_gate.json"),
+]
+
+print("| Artifact | Status | Detail |")
+print("|---|---:|---|")
+for label, path in artifacts:
+    if not path.exists():
+        print(f"| {label} | missing | `{path.relative_to(root)}` |")
+        continue
+    detail = ""
+    try:
+        payload = json.loads(path.read_text())
+        if isinstance(payload, dict):
+            detail = ", ".join(sorted(payload.keys())[:5])
+        elif isinstance(payload, list):
+            detail = f"{len(payload)} records"
+    except Exception:
+        detail = "present"
+    print(f"| {label} | present | `{path.relative_to(root)}` {detail} |")
+```
+
+## Local gates
+
+The docs slice should be reviewed with:
+
+```bash
+uv run pytest -q
+uv run python scripts/release_check.py
+uv run python scripts/validate_tier_a_stimuli.py
+cd docs && make quarto
+```

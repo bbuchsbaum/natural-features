@@ -1,0 +1,9 @@
+---
+title: "Spec"
+subtitle: "Contracts that can be implemented without importing the package."
+sidebar: spec
+---
+
+Specs in this site are rendered pages, not raw Markdown downloads.
+
+- [Feature object schemas](feature-object-schemas.qmd)

@@ -1,0 +1,11 @@
+---
+title: "Cookbook"
+subtitle: "Task recipes that name the feature route and the boundary condition."
+sidebar: cookbook
+---
+
+Current recipes:
+
+- [Tokenize text into word events](text-tokenization.qmd)
+
+The cookbook should grow by feature family: audio, vision, speech, language, fMRI querying, and media preprocessing.

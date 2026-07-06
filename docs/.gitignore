@@ -1,0 +1,6 @@
+/.quarto/
+/_freeze/
+/_site/
+/.jupyter_cache/
+/objects.json
+**/.jupyter_cache/

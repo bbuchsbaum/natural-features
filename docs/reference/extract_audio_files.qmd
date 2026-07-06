@@ -1,0 +1,15 @@
+# extract_audio_files { #natural_features.extract_audio_files }
+
+```python
+extract_audio_files(
+    paths,
+    *,
+    resolution_s=1.0,
+    selected_features=None,
+    feature_params=None,
+    resample_method='mean',
+    execution_mode=None,
+    as_dataframe=True,
+    collapse=None,
+)
+```

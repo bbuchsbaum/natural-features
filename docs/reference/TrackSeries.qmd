@@ -1,0 +1,14 @@
+# TrackSeries { #natural_features.TrackSeries }
+
+```python
+TrackSeries(
+    times_s,
+    track_id,
+    values,
+    dims=('time', 'track', 'feature'),
+    coords=dict(),
+    metadata=dict(),
+    schema='TrackSeries/v1',
+    timebase=(lambda: TimebaseSpec(kind='frames'))(),
+)
+```
