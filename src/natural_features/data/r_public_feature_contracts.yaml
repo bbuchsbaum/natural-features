@@ -150,7 +150,7 @@ features:
     r_catalog_schema: "EventSeries"
     bundles: []
     required_default_keys: ["execution_mode"]
-    allowed_python_default_extras: ["hop_s", "model", "strict_dependency", "win_s"]
+    allowed_python_default_extras: ["hop_s", "local_files_only", "model", "strict_dependency", "win_s"]
     decision: "Python keeps neural VAD as framewise speech_probability FeatureSeries; speech.vad is the event wrapper."
   speech.phonemes:
     expected_python_schema: "EventSeries/v1"

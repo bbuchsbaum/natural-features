@@ -12,6 +12,7 @@ from natural_features.features.preprocess import image_ocr, text_tokenize
 from natural_features.features.language.syntax import syntactic_features
 from natural_features.features.speech.emotion import speech_emotion
 from natural_features.features.speech.ssl import hubert_hidden_states, wavlm_hidden_states
+from natural_features.features.speech.vad import neural_vad
 from natural_features.features.vision.neural import vision_clip_embeddings, vision_dino_embeddings
 
 
@@ -142,6 +143,25 @@ def test_real_speech_emotion_backend_local_model_contract() -> None:
     _assert_real_feature_series(out, feature_id="speech.emotion")
     assert out.values.shape[0] == 1
     assert out.values.shape[1] >= 2
+
+
+def test_real_neural_vad_backend_contract() -> None:
+    pytest.importorskip("torch")
+    model = _env_required("NF_TEST_NEURAL_VAD_MODEL")
+    if model in {"silero", "silero_vad", "package"}:
+        pytest.importorskip("silero_vad")
+
+    out = neural_vad(
+        _audio(),
+        model=model,
+        local_files_only=True,
+        execution_mode="strict",
+        strict_dependency=True,
+    )
+
+    _assert_real_feature_series(out, feature_id="speech.neural_vad")
+    assert out.values.shape[1] == 1
+    assert out.metadata["backend"].startswith("silero")
 
 
 def test_real_clip_backend_local_model_contract() -> None:

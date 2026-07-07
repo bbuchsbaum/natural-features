@@ -712,7 +712,7 @@ extractors:
     version: "1.0"
     label: Neural VAD
     modalities: [audio]
-    requires: [speech, torch]
+    requires: [speech, torch, silero_vad]
     dependency_class: optional_python
     cost_class: cheap
     infer_bundles: false
@@ -721,6 +721,7 @@ extractors:
       model: { type: str, default: silero_vad }
       hop_s: { type: float, default: 0.02 }
       win_s: { type: float, default: 0.03 }
+      local_files_only: { type: bool, default: true }
       execution_mode: { type: str, default: fallback }
       strict_dependency: { type: bool, default: false }
     outputs:

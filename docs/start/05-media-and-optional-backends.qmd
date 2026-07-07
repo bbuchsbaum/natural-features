@@ -29,6 +29,7 @@ plan.to_recipe()
 | `vision.face` | image or video | MediaPipe | face count and geometry summaries |
 | `vision.clip` | image or video | transformers + torch | frame/image embeddings |
 | `vision.dino` | image or video | transformers + torch | frame/image embeddings |
+| `speech.neural_vad` | audio | silero-vad + torch | speech probability track or energy fallback |
 
 ## Strict execution
 

@@ -12,6 +12,7 @@ from natural_features.core.stimulus import AudioStimulus
 from natural_features.features.speech.asr import whisper_transcribe
 from natural_features.features.speech.emotion import speech_emotion
 from natural_features.features.speech.phonology import ctc_phone_posteriors
+from natural_features.features.speech.vad import neural_vad
 from natural_features.workflows.multiscale_language import extract_multiscale_language
 
 
@@ -129,6 +130,57 @@ def test_speech_emotion_strict_mode_uses_transformers_backend(monkeypatch) -> No
     assert out.coords["feature"] == ["calm", "excited", "sad"]
     assert out.values.shape == (1, 3)
     np.testing.assert_allclose(out.values.sum(axis=1), np.asarray([1.0], dtype=np.float32))
+
+
+def test_neural_vad_strict_mode_uses_silero_backend(monkeypatch) -> None:  # noqa: ANN001
+    class FakeTorchTensor:
+        def __init__(self, array: np.ndarray):
+            self.array = np.asarray(array, dtype=np.float32)
+
+    class FakeProb:
+        def __init__(self, value: float):
+            self.value = float(value)
+
+        def item(self) -> float:
+            return self.value
+
+    class FakeSileroModel:
+        def __init__(self) -> None:
+            self.calls = 0
+            self.reset_count = 0
+
+        def reset_states(self) -> None:
+            self.reset_count += 1
+
+        def __call__(self, chunk: FakeTorchTensor, sr_hz: int) -> FakeProb:
+            assert sr_hz == 8000
+            assert chunk.array.shape == (256,)
+            self.calls += 1
+            return FakeProb(min(0.95, 0.05 + 0.01 * self.calls))
+
+    fake_model = FakeSileroModel()
+    torch = types.ModuleType("torch")
+    torch.from_numpy = lambda array: FakeTorchTensor(array)
+    silero_vad = types.ModuleType("silero_vad")
+    silero_vad.load_silero_vad = lambda: fake_model
+    monkeypatch.setitem(sys.modules, "torch", torch)
+    monkeypatch.setitem(sys.modules, "silero_vad", silero_vad)
+
+    out = neural_vad(
+        _audio(),
+        model="silero_vad",
+        local_files_only=True,
+        execution_mode="strict",
+        strict_dependency=True,
+    )
+
+    assert out.metadata["backend"] == "silero_vad_package"
+    assert out.metadata["fallback_used"] is False
+    assert out.metadata["model_sample_rate_hz"] == 8000
+    assert out.values.shape == (100, 1)
+    assert fake_model.calls > 0
+    assert fake_model.reset_count == 2
+    assert np.logical_and(out.values >= 0.0, out.values <= 1.0).all()
 
 
 def test_multiscale_language_provider_fallback_when_openai_unavailable(monkeypatch) -> None:
