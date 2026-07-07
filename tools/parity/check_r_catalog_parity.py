@@ -17,6 +17,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from natural_features.workflows.extract_features import available_features  # noqa: E402
+from natural_features.workflows._public_contract import load_r_public_feature_contracts  # noqa: E402
 
 
 def _load_manifest(path: Path) -> dict[str, Any]:
@@ -150,8 +151,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--manifest",
         type=Path,
-        default=ROOT / "tools" / "parity" / "r_public_feature_contracts.yaml",
-        help="Path to the parity manifest.",
+        default=None,
+        help="Path to a parity manifest. Defaults to the packaged public feature contract.",
     )
     parser.add_argument(
         "--r-repo",
@@ -162,7 +163,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--no-r-compare", action="store_true", help="Skip live comparison to the R package checkout.")
     args = parser.parse_args(argv)
 
-    manifest = _load_manifest(args.manifest)
+    manifest = _load_manifest(args.manifest) if args.manifest is not None else load_r_public_feature_contracts()
     features = manifest["features"]
     errors = _check_python_contract(features)
     if not args.no_r_compare and args.r_repo.exists():

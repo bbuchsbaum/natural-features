@@ -17,6 +17,7 @@ from natural_features.core.stimulus import (
     TextStimulus,
     VideoStimulus,
 )
+from natural_features.workflows._public_contract import public_feature_ids
 
 _IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".webp"}
 _VIDEO_SUFFIXES = {".mp4", ".mov", ".m4v", ".avi", ".mkv", ".webm"}
@@ -67,57 +68,7 @@ _PREFERRED_FEATURE_IDS = {
     "language.embed.bert_words": "language.bert",
     "language.predict.surprisal": "language.surprisal",
 }
-_PUBLIC_FEATURE_IDS = {
-    "audio.ast",
-    "audio.clap",
-    "audio.egemaps",
-    "audio.gammatone",
-    "audio.mel",
-    "audio.mfcc",
-    "audio.pitch",
-    "audio.prosody",
-    "audio.resample",
-    "audio.rms",
-    "audio.spectral_stats",
-    "audio.trim",
-    "events.align",
-    "features.hrf",
-    "features.lag",
-    "features.resample",
-    "image.ocr",
-    "language.bert",
-    "language.discourse",
-    "language.hidden_states",
-    "language.surface",
-    "language.surprisal",
-    "language.syntax",
-    "speech.articulatory",
-    "speech.ctc",
-    "speech.diarization",
-    "speech.emotion",
-    "speech.hubert",
-    "speech.neural_vad",
-    "speech.phonemes",
-    "speech.vad",
-    "speech.wavlm",
-    "speech.words",
-    "text.tokenize",
-    "video.audio.extract",
-    "video.frames.sample",
-    "video.ocr",
-    "video.trim",
-    "vision.clip",
-    "vision.dct",
-    "vision.dino",
-    "vision.energy",
-    "vision.face",
-    "vision.frame_diffs",
-    "vision.motion",
-    "vision.motion_energy",
-    "vision.optical_flow",
-    "vision.semantic_views",
-    "vision.social_proxies",
-}
+_PUBLIC_FEATURE_IDS = public_feature_ids()
 
 
 @dataclass(frozen=True)

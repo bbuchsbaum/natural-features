@@ -3,10 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 import subprocess
 import sys
-from typing import Any
 
 import numpy as np
-import yaml
 
 from natural_features.core.feature_types import EventSeries, FeatureSeries, TrackSeries
 from natural_features.core.registry import Registry
@@ -25,6 +23,7 @@ from natural_features.features.speech.vad import neural_vad, speech_vad
 from natural_features.features.vision.dct import vision_dct_features
 from natural_features.features.vision.motion import optical_flow
 from natural_features.features.vision.semantic import vision_semantic_views
+from natural_features.workflows._public_contract import load_r_public_feature_contracts, public_feature_ids
 from natural_features.workflows.extract_features import available_features, extract_features
 
 
@@ -46,19 +45,8 @@ GAP_FEATURE_IDS = {
 }
 
 ROOT = Path(__file__).resolve().parents[2]
-PARITY_MANIFEST_PATH = ROOT / "tools" / "parity" / "r_public_feature_contracts.yaml"
-
-
-def _load_parity_features() -> dict[str, dict[str, Any]]:
-    payload = yaml.safe_load(PARITY_MANIFEST_PATH.read_text(encoding="utf-8"))
-    assert isinstance(payload, dict)
-    features = payload["features"]
-    assert isinstance(features, dict)
-    return features
-
-
-PARITY_FEATURES = _load_parity_features()
-R_PUBLIC_FEATURE_IDS = set(PARITY_FEATURES)
+PARITY_FEATURES = load_r_public_feature_contracts()["features"]
+R_PUBLIC_FEATURE_IDS = set(public_feature_ids())
 
 
 def _manifest_set(feature_id: str, key: str) -> set[str]:
@@ -110,6 +98,12 @@ def test_r_public_feature_ids_are_registered() -> None:
     registered = {spec.name for spec in registry.list()}
 
     assert R_PUBLIC_FEATURE_IDS <= registered
+
+
+def test_packaged_manifest_defines_public_catalog() -> None:
+    public_ids = {entry.feature_id for entry in available_features(budget="all")}
+
+    assert public_ids == R_PUBLIC_FEATURE_IDS
 
 
 def test_r_public_feature_bundles_match_catalog_contract() -> None:
