@@ -738,7 +738,10 @@ extractors:
     infer_bundles: false
     tags: [speech, diarization, fallback]
     params:
+      model: { type: str, default: pyannote/speaker-diarization-community-1 }
       hop_s: { type: float, default: 0.02 }
+      local_files_only: { type: bool, default: true }
+      device: { type: str, default: cpu }
       execution_mode: { type: str, default: fallback }
       strict_dependency: { type: bool, default: false }
     outputs:

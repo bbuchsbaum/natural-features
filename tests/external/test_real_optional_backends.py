@@ -5,11 +5,12 @@ import os
 import numpy as np
 import pytest
 
-from natural_features.core.feature_types import EventSeries, FeatureSeries
+from natural_features.core.feature_types import EventSeries, FeatureSeries, TrackSeries
 from natural_features.core.stimulus import AudioStimulus, ImageStimulus, VideoStimulus
 from natural_features.features.audio.neural import audio_ast_embeddings, audio_clap_embeddings
 from natural_features.features.preprocess import image_ocr, text_tokenize
 from natural_features.features.language.syntax import syntactic_features
+from natural_features.features.speech.diarization import speaker_diarization
 from natural_features.features.speech.emotion import speech_emotion
 from natural_features.features.speech.ssl import hubert_hidden_states, wavlm_hidden_states
 from natural_features.features.speech.vad import neural_vad
@@ -162,6 +163,28 @@ def test_real_neural_vad_backend_contract() -> None:
     _assert_real_feature_series(out, feature_id="speech.neural_vad")
     assert out.values.shape[1] == 1
     assert out.metadata["backend"].startswith("silero")
+
+
+def test_real_pyannote_diarization_backend_local_pipeline_contract() -> None:
+    pytest.importorskip("torch")
+    pytest.importorskip("pyannote.audio")
+    model = _env_required("NF_TEST_PYANNOTE_DIARIZATION_MODEL")
+
+    out = speaker_diarization(
+        _audio(),
+        model=model,
+        local_files_only=True,
+        execution_mode="strict",
+        strict_dependency=True,
+    )
+
+    assert isinstance(out, TrackSeries)
+    assert out.metadata["extractor_name"] == "speech.diarization"
+    assert out.metadata["fallback_used"] is False
+    assert out.metadata["backend"] == "pyannote"
+    assert out.values.shape[0] == len(out.times_s)
+    assert out.values.ndim == 3
+    assert out.values.shape[2] == 1
 
 
 def test_real_clip_backend_local_model_contract() -> None:

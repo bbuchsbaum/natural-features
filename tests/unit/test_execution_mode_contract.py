@@ -10,6 +10,7 @@ import pytest
 from natural_features.core.execution import resolve_execution_mode
 from natural_features.core.stimulus import AudioStimulus
 from natural_features.features.speech.asr import whisper_transcribe
+from natural_features.features.speech.diarization import speaker_diarization
 from natural_features.features.speech.emotion import speech_emotion
 from natural_features.features.speech.phonology import ctc_phone_posteriors
 from natural_features.features.speech.vad import neural_vad
@@ -181,6 +182,75 @@ def test_neural_vad_strict_mode_uses_silero_backend(monkeypatch) -> None:  # noq
     assert fake_model.calls > 0
     assert fake_model.reset_count == 2
     assert np.logical_and(out.values >= 0.0, out.values <= 1.0).all()
+
+
+def test_speaker_diarization_strict_mode_uses_pyannote_backend(monkeypatch, tmp_path) -> None:  # noqa: ANN001
+    class FakeTorchTensor:
+        def __init__(self, array: np.ndarray):
+            self.array = np.asarray(array, dtype=np.float32)
+
+    class FakeSegment:
+        def __init__(self, start: float, end: float):
+            self.start = start
+            self.end = end
+
+    class FakeAnnotation:
+        def itertracks(self, *, yield_label: bool):  # noqa: ANN202
+            assert yield_label is True
+            yield FakeSegment(0.0, 1.0), "track_0", "SPEAKER_00"
+            yield FakeSegment(1.0, 2.0), "track_1", "SPEAKER_01"
+
+    class FakePipeline:
+        loaded_from: str | None = None
+        moved_to: object | None = None
+
+        @classmethod
+        def from_pretrained(cls, model: str):  # noqa: ANN102, ANN202
+            cls.loaded_from = model
+            return cls()
+
+        def to(self, device: object) -> None:
+            self.__class__.moved_to = device
+
+        def __call__(self, audio: dict[str, object]) -> object:
+            waveform = audio["waveform"]
+            assert isinstance(waveform, FakeTorchTensor)
+            assert waveform.array.shape == (1, 16000)
+            assert audio["sample_rate"] == 8000
+            return SimpleNamespace(speaker_diarization=FakeAnnotation())
+
+    config = tmp_path / "config.yaml"
+    config.write_text("pipeline:\n  name: fake\n", encoding="utf-8")
+    torch = types.ModuleType("torch")
+    torch.from_numpy = lambda array: FakeTorchTensor(array)
+    torch.device = lambda name: f"device:{name}"
+    pyannote_audio = types.ModuleType("pyannote.audio")
+    pyannote_audio.Pipeline = FakePipeline
+    pyannote = types.ModuleType("pyannote")
+    pyannote.audio = pyannote_audio
+    monkeypatch.setitem(sys.modules, "torch", torch)
+    monkeypatch.setitem(sys.modules, "pyannote", pyannote)
+    monkeypatch.setitem(sys.modules, "pyannote.audio", pyannote_audio)
+
+    out = speaker_diarization(
+        _audio(),
+        model=str(config),
+        hop_s=0.5,
+        local_files_only=True,
+        device="cpu",
+        execution_mode="strict",
+        strict_dependency=True,
+    )
+
+    assert FakePipeline.loaded_from == str(config)
+    assert FakePipeline.moved_to == "device:cpu"
+    assert out.metadata["backend"] == "pyannote"
+    assert out.metadata["fallback_used"] is False
+    assert out.metadata["turn_count"] == 2
+    assert out.track_id.tolist() == ["SPEAKER_00", "SPEAKER_01"]
+    assert out.coords["feature"] == ["speaker_activity"]
+    assert out.values.shape == (4, 2, 1)
+    np.testing.assert_array_equal(out.values[:, :, 0], np.asarray([[1, 0], [1, 0], [0, 1], [0, 1]]))
 
 
 def test_multiscale_language_provider_fallback_when_openai_unavailable(monkeypatch) -> None:
