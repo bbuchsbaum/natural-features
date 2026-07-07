@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import argparse
+import csv
 from datetime import datetime, timezone
 import json
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 from typing import Any
 
 import numpy as np
@@ -24,6 +26,7 @@ from natural_features.features.speech.formats import read_ctm, write_ctm, write_
 from natural_features.features.speech.validation import validate_alignment_backends
 from natural_features.storage.catalog import Catalog
 from natural_features.util.io import atomic_numpy_save, atomic_write_json
+from natural_features.workflows.extract_features import FeatureCatalogEntry, available_features
 import yaml
 
 
@@ -32,6 +35,16 @@ def _build_parser() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest="cmd", required=True)
 
     sub.add_parser("list", help="List registered extractors")
+
+    feat = sub.add_parser("features", help="List high-level feature catalogue entries")
+    feat.add_argument("--modality", action="append", default=[], help="Filter by modality (repeatable)")
+    feat.add_argument("--budget", default="default", help="Budget: default|allow_python|all")
+    feat.add_argument("--bundle", default=None, help="Filter by bundle name")
+    feat.add_argument("--tag", action="append", default=[], help="Require tag (repeatable)")
+    feat.add_argument("--include-internal", action="store_true", help="Include internal and legacy extractor IDs")
+    feat.add_argument("--include-placeholders", action="store_true", help="Include placeholder catalogue entries")
+    feat.add_argument("--json", action="store_true", help="Emit JSON output")
+    feat.add_argument("--csv", action="store_true", help="Emit CSV output")
 
     d = sub.add_parser("describe", help="Describe an extractor")
     d.add_argument("name")
@@ -142,6 +155,72 @@ def _load_inputs(args: argparse.Namespace) -> dict[str, Any]:
 def _cmd_list(reg: Registry) -> int:
     for spec in reg.list():
         print(f"{spec.name}\tmodalities={','.join(spec.modalities)}\trequires={','.join(spec.requires)}")
+    return 0
+
+
+def _feature_entry_record(entry: FeatureCatalogEntry) -> dict[str, Any]:
+    return {
+        "feature_id": entry.feature_id,
+        "label": entry.label,
+        "modalities": list(entry.modalities),
+        "output_schema": entry.output_schema,
+        "dependency_class": entry.dependency_class,
+        "cost_class": entry.cost_class,
+        "requires": list(entry.requires),
+        "requires_opt_in": bool(entry.requires_opt_in),
+        "is_public": bool(entry.is_public),
+        "bundles": list(entry.bundles),
+        "tags": list(entry.tags),
+        "default_params": dict(entry.default_params),
+    }
+
+
+def _cmd_features(args: argparse.Namespace) -> int:
+    entries = available_features(
+        modality=args.modality or None,
+        budget=args.budget,
+        bundle=args.bundle,
+        tags=args.tag or None,
+        include_placeholders=bool(args.include_placeholders),
+        public_only=not bool(args.include_internal),
+    )
+    records = [_feature_entry_record(entry) for entry in entries]
+    if args.json:
+        print(json.dumps({"features": records}, indent=2, sort_keys=True))
+        return 0
+    columns = [
+        "feature_id",
+        "modalities",
+        "output_schema",
+        "dependency_class",
+        "cost_class",
+        "requires_opt_in",
+        "is_public",
+        "bundles",
+        "requires",
+    ]
+    rows = [
+        {
+            "feature_id": row["feature_id"],
+            "modalities": ",".join(row["modalities"]),
+            "output_schema": row["output_schema"],
+            "dependency_class": row["dependency_class"],
+            "cost_class": row["cost_class"],
+            "requires_opt_in": str(row["requires_opt_in"]).lower(),
+            "is_public": str(row["is_public"]).lower(),
+            "bundles": ",".join(row["bundles"]),
+            "requires": ",".join(row["requires"]),
+        }
+        for row in records
+    ]
+    if args.csv:
+        writer = csv.DictWriter(sys.stdout, fieldnames=columns)
+        writer.writeheader()
+        writer.writerows(rows)
+        return 0
+    print("\t".join(columns))
+    for row in rows:
+        print("\t".join(str(row[col]) for col in columns))
     return 0
 
 
@@ -529,6 +608,8 @@ def main(argv: list[str] | None = None) -> int:
     reg = Registry.with_builtin_specs()
     if args.cmd == "list":
         return _cmd_list(reg)
+    if args.cmd == "features":
+        return _cmd_features(args)
     if args.cmd == "describe":
         return _cmd_describe(reg, args.name)
     if args.cmd == "validate":

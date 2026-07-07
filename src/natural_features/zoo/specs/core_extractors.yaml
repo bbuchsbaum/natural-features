@@ -754,7 +754,9 @@ extractors:
     infer_bundles: false
     tags: [speech, affect, fallback]
     params:
+      model: { type: str, default: superb/wav2vec2-base-superb-er }
       hop_s: { type: float, default: 0.02 }
+      local_files_only: { type: bool, default: true }
       execution_mode: { type: str, default: fallback }
       strict_dependency: { type: bool, default: false }
     outputs:

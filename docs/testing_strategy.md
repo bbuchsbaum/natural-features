@@ -75,6 +75,7 @@ NF_TEST_AST_MODEL=/path-or-local-id/to/ast \
 NF_TEST_CLAP_MODEL=/path-or-local-id/to/clap \
 NF_TEST_HUBERT_MODEL=/path-or-local-id/to/hubert \
 NF_TEST_WAVLM_MODEL=/path-or-local-id/to/wavlm \
+NF_TEST_SPEECH_EMOTION_MODEL=/path-or-local-id/to/emotion \
 NF_TEST_CLIP_MODEL=/path-or-local-id/to/clip \
 NF_TEST_DINO_MODEL=/path-or-local-id/to/dino \
 NF_TEST_SPACY_MODEL=en_core_web_sm \

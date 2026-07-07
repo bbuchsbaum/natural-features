@@ -139,7 +139,7 @@ features:
     expected_python_schema: "FeatureSeries/v1"
     bundles: []
     required_default_keys: ["execution_mode"]
-    allowed_python_default_extras: ["hop_s", "strict_dependency"]
+    allowed_python_default_extras: ["hop_s", "local_files_only", "model", "strict_dependency"]
   speech.hubert:
     expected_python_schema: "FeatureSeries/v1"
     bundles: []

@@ -24,6 +24,14 @@ rows = available_features(modality="text")
 ]
 ```
 
+The same catalogue is available from the command line:
+
+```bash
+nf features --modality text --json
+nf features --modality audio --budget all --csv
+nf features --modality audio --budget all --include-internal
+```
+
 ## Plan rows
 
 Planning resolves a requested feature to the extractor name, input token, default parameters, and output schema. Nothing has run yet.

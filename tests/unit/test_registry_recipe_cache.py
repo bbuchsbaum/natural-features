@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import csv
+import json
 from pathlib import Path
 import subprocess
+from io import StringIO
 import wave
 
 import numpy as np
@@ -320,6 +323,27 @@ def test_cli_list_describe_and_extract(tmp_path, capsys) -> None:
     payload = capsys.readouterr().out
     assert "\"artifacts\"" in payload
     assert (out_dir / "catalog.sqlite3").exists()
+
+
+def test_cli_features_exports_public_catalog_text_json_and_csv(capsys) -> None:
+    assert cli_main(["features", "--modality", "audio", "--budget", "all"]) == 0
+    listed = capsys.readouterr().out
+    assert "feature_id\tmodalities\toutput_schema" in listed
+    assert "audio.rms" in listed
+    assert "audio.lowlevel.rms" not in listed
+
+    assert cli_main(["features", "--modality", "audio", "--budget", "all", "--include-internal", "--csv"]) == 0
+    csv_text = capsys.readouterr().out
+    rows = list(csv.DictReader(StringIO(csv_text)))
+    ids = {row["feature_id"] for row in rows}
+    assert "audio.rms" in ids
+    assert "audio.lowlevel.rms" in ids
+    assert next(row for row in rows if row["feature_id"] == "audio.lowlevel.rms")["is_public"] == "false"
+
+    assert cli_main(["features", "--modality", "text", "--json"]) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert [row["feature_id"] for row in payload["features"]] == ["text.tokenize"]
+    assert payload["features"][0]["is_public"] is True
 
 
 def test_cli_validate_and_presets(capsys) -> None:

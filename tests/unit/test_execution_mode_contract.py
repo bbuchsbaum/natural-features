@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+import sys
+import types
+from types import SimpleNamespace
+
 import numpy as np
 import pytest
 
 from natural_features.core.execution import resolve_execution_mode
 from natural_features.core.stimulus import AudioStimulus
 from natural_features.features.speech.asr import whisper_transcribe
+from natural_features.features.speech.emotion import speech_emotion
 from natural_features.features.speech.phonology import ctc_phone_posteriors
 from natural_features.workflows.multiscale_language import extract_multiscale_language
 
@@ -55,6 +60,75 @@ def test_ctc_posteriors_strict_mode_fails_loudly() -> None:
             local_files_only=True,
             execution_mode="strict",
         )
+
+
+def test_speech_emotion_strict_mode_uses_transformers_backend(monkeypatch) -> None:  # noqa: ANN001
+    class FakeTensor:
+        def __init__(self, array: np.ndarray):
+            self.array = np.asarray(array, dtype=np.float32)
+
+        def detach(self) -> "FakeTensor":
+            return self
+
+        def cpu(self) -> "FakeTensor":
+            return self
+
+        def numpy(self) -> np.ndarray:
+            return self.array
+
+    class NoGrad:
+        def __enter__(self) -> None:
+            return None
+
+        def __exit__(self, *_exc: object) -> None:
+            return None
+
+    class FakeFeatureExtractor:
+        @classmethod
+        def from_pretrained(cls, model: str, local_files_only: bool):  # noqa: ANN102, ANN202
+            assert model == "fake-emotion"
+            assert local_files_only is True
+            return cls()
+
+        def __call__(self, wav: np.ndarray, sampling_rate: int, return_tensors: str) -> dict[str, np.ndarray]:
+            assert wav.ndim == 1
+            assert sampling_rate == 8000
+            assert return_tensors == "pt"
+            return {"input_values": wav[None, :]}
+
+    class FakeModel:
+        config = SimpleNamespace(id2label={0: "calm", 1: "excited", 2: "sad"})
+
+        @classmethod
+        def from_pretrained(cls, model: str, local_files_only: bool):  # noqa: ANN102, ANN202
+            assert model == "fake-emotion"
+            assert local_files_only is True
+            return cls()
+
+        def __call__(self, **_inputs: object) -> object:
+            return SimpleNamespace(logits=FakeTensor(np.asarray([[0.0, 2.0, -1.0]], dtype=np.float32)))
+
+    torch = types.ModuleType("torch")
+    torch.no_grad = lambda: NoGrad()
+    transformers = types.ModuleType("transformers")
+    transformers.AutoFeatureExtractor = FakeFeatureExtractor
+    transformers.AutoModelForAudioClassification = FakeModel
+    monkeypatch.setitem(sys.modules, "torch", torch)
+    monkeypatch.setitem(sys.modules, "transformers", transformers)
+
+    out = speech_emotion(
+        _audio(),
+        model="fake-emotion",
+        local_files_only=True,
+        execution_mode="strict",
+        strict_dependency=True,
+    )
+
+    assert out.metadata["backend"] == "transformers_audio_classification"
+    assert out.metadata["fallback_used"] is False
+    assert out.coords["feature"] == ["calm", "excited", "sad"]
+    assert out.values.shape == (1, 3)
+    np.testing.assert_allclose(out.values.sum(axis=1), np.asarray([1.0], dtype=np.float32))
 
 
 def test_multiscale_language_provider_fallback_when_openai_unavailable(monkeypatch) -> None:
