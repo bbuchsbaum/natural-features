@@ -4,59 +4,46 @@ subtitle: "A guided route through inputs, feature families, outputs, and downstr
 sidebar: tour
 ---
 
-This tour is the first pass through `natural_features`: what you can give it, what you can ask for, and what the library returns.
+This tour is the first pass through `natural_features`: start with a stimulus, choose feature IDs from the catalogue, inspect a plan, extract typed temporal objects, and align them to timelines.
 
-## One route through the library
+## The route
 
-::: {.tour-route}
-::: {.tour-step}
-#### 1. Bring in a stimulus
-Use text strings, paths, arrays, or typed stimulus wrappers such as `TextStimulus`, `AudioStimulus`, `ImageStimulus`, `VideoStimulus`, and `MultiModalStimulus`.
+::: {.tour-path}
+::: {.tour-path-step}
+### 1. Start with the material
+
+A stimulus is the thing whose time axis you want to preserve: text, audio, an image, a video, or an object you have already extracted. Plain strings and paths are accepted for common cases; wrappers such as `TextStimulus`, `AudioStimulus`, `ImageStimulus`, `VideoStimulus`, and `MultiModalStimulus` make the contract explicit.
 :::
 
-::: {.tour-step}
-#### 2. Inspect the catalogue
-`available_features()` reports feature IDs, modalities, output schemas, dependency classes, tags, bundles, and opt-in status.
+::: {.tour-path-step}
+### 2. Pick feature IDs
+
+`available_features()` is the inventory. It tells you which feature IDs exist, what kind of input they expect, which output schema they return, and whether they need an opt-in budget.
 :::
 
-::: {.tour-step}
-#### 3. Plan or extract
-`plan_features()` resolves inputs and parameters without running extractors. `extract_features()` executes the plan and returns typed feature objects.
+::: {.tour-path-step}
+### 3. Plan before execution
+
+`plan_features()` resolves the route without running the extractors. Use it when media, speech, embeddings, or optional runtimes are involved.
 :::
 
-::: {.tour-step}
-#### 4. Export or query
-Convert outputs to tables, merge feature tables, run recipe DAGs, batch audio files, or query run-aware windows for fMRI models.
-:::
-:::
+::: {.tour-path-step}
+### 4. Extract, align, then export
 
-## What you can bring in
-
-::: {.tour-grid}
-::: {.tour-card}
-#### Text and transcripts
-Plain text can become word events. Existing `EventSeries` objects can feed alignment, language, phonology, and table export workflows.
-:::
-
-::: {.tour-card}
-#### Audio
-WAV files and `AudioStimulus` objects support acoustic summaries, speech routes, voice activity, phonology, and batch extraction.
-:::
-
-::: {.tour-card}
-#### Images and video
-Images and videos can be routed to OCR, low-level visual descriptors, face signals, neural embeddings, frame sampling, and audio extraction.
-:::
-
-::: {.tour-card}
-#### Feature objects
-`FeatureSeries`, `EventSeries`, and `TrackSeries` can be validated, converted to tables, merged, resampled, lagged, convolved, and queried by time.
+`extract_features()` returns typed objects keyed by feature ID. `align_to()` records how those outputs map to word events, video frames, or another timeline before you export rows or query run-aware windows.
 :::
 :::
 
-## What you can ask for today
+## Inputs decide the first contract
 
-The grid below is generated from the installed Python package when the docs render. It uses `budget="allow_python"` so optional Python-backed routes are visible, while placeholder specs remain hidden.
+- **Text and transcripts** become word events, then can feed language, phonology, alignment, and table-export workflows.
+- **Audio** supports dense acoustic summaries, speech routes, voice activity, phonology, and batch extraction.
+- **Images and video** can be routed to OCR, low-level visual descriptors, face signals, neural embeddings, frame sampling, and audio extraction.
+- **Feature objects** such as `FeatureSeries`, `EventSeries`, and `TrackSeries` can be validated, converted to tables, merged, resampled, lagged, convolved, and queried by time.
+
+## Feature families
+
+A feature ID has the form `family.name`. The family points to the input domain; the full ID names the extractor. The list below is generated from the installed package when the docs render, using `budget="allow_python"` so optional Python-backed routes are visible while placeholder specs remain hidden.
 
 ```{python}
 #| echo: false
@@ -65,43 +52,43 @@ from collections import defaultdict
 from natural_features.workflows import available_features
 
 family_notes = {
-    "affect": "Audio and visual proxy features for social or affective structure.",
-    "audio": "RMS, mel, MFCC, spectral summaries, resampling, trimming, and optional openSMILE LLDs.",
-    "events": "Event alignment utilities.",
-    "features": "Resampling, HRF convolution, and lag expansion for FeatureSeries objects.",
+    "affect": "Social or affective proxy features from audio or image-like inputs.",
+    "audio": "Dense sound features such as energy, spectra, pitch, and embeddings.",
+    "events": "Utilities for aligning or adjusting interval-like annotations.",
+    "features": "Transforms for existing FeatureSeries objects, including resampling, HRF convolution, and lag expansion.",
     "image": "OCR routes for still images.",
-    "language": "Surface controls, embedding hooks, BERT-style word embeddings, and surprisal routes.",
-    "meta": "Scene boundary summaries.",
-    "speech": "VAD, ASR word events, alignment, phonology, articulatory features, posteriorgrams, and SSL embeddings.",
-    "text": "Word event tokenization.",
+    "language": "Word-aligned controls, syntax, embeddings, and surprisal routes.",
+    "meta": "Scene-level summaries.",
+    "speech": "Voice activity, ASR word events, phonology, articulatory features, posteriorgrams, and SSL embeddings.",
+    "text": "Tokenization into word events.",
     "video": "Frame sampling, trimming, OCR, and audio extraction.",
-    "vision": "Frame energy, motion, face signals, CLIP/DINO embeddings, and motion-energy routes.",
+    "vision": "Frame energy, motion, face signals, image embeddings, and motion-energy routes.",
 }
 
 groups = defaultdict(list)
 for entry in available_features(budget="allow_python"):
     groups[entry.feature_id.split(".", 1)[0]].append(entry)
 
-print("::: {.tour-family-grid}")
+print("::: {.tour-family-list}")
 for family in sorted(groups):
     entries = sorted(groups[family], key=lambda item: item.feature_id)
-    shown = ", ".join(f"`{entry.feature_id}`" for entry in entries[:7])
-    if len(entries) > 7:
-        shown += f", +{len(entries) - 7} more"
+    examples = ", ".join(entry.feature_id for entry in entries[:5])
+    if len(entries) > 5:
+        examples += f", +{len(entries) - 5} more"
+    schemas = ", ".join(sorted({entry.output_schema for entry in entries}))
     opt_in = sum(1 for entry in entries if entry.requires_opt_in)
     feature_word = "feature ID" if len(entries) == 1 else "feature IDs"
     opt_phrase = "1 requires opt-in" if opt_in == 1 else f"{opt_in} require opt-in"
     note = family_notes.get(family, "Registered extractor family.")
     print(f"""
-::: {{.tour-family}}
+::: {{.tour-family-row}}
 #### {family}
+
 {note}
 
-[{len(entries)} {feature_word}; {opt_phrase}.]{{.tour-meta}}
+Returns: {schemas}. {len(entries)} {feature_word}; {opt_phrase}.
 
-::: {{.tour-feature-list}}
-{shown}
-:::
+Examples: {examples}
 :::
 """)
 print(":::")
@@ -109,7 +96,7 @@ print(":::")
 
 ## First runnable path
 
-Start with text because it needs no optional media backend. `extract_features()` returns an `ExtractFeaturesResult`; the feature you requested is a typed `EventSeries`.
+Start with text because it needs no optional media backend. `extract_features()` returns an `ExtractFeaturesResult`; requested outputs are stored under feature IDs, and one output can become the timeline for another.
 
 ```{python}
 #| echo: false
@@ -119,48 +106,32 @@ from natural_features.workflows import extract_features
 
 result = extract_features(
     "The scene opens on a quiet room.",
-    features=["text.tokenize"],
+    features=["text.tokenize", "language.surface"],
 )
 words = result.features["text.tokenize"]
+aligned = result.align_to("text.tokenize", features="language.surface")
 labels = words.label.tolist()
 
-print(f"""
-::: {{.quick-result .tour-result}}
-::: {{.quick-stat}}
-[request]{{.quick-label}}
-
-`text.tokenize`
-:::
-::: {{.quick-stat}}
-[object]{{.quick-label}}
-
-`{type(words).__name__}` - `{words.schema}`
-:::
-::: {{.quick-stat}}
-[events]{{.quick-label}}
-
-{len(words)} word events
-:::
-::: {{.quick-words}}
-[labels]{{.quick-label}}
-
-{", ".join(f"`{label}`" for label in labels)}
-:::
-:::
-""")
+print("| Question | Answer |")
+print("|---|---|")
+print("| Requested features | text.tokenize, language.surface |")
+print(f"| Returned object | {type(words).__name__} with schema {words.schema} |")
+print(f"| Event count | {len(words)} word events |")
+print(f"| Alignment target | {aligned.target.name} ({aligned.target.kind}) |")
+print(f"| Labels | {', '.join(labels)} |")
 
 table = as_event_table(words).loc[:, ["onset_s", "offset_s", "label", "schema"]]
-print("| onset_s | offset_s | label | schema |")
+print("\n| onset_s | offset_s | label | schema |")
 print("|---:|---:|---|---|")
 for row in table.itertuples(index=False):
-    print(f"| {row.onset_s:g} | {row.offset_s:g} | `{row.label}` | `{row.schema}` |")
+    print(f"| {row.onset_s:g} | {row.offset_s:g} | {row.label} | {row.schema} |")
 ```
 
-The object keeps event timing, labels, schema, and provenance metadata together. Table export is a view of the same object, not a separate representation to maintain by hand.
+The distinction matters: the result container is keyed by feature ID, while each value is a typed temporal object. Alignment and table export are views of those objects, not separate representations to maintain by hand.
 
 ## Plan media before running it
 
-For video, image, speech, and neural embedding routes, planning is often the first useful operation. It tells you what would run and which features require an opt-in budget.
+For video, image, speech, and embedding routes, planning is often the first useful operation. It answers three questions before any backend runs: what input token is required, what output schema will be produced, and whether the route needs an opt-in budget.
 
 ```{python}
 #| echo: false
@@ -173,14 +144,14 @@ plan = plan_features(
     budget="allow_python",
 )
 
-print("| feature | input | output | opt-in |")
-print("|---|---|---|---|")
+print("::: {.tour-plan-list}")
 for row in plan.rows:
     opt_in = "yes" if row.requires_opt_in else "no"
     print(
-        f"| `{row.feature_id}` | `{row.input_token}` | "
-        f"`{row.output_schema}` | {opt_in} |"
+        f"- **{row.feature_id}**: input {row.input_token}; "
+        f"output {row.output_schema}; opt-in {opt_in}."
     )
+print(":::")
 ```
 
 The same plan can become a recipe dictionary, which lets you inspect or store the route before execution.
@@ -195,45 +166,18 @@ print(yaml.safe_dump(plan.to_recipe(), sort_keys=False).strip())
 print("```")
 ```
 
-## What you can do with the outputs
+## What outputs are for
 
-::: {.tour-grid}
-::: {.tour-card}
-#### Keep temporal objects typed
-Use `FeatureSeries` for sampled arrays, `EventSeries` for labeled intervals, and `TrackSeries` for tracked objects with framewise coordinates.
-:::
+Use the output type to choose the next operation:
 
-::: {.tour-card}
-#### Move into tables
-Use `as_feature_table()`, `as_event_table()`, `as_track_table()`, `as_temporal_table()`, and `merge_feature_tables()` when a modeling or QC step wants tabular data.
-:::
-
-::: {.tour-card}
-#### Compose recipes
-Use recipe specs to express multi-step feature routes, preview them as DAGs, and run them through the local execution engine.
-:::
-
-::: {.tour-card}
-#### Query fMRI windows
-Use `RunGrid`, `ExperimentGrid`, and window queries to collect features by run, TR, and time window without losing stimulus provenance.
-:::
-:::
+- `FeatureSeries` holds sampled arrays with a time axis; resample, lag, convolve, merge, or export it.
+- `EventSeries` holds labeled intervals; align events, inspect labels, or turn them into model tables.
+- `TrackSeries` holds framewise tracked objects; export coordinates or query them by time.
+- `Timeline` and `FeatureAlignment` record mappings between feature outputs and word, event, frame, or custom timelines.
+- `RunGrid` and `ExperimentGrid` keep feature queries tied to runs, TRs, windows, and stimulus provenance.
 
 ## Where to go next
 
-::: {.tour-next-grid}
-::: {.tour-next}
-#### Build a first object
-[Start with the five-page path](../start/index.qmd): wrap a stimulus, list features, extract, export, and handle optional media backends.
-:::
-
-::: {.tour-next}
-#### Read the contracts
-[Concepts](../concepts/index.qmd) explains feature objects, planning, execution modes, recipe DAGs, table interchange, and fMRI windows.
-:::
-
-::: {.tour-next}
-#### Copy a task recipe
-[Cookbook](../cookbook/index.qmd) contains runnable examples for text tokenization, media planning, audio batches, table export, and fMRI window queries.
-:::
-:::
+- [Start](../start/index.qmd) walks through the five-page path: wrap a stimulus, list features, extract, export, and handle optional media backends.
+- [Concepts](../concepts/index.qmd) explains feature objects, the unified workflow, planning, execution modes, recipe DAGs, table interchange, and fMRI windows.
+- [Cookbook](../cookbook/index.qmd) gives runnable task recipes, including text tokenization, timeline alignment, media planning, audio batches, table export, and fMRI window queries.

@@ -1,0 +1,36 @@
+# extract_video_text { #natural_features.extract_video_text }
+
+```python
+extract_video_text(
+    video,
+    *,
+    sources=('speech',),
+    transcript_text=None,
+    align='auto',
+    language='auto',
+    asr_model='small',
+    chunked=False,
+    chunk_window_s=30.0,
+    chunk_overlap_s=1.0,
+    audio_sr_hz=16000,
+    start_s=0.0,
+    duration_s=None,
+    video_fps=None,
+    frame_policy='overlap',
+    execution_mode=None,
+    strict_dependency=None,
+    ffmpeg_path='ffmpeg',
+    ffprobe_path='ffprobe',
+    align_backend=None,
+    mfa_dictionary_path=None,
+    mfa_acoustic_model_path=None,
+    mfa_timeout_s=300.0,
+    mfa_tmp_dir=None,
+    mfa_extra_args=None,
+)
+```
+
+Extract speech text from a video and align word events to frame indices.
+
+The workflow currently covers speech text. OCR/object-text can be added as
+additional sources without changing the word/frame result contract.

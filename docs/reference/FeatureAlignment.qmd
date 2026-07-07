@@ -1,0 +1,17 @@
+# FeatureAlignment { #natural_features.FeatureAlignment }
+
+```python
+FeatureAlignment(
+    source_name,
+    source,
+    source_kind,
+    source_schema,
+    source_onset_s,
+    source_offset_s,
+    target,
+    mapping,
+    policy='overlap',
+)
+```
+
+Alignment of one temporal feature output to a target timeline.

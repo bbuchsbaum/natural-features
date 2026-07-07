@@ -8,6 +8,9 @@ Current recipes:
 
 - [Tokenize text into word events](text-tokenization.qmd)
 - [Plan media features without running them](media-feature-planning.qmd)
+- [Align features to a timeline](timeline-alignment.qmd)
+- [Five feature types, five concepts](five-feature-concepts.qmd)
+- [Inspect and plot feature types](feature-type-gallery.qmd)
 - [Extract audio features from WAV files](audio-batch-from-wav.qmd)
 - [Preview a recipe DAG](recipe-dag-preview.qmd)
 - [Export events to a table](event-table-export.qmd)

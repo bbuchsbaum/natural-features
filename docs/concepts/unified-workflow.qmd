@@ -1,0 +1,69 @@
+---
+title: "Unified Workflow"
+subtitle: "`extract_features()` -> `Timeline` -> `FeatureAlignment` -> tables."
+sidebar: concepts
+---
+
+## What it is
+
+The main workflow starts with a stimulus, extracts typed feature objects, and then aligns those objects to an explicit timeline. The same route covers word events, dense audio features, framewise visual features, and downstream tables.
+
+The core objects are:
+
+- `ExtractFeaturesResult`: the result bundle returned by `extract_features()`.
+- `Timeline`: a named temporal target such as word events or video frames.
+- `FeatureAlignment`: the row-wise mapping from one feature object to a target timeline.
+- `AlignedFeatureSet`: a bundle of alignments for one target timeline.
+
+## Invariants
+
+- `extract_features()` returns feature outputs keyed by feature ID.
+- `ExtractFeaturesResult.align_to()` accepts a named feature output, a built-in timeline such as `video_frames`, or an explicit `Timeline`.
+- Alignment does not mutate the original `FeatureSeries`, `EventSeries`, or `TrackSeries`.
+- `FeatureAlignment.to_rows()` records source rows, source times, target indices, target times, target kind, and the mapping policy.
+- `AlignedFeatureSet.annotated_features()` only annotates event outputs; dense features keep their array contract.
+
+## One route, two feature types
+
+```{python}
+from natural_features.workflows import extract_features
+
+result = extract_features(
+    "one two two",
+    features=["text.tokenize", "language.surface"],
+)
+
+aligned = result.align_to(
+    "text.tokenize",
+    features="language.surface",
+)
+
+aligned.to_dataframe().loc[
+    :,
+    [
+        "source_name",
+        "source_row",
+        "source_onset_s",
+        "target_name",
+        "target_index_start",
+        "target_time_s",
+    ],
+]
+```
+
+`language.surface` is a dense `FeatureSeries`. `text.tokenize` is an `EventSeries`. The alignment object states how rows in the dense feature map back to the word-event timeline.
+
+## What it refuses
+
+- Unknown feature outputs or timeline names.
+- Non-temporal outputs as alignment sources.
+- Non-temporal feature outputs as timeline targets.
+- Mapping policies outside `overlap`, `start`, `center`, and `nearest`.
+
+## What it doesn't do
+
+The workflow layer does not pick scientific features for you, install optional models, or decide how a downstream model should aggregate aligned rows. It keeps the route explicit so those choices can be inspected and tested.
+
+## See also
+
+[Extract features](../start/03-extract-features.qmd) · [Align features to a timeline](../cookbook/timeline-alignment.qmd) · [Table interchange](table-interchange.qmd)

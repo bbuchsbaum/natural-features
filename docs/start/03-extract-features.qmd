@@ -1,6 +1,6 @@
 ---
 title: "Extract features"
-subtitle: "`extract_features()` returns feature objects, plans, recipes, and step outputs."
+subtitle: "`extract_features()` returns feature objects, plans, recipes, timelines, and alignments."
 sidebar: start
 ---
 
@@ -13,15 +13,17 @@ from natural_features.workflows import extract_features
 
 result = extract_features(
     "The scene opens on a quiet room.",
-    features=["text.tokenize"],
+    features=["text.tokenize", "language.surface"],
 )
 
 words = result.features["text.tokenize"]
+surface = result.features["language.surface"]
 {
     "result_type": type(result).__name__,
     "feature_keys": sorted(result.features),
     "recipe": result.recipe,
     "event_count": len(words),
+    "dense_shape": surface.values.shape,
 }
 ```
 
@@ -37,6 +39,31 @@ words = result.features["text.tokenize"]
 }
 ```
 
+## Align one output to another
+
+`language.surface` is a dense `FeatureSeries`. `text.tokenize` is an `EventSeries`. Alignment records how rows in one object map to the timeline implied by the other.
+
+```{python}
+aligned = result.align_to(
+    "text.tokenize",
+    features="language.surface",
+)
+
+aligned.to_dataframe().loc[
+    :,
+    [
+        "source_name",
+        "source_row",
+        "source_onset_s",
+        "target_name",
+        "target_index_start",
+        "target_time_s",
+    ],
+]
+```
+
+The source objects are unchanged. The alignment is a separate object that can become rows, or can annotate event outputs when the source is event-shaped.
+
 ## Return a recipe instead
 
 ```{python}
@@ -50,8 +77,9 @@ extract_features(
 ## Refuses to
 
 - `format` must be one of `features`, `result`, `recipe`, `plan`, or `table`.
+- `align_to()` requires a known timeline or temporal feature output.
 - Table output requires the storage extra because it uses pandas.
 
 ## Read next
 
-[Feature objects](../concepts/feature-objects.qmd)
+[Unified workflow](../concepts/unified-workflow.qmd) · [Feature objects](../concepts/feature-objects.qmd)

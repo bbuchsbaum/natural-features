@@ -28,6 +28,8 @@ Feature objects are immutable dataclasses for extracted stimulus features. Dense
 
 These objects do not choose a storage backend, feature extractor, or fMRI model. They define the container contract those layers consume.
 
+`Timeline` and `FeatureAlignment` sit beside these objects. They describe how rows in a feature object map to another temporal frame without changing the feature object itself.
+
 ## See also
 
-[Extract features](../start/03-extract-features.qmd) · [Feature object schemas](../spec/feature-object-schemas.qmd) · [API reference](../reference/index.qmd)
+[Extract features](../start/03-extract-features.qmd) · [Unified workflow](unified-workflow.qmd) · [Feature object schemas](../spec/feature-object-schemas.qmd) · [API reference](../reference/index.qmd)

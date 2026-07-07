@@ -47,6 +47,21 @@ a:hover {
   font-weight: 600;
 }
 
+table.table {
+  max-width: 100%;
+}
+table.table th,
+table.table td {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  table.table {
+    display: block;
+    overflow-x: auto;
+    width: 100%;
+  }
+}
+
 .card {
   border: 1px solid var(--bs-border-color);
   border-radius: 8px;
@@ -252,25 +267,35 @@ a:hover {
   font-family: var(--bs-font-monospace, ui-monospace, monospace);
   font-size: 0.82rem;
   color: var(--bs-link-color);
-  background: color-mix(in srgb, var(--bs-link-color) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--bs-link-color) 28%, transparent);
-  padding: 0.32em 0.7em;
-  border-radius: 6px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  border-radius: 0;
 }
 
 .quick-result {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
+  gap: 0;
   margin: 1.4rem 0 2rem;
+  border-top: 1px solid var(--bs-border-color);
+  border-bottom: 1px solid var(--bs-border-color);
 }
 .quick-stat,
 .quick-words,
 .catalogue-card {
-  border: 1px solid var(--bs-border-color);
-  background: var(--bs-secondary-bg, rgba(255, 255, 255, 0.02));
-  border-radius: 8px;
-  padding: 1rem 1.1rem;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+  padding: 0.95rem 1rem 0.95rem 0;
+}
+.quick-stat {
+  border-right: 1px solid var(--bs-border-color);
+  margin-right: 1rem;
+}
+.quick-stat:nth-of-type(3) {
+  border-right: 0;
+  margin-right: 0;
 }
 .quick-label {
   display: block;
@@ -284,85 +309,86 @@ a:hover {
 
 /* ---------------------------------------------------------------------- *
  * Tour page: a guided route through inputs, catalogue families, planning,
- * and downstream tables/windows. Layouts use fixed grid constraints so
- * generated labels cannot shift the page.
+ * and downstream tables/windows. These layouts favor annotated flow over
+ * boxed grids.
  * ---------------------------------------------------------------------- */
-.tour-route,
-.tour-grid,
-.tour-family-grid,
-.tour-next-grid {
-  display: grid;
-  gap: 1rem;
-  margin: 1.2rem 0 1.8rem;
+.tour-path {
+  border-left: 1px solid var(--bs-border-color);
+  margin: 1.2rem 0 2rem;
 }
-.tour-route {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-.tour-grid,
-.tour-family-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-.tour-next-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-.tour-step,
-.tour-card,
-.tour-family,
-.tour-next {
-  border: 1px solid var(--bs-border-color);
-  border-radius: 8px;
-  background: var(--bs-secondary-bg, rgba(255, 255, 255, 0.02));
-  padding: 1rem 1.05rem;
+.tour-path-step {
   min-width: 0;
+  padding: 0.1rem 0 1.15rem 1.35rem;
+  position: relative;
 }
-.tour-step h4,
-.tour-card h4,
-.tour-family h4,
-.tour-next h4 {
-  font-size: 1.02rem;
+.tour-path-step::before {
+  background: var(--bs-body-bg);
+  border: 2px solid var(--bs-link-color);
+  border-radius: 50%;
+  content: "";
+  height: 0.62rem;
+  left: -0.36rem;
+  position: absolute;
+  top: 0.45rem;
+  width: 0.62rem;
+}
+.tour-path-step h3 {
+  font-size: 1.06rem;
   font-weight: 650;
   letter-spacing: 0;
   margin: 0 0 0.5rem;
 }
-.tour-step p,
-.tour-card p,
-.tour-family p,
-.tour-next p {
+.tour-path-step p {
   color: var(--bs-secondary-color, #6b7280);
   line-height: 1.55;
   margin-bottom: 0.75rem;
 }
-.tour-meta {
-  color: var(--bs-secondary-color, #6b7280);
-  font-size: 0.88rem;
-  margin: 0.4rem 0 0.8rem;
+.tour-family-list {
+  border-top: 1px solid var(--bs-border-color);
+  margin: 1rem 0 1.8rem;
 }
-.tour-feature-list {
-  font-size: 0.88rem;
-  line-height: 1.6;
+.tour-family-row {
+  border-bottom: 1px solid var(--bs-border-color);
+  column-gap: 1.4rem;
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.32fr) minmax(0, 1fr);
+  padding: 1rem 0;
+}
+.tour-family-row h4 {
+  font-size: 1rem;
+  font-weight: 650;
+  grid-row: 1 / span 4;
+  letter-spacing: 0;
+  margin: 0;
+}
+.tour-family-row p {
+  color: var(--bs-body-color);
+  line-height: 1.55;
+  margin: 0 0 0.45rem;
+}
+.tour-family-row p:last-child {
+  color: var(--bs-secondary-color, #6b7280);
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+}
+.tour-plan-list {
+  overflow-wrap: anywhere;
 }
 .tour-result {
   margin-top: 1rem;
 }
-@media (max-width: 1000px) {
-  .tour-route {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
 @media (max-width: 800px) {
-  .tour-grid,
-  .tour-family-grid,
-  .tour-next-grid {
+  .tour-family-row {
     grid-template-columns: 1fr;
   }
-}
-@media (max-width: 560px) {
-  .tour-route {
-    grid-template-columns: 1fr;
+  .tour-family-row h4,
+  .tour-family-row p {
+    grid-column: 1;
   }
 }
 .quick-words {
   grid-column: 1 / -1;
+  border-top: 1px solid var(--bs-border-color);
 }
 .quick-words code,
 .quick-stat code {
@@ -371,8 +397,12 @@ a:hover {
 .catalogue-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  column-gap: 1.4rem;
+  row-gap: 0;
   margin: 1rem 0 1.5rem;
+}
+.catalogue-card {
+  border-top: 1px solid var(--bs-border-color);
 }
 .catalogue-card h4 {
   margin-top: 0;
@@ -381,6 +411,14 @@ a:hover {
   .quick-result,
   .catalogue-grid {
     grid-template-columns: 1fr;
+  }
+  .quick-result {
+    border-bottom: 0;
+  }
+  .quick-stat {
+    border-bottom: 1px solid var(--bs-border-color);
+    border-right: 0;
+    margin-right: 0;
   }
 }
 @media (max-width: 600px) {

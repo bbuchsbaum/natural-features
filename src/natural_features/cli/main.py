@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import csv
 from datetime import datetime, timezone
+import io
 import json
 from pathlib import Path
 import shutil
@@ -25,8 +26,9 @@ from natural_features.features.speech.doctor import build_alignment_doctor_repor
 from natural_features.features.speech.formats import read_ctm, write_ctm, write_textgrid
 from natural_features.features.speech.validation import validate_alignment_backends
 from natural_features.storage.catalog import Catalog
-from natural_features.util.io import atomic_numpy_save, atomic_write_json
+from natural_features.util.io import atomic_numpy_save, atomic_write_json, atomic_write_text
 from natural_features.workflows.extract_features import FeatureCatalogEntry, available_features
+from natural_features.workflows.video_text import extract_video_text
 import yaml
 
 
@@ -83,6 +85,103 @@ def _build_parser() -> argparse.ArgumentParser:
     pv.add_argument("--no-video", action="store_true", help="Skip video frame extraction")
     pv.add_argument("--no-audio", action="store_true", help="Skip audio extraction")
     pv.add_argument("--json", action="store_true", help="Emit JSON output")
+
+    vt = sub.add_parser(
+        "video-text",
+        help="Extract speech text from a video and align words to frame indices",
+    )
+    vt.add_argument("input_video", help="Input video file path (e.g., mp4/mkv)")
+    vt.add_argument("--model", default="small", help="ASR model id")
+    vt.add_argument("--language", default="auto", help="ASR language code or auto")
+    vt.add_argument(
+        "--align-backend",
+        default="auto",
+        help="Alignment backend: auto|whisperx|mfa|none",
+    )
+    vt.add_argument(
+        "--execution-mode", default="fallback", choices=["fallback", "strict"]
+    )
+    vt.add_argument(
+        "--strict-dependency",
+        action="store_true",
+        help="Treat missing deps as hard failures",
+    )
+    vt.add_argument(
+        "--chunked", action="store_true", help="Use chunked ASR path for long videos"
+    )
+    vt.add_argument(
+        "--chunk-window-s", type=float, default=30.0, help="Chunk window (s)"
+    )
+    vt.add_argument(
+        "--chunk-overlap-s", type=float, default=1.0, help="Chunk overlap (s)"
+    )
+    vt.add_argument(
+        "--audio-sr", type=int, default=16000, help="Extracted audio sample rate in Hz"
+    )
+    vt.add_argument(
+        "--start-s", type=float, default=0.0, help="Start time in source-video seconds"
+    )
+    vt.add_argument(
+        "--duration-s", type=float, default=None, help="Clip duration (seconds)"
+    )
+    vt.add_argument(
+        "--video-fps",
+        type=float,
+        default=None,
+        help="Known source video FPS; skips ffprobe",
+    )
+    vt.add_argument(
+        "--frame-policy",
+        default="overlap",
+        choices=["overlap", "start", "center", "nearest"],
+        help="How word intervals map to frames",
+    )
+    vt.add_argument("--ffmpeg-path", default="ffmpeg", help="ffmpeg executable path")
+    vt.add_argument("--ffprobe-path", default="ffprobe", help="ffprobe executable path")
+    vt.add_argument(
+        "--mfa-dictionary",
+        default=None,
+        help="MFA dictionary path (required for backend=mfa)",
+    )
+    vt.add_argument(
+        "--mfa-acoustic-model",
+        default=None,
+        help="MFA acoustic model path (required for backend=mfa)",
+    )
+    vt.add_argument(
+        "--mfa-timeout-s",
+        type=float,
+        default=300.0,
+        help="MFA align timeout in seconds",
+    )
+    vt.add_argument(
+        "--mfa-tmp-dir",
+        default=None,
+        help="Optional temp dir for MFA intermediate files",
+    )
+    vt.add_argument(
+        "--mfa-extra-arg",
+        action="append",
+        default=[],
+        help="Additional MFA CLI argument (repeatable), forwarded to `mfa align`",
+    )
+    vt.add_argument(
+        "--ctm-out", default=None, help="Optional CTM output path for word events"
+    )
+    vt.add_argument(
+        "--textgrid-out",
+        default=None,
+        help="Optional TextGrid output path for word events",
+    )
+    vt.add_argument(
+        "--table-out",
+        default=None,
+        help="Optional CSV output path for word/frame table",
+    )
+    vt.add_argument(
+        "--out-json", default=None, help="Optional JSON summary output path"
+    )
+    vt.add_argument("--json", action="store_true", help="Emit JSON output")
 
     sa = sub.add_parser("speech-align", help="One-pass ASR + alignment with optional CTM/TextGrid export")
     sa.add_argument("--audio-wav", required=True, help="Input mono/stereo WAV file")
@@ -435,6 +534,102 @@ def _cmd_prep_video(args: argparse.Namespace) -> int:
     return 0
 
 
+def _json_safe(value: Any) -> Any:
+    if isinstance(value, np.generic):
+        return value.item()
+    if isinstance(value, np.ndarray):
+        return [_json_safe(x) for x in value.tolist()]
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, dict):
+        return {str(k): _json_safe(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(x) for x in value]
+    return value
+
+
+def _write_csv_rows(path: str | Path, rows: list[dict[str, Any]]) -> Path:
+    out = Path(path)
+    columns: list[str] = []
+    seen: set[str] = set()
+    for row in rows:
+        for key in row:
+            if key not in seen:
+                columns.append(key)
+                seen.add(key)
+    buf = io.StringIO()
+    writer = csv.DictWriter(buf, fieldnames=columns)
+    writer.writeheader()
+    writer.writerows([{key: row.get(key) for key in columns} for row in rows])
+    return atomic_write_text(out, buf.getvalue(), encoding="utf-8")
+
+
+def _cmd_video_text(args: argparse.Namespace) -> int:
+    execution_mode = "strict" if args.strict_dependency else args.execution_mode
+    result = extract_video_text(
+        args.input_video,
+        align=args.align_backend,
+        language=args.language,
+        asr_model=args.model,
+        chunked=bool(args.chunked),
+        chunk_window_s=float(args.chunk_window_s),
+        chunk_overlap_s=float(args.chunk_overlap_s),
+        audio_sr_hz=int(args.audio_sr),
+        start_s=float(args.start_s),
+        duration_s=args.duration_s,
+        video_fps=args.video_fps,
+        frame_policy=args.frame_policy,
+        execution_mode=execution_mode,
+        strict_dependency=bool(args.strict_dependency)
+        if args.strict_dependency
+        else None,
+        ffmpeg_path=args.ffmpeg_path,
+        ffprobe_path=args.ffprobe_path,
+        mfa_dictionary_path=args.mfa_dictionary,
+        mfa_acoustic_model_path=args.mfa_acoustic_model,
+        mfa_timeout_s=float(args.mfa_timeout_s),
+        mfa_tmp_dir=args.mfa_tmp_dir,
+        mfa_extra_args=list(args.mfa_extra_arg or []),
+    )
+    payload = {
+        "input_video": str(args.input_video),
+        "n_words": int(len(result.words)),
+        "n_segments": int(len(result.segments)),
+        "execution_mode": execution_mode,
+        "word_metadata": result.words.metadata,
+        "asr_qc": result.asr_qc,
+        "align_qc": result.align_qc,
+        "frame_qc": result.frame_qc,
+    }
+
+    if args.ctm_out:
+        ctm_path = write_ctm(result.words, args.ctm_out)
+        payload["ctm_out"] = str(ctm_path)
+    if args.textgrid_out:
+        tg_path = write_textgrid(result.words, args.textgrid_out)
+        payload["textgrid_out"] = str(tg_path)
+    if args.table_out:
+        table_path = _write_csv_rows(args.table_out, result.word_rows())
+        payload["table_out"] = str(table_path)
+    if args.out_json:
+        out = Path(args.out_json)
+        atomic_write_json(out, _json_safe(payload), sort_keys=True, indent=2)
+        payload["out_json"] = str(out)
+
+    payload = _json_safe(payload)
+    if args.json:
+        print(json.dumps(payload, indent=2, sort_keys=True))
+    else:
+        print(f"n_words={payload['n_words']}")
+        print(f"asr_mode={payload['asr_qc'].get('mode', 'unknown')}")
+        print(f"align_mode={payload['align_qc'].get('mode', 'unknown')}")
+        print(f"frame_mode={payload['frame_qc'].get('mode', 'unknown')}")
+        for key in ("ctm_out", "textgrid_out", "table_out", "out_json"):
+            if key in payload:
+                print(f"{key}={payload[key]}")
+    return 0
+
+
 def _cmd_speech_align(args: argparse.Namespace) -> int:
     audio = AudioStimulus.from_wav(args.audio_wav)
     strict = bool(args.strict_dependency) or (args.execution_mode == "strict")
@@ -622,6 +817,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_extract(reg, args)
     if args.cmd == "prep-video":
         return _cmd_prep_video(args)
+    if args.cmd == "video-text":
+        return _cmd_video_text(args)
     if args.cmd == "speech-align":
         return _cmd_speech_align(args)
     if args.cmd == "speech-validate-backends":

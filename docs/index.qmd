@@ -11,15 +11,15 @@ title-block-style: none
 ::: {.hero-copy}
 [Naturalistic stimulus features]{.eyebrow}
 
-# natural_features turns media and transcripts into time-aligned feature objects.
+# natural_features turns stimuli into aligned feature workflows.
 
-[Install `natural-features`, import `natural_features`, and keep extracted features tied to stimulus time, provenance, and downstream fMRI windows.]{.lead}
+[Extract features from media or transcripts, align them to explicit timelines, and export tables without losing stimulus time or provenance.]{.lead}
 
 [Start here](start/index.qmd){.btn .btn-primary}
 [Feature tour](tour/index.qmd){.btn .btn-outline-secondary}
 [API reference](reference/index.qmd){.btn .btn-outline-secondary}
 
-[stimuli]{.kicker} [catalogue]{.kicker} [recipes]{.kicker} [fMRI windows]{.kicker}
+[stimuli]{.kicker} [features]{.kicker} [timelines]{.kicker} [alignment]{.kicker}
 :::
 ::: {.hero-code}
 ::: {.code-card}
@@ -29,11 +29,14 @@ from natural_features.workflows import extract_features
 
 result = extract_features(
     "The scene opens on a quiet room.",
-    features=["text.tokenize"],
+    features=["text.tokenize", "language.surface"],
 )
 
-words = result.features["text.tokenize"]
-words.label.tolist()
+aligned = result.align_to(
+    "text.tokenize",
+    features="language.surface",
+)
+aligned.to_dataframe().head()
 ```
 :::
 :::
@@ -46,37 +49,37 @@ One request returns a typed event object. The result below is generated when thi
 ```{python}
 #| echo: false
 #| output: asis
-from natural_features.workflows import available_features, extract_features
+from natural_features.workflows import extract_features
 
-catalog = available_features(modality="text")
 result = extract_features(
     "The scene opens on a quiet room.",
-    features=["text.tokenize"],
+    features=["text.tokenize", "language.surface"],
 )
 words = result.features["text.tokenize"]
-labels = words.label.tolist()
+aligned = result.align_to("text.tokenize", features="language.surface")
+alignment_rows = aligned.to_rows()
 
 print(f"""
 ::: {{.quick-result}}
 ::: {{.quick-stat}}
 [request]{{.quick-label}}
 
-`text.tokenize`
+`text.tokenize` + `language.surface`
 :::
 ::: {{.quick-stat}}
 [returns]{{.quick-label}}
 
-`{type(words).__name__}` · `{words.schema}`
+`{type(result).__name__}`
 :::
 ::: {{.quick-stat}}
-[events]{{.quick-label}}
+[aligned rows]{{.quick-label}}
 
-{len(words)} word events
+{len(alignment_rows)} dense rows -> word timeline
 :::
 ::: {{.quick-words}}
-[labels]{{.quick-label}}
+[timeline]{{.quick-label}}
 
-{", ".join(f"`{label}`" for label in labels)}
+`{aligned.target.name}` · `{aligned.target.kind}`
 :::
 :::
 """)
@@ -100,9 +103,9 @@ Dense features, events, and tracks have explicit time arrays and required metada
 :::
 
 ::: {.promise-card}
-#### Plans expose what will run
-The catalogue and planner show feature IDs, required inputs, parameters, and opt-in status before execution. [Concept](concepts/catalog-and-planning.qmd)
+#### Timelines make alignment explicit
+Align extracted outputs to word events, frames, or a custom timeline before exporting tables. [Concept](concepts/unified-workflow.qmd)
 
-[`plan_features`]{.promise-tag}
+[`FeatureAlignment`]{.promise-tag}
 :::
 :::

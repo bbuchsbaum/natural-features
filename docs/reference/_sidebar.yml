@@ -6,7 +6,20 @@ website:
       - reference/FeatureSeries.qmd
       - reference/EventSeries.qmd
       - reference/TrackSeries.qmd
+      - reference/Timeline.qmd
+      - reference/FeatureAlignment.qmd
       section: Feature objects
+    - contents:
+      - reference/available_features.qmd
+      - reference/feature_catalog.qmd
+      - reference/plan_features.qmd
+      - reference/extract_features.qmd
+      - reference/ExtractFeaturesResult.qmd
+      - reference/AlignedFeatureSet.qmd
+      - reference/FrameTimeline.qmd
+      - reference/VideoTextResult.qmd
+      - reference/extract_video_text.qmd
+      section: Unified extraction workflow
     - contents:
       - reference/extract_audio_files.qmd
       - reference/extract_audio_dir.qmd

@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 import re
 from typing import Any, Iterable
 
+from natural_features.core.feature_types import EventSeries, FeatureSeries, TrackSeries
 from natural_features.core.interchange import merge_feature_tables
 from natural_features.core.recipe import execute_recipe
 from natural_features.core.registry import ExtractorSpec, Registry
@@ -17,6 +18,7 @@ from natural_features.core.stimulus import (
     TextStimulus,
     VideoStimulus,
 )
+from natural_features.core.timeline import FeatureAlignment, Timeline, align_feature_to_timeline
 from natural_features.workflows._public_contract import public_feature_ids
 
 _IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".webp"}
@@ -123,12 +125,80 @@ class FeaturePlan:
 
 
 @dataclass
+class AlignedFeatureSet:
+    features: dict[str, Any]
+    target: Timeline
+    alignments: dict[str, FeatureAlignment]
+    policy: str = "overlap"
+
+    def to_rows(self) -> list[dict[str, Any]]:
+        rows: list[dict[str, Any]] = []
+        for alignment in self.alignments.values():
+            rows.extend(alignment.to_rows())
+        return rows
+
+    def to_dataframe(self) -> Any:
+        pd = _require_pandas()
+        return pd.DataFrame(self.to_rows())
+
+    def annotated_features(self, *, prefix: str | None = None) -> dict[str, Any]:
+        out = dict(self.features)
+        for name, alignment in self.alignments.items():
+            if isinstance(alignment.source, EventSeries):
+                out[name] = alignment.annotated_events(prefix=prefix)
+        return out
+
+
+@dataclass
 class ExtractFeaturesResult:
     features: dict[str, Any]
     plan: FeaturePlan
     recipe: dict[str, Any]
     steps: dict[str, dict[str, Any]]
     table: Any | None = None
+    inputs: dict[str, Any] = field(default_factory=dict)
+    timelines: dict[str, Timeline] = field(default_factory=dict)
+
+    def to_table(
+        self,
+        *,
+        format: str = "long",
+        include_objects: bool = True,
+        include_metadata: bool = True,
+    ) -> Any:
+        return merge_feature_tables(
+            self.features,
+            format=format,
+            include_objects=include_objects,
+            include_metadata=include_metadata,
+        )
+
+    def timeline(self, target: str | Timeline) -> Timeline:
+        return _resolve_timeline(self, target)
+
+    def align_to(
+        self,
+        target: str | Timeline,
+        *,
+        features: str | Iterable[str] | None = None,
+        policy: str = "overlap",
+    ) -> AlignedFeatureSet:
+        target_timeline = self.timeline(target)
+        names = _as_list(features) if features is not None else _temporal_feature_names(self.features)
+        alignments: dict[str, FeatureAlignment] = {}
+        for name in names:
+            if name not in self.features:
+                raise KeyError(f"Unknown feature output: {name}")
+            obj = self.features[name]
+            if not _is_temporal_output(obj):
+                raise TypeError(f"Feature output '{name}' is not a temporal feature object")
+            alignments[name] = align_feature_to_timeline(name, obj, target_timeline, policy=policy)
+        return AlignedFeatureSet(
+            features=self.features,
+            target=target_timeline,
+            alignments=alignments,
+            policy=policy,
+        )
 
 
 def _require_pandas() -> Any:
@@ -395,6 +465,46 @@ def _coerce_inputs(stimulus: Any, *, video_fps: float) -> dict[str, Any]:
     raise TypeError("Unsupported stimulus input")
 
 
+def _is_temporal_output(value: Any) -> bool:
+    return isinstance(value, (FeatureSeries, EventSeries, TrackSeries))
+
+
+def _temporal_feature_names(features: dict[str, Any]) -> list[str]:
+    return [name for name, value in features.items() if _is_temporal_output(value)]
+
+
+def _default_timelines_from_inputs(inputs: dict[str, Any]) -> dict[str, Timeline]:
+    timelines: dict[str, Timeline] = {}
+    video = inputs.get("video")
+    if isinstance(video, VideoStimulus):
+        timelines["video_frames"] = Timeline.from_video_stimulus(video)
+    return timelines
+
+
+def _resolve_timeline(result: ExtractFeaturesResult, target: str | Timeline) -> Timeline:
+    if isinstance(target, Timeline):
+        return target
+    target_name = str(target)
+    if target_name in result.timelines:
+        return result.timelines[target_name]
+    if target_name in result.features:
+        obj = result.features[target_name]
+        if not _is_temporal_output(obj):
+            raise TypeError(f"Feature output '{target_name}' is not temporal and cannot define a timeline")
+        return Timeline.from_feature(target_name, obj)
+    feature_prefix = "feature:"
+    if target_name.startswith(feature_prefix):
+        feature_name = target_name[len(feature_prefix) :]
+        if feature_name not in result.features:
+            raise KeyError(f"Unknown feature output: {feature_name}")
+        obj = result.features[feature_name]
+        if not _is_temporal_output(obj):
+            raise TypeError(f"Feature output '{feature_name}' is not temporal and cannot define a timeline")
+        return Timeline.from_feature(feature_name, obj)
+    known = sorted([*result.timelines.keys(), *result.features.keys()])
+    raise KeyError(f"Unknown timeline target: {target_name}. Known targets: {', '.join(known)}")
+
+
 def _sanitize_step_id(feature_id: str) -> str:
     token = re.sub(r"[^A-Za-z0-9_]+", "_", feature_id).strip("_")
     return token or "feature"
@@ -616,4 +726,6 @@ def extract_features(
         plan=plan,
         recipe=recipe,
         steps=result.steps,
+        inputs=inputs,
+        timelines=_default_timelines_from_inputs(inputs),
     )

@@ -10,6 +10,8 @@ The feature catalogue is generated from registered extractor specs. It is the re
 
 By default, `available_features()` returns the public catalogue: the stable feature IDs that match the R package compatibility surface. Internal extractor IDs remain registered for recipes, debugging, and lower-level workflows, but they are hidden from the high-level catalogue unless you request them with `public_only=False`.
 
+For an executable gallery that lists every public family and plots representative outputs, see [Inspect and plot feature types](../cookbook/feature-type-gallery.qmd).
+
 ## Current families
 
 ```{python}
@@ -61,4 +63,4 @@ The catalogue does not execute extractors or install optional dependencies. It t
 
 ## See also
 
-[List and plan features](../start/02-list-and-plan-features.qmd) · [Execution modes](execution-modes.qmd)
+[List and plan features](../start/02-list-and-plan-features.qmd) · [Inspect and plot feature types](../cookbook/feature-type-gallery.qmd) · [Execution modes](execution-modes.qmd)

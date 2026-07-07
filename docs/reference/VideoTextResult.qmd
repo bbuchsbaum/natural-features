@@ -1,0 +1,16 @@
+# VideoTextResult { #natural_features.VideoTextResult }
+
+```python
+VideoTextResult(
+    words,
+    segments,
+    frame_timeline,
+    asr_qc,
+    align_qc,
+    frame_qc,
+    source_video=None,
+    audio=None,
+)
+```
+
+Result bundle for speech-derived text aligned to video time.

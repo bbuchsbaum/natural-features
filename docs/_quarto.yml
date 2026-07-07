@@ -80,6 +80,7 @@ website:
         - concepts/index.qmd
         - concepts/stimuli.qmd
         - concepts/feature-objects.qmd
+        - concepts/unified-workflow.qmd
         - concepts/catalog-and-planning.qmd
         - concepts/feature-catalogue.qmd
         - concepts/execution-modes.qmd
@@ -95,6 +96,9 @@ website:
         - cookbook/index.qmd
         - cookbook/text-tokenization.qmd
         - cookbook/media-feature-planning.qmd
+        - cookbook/timeline-alignment.qmd
+        - cookbook/five-feature-concepts.qmd
+        - cookbook/feature-type-gallery.qmd
         - cookbook/audio-batch-from-wav.qmd
         - cookbook/recipe-dag-preview.qmd
         - cookbook/event-table-export.qmd

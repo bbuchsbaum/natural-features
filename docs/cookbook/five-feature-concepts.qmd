@@ -1,0 +1,303 @@
+---
+title: "Five feature types, five concepts"
+subtitle: "A compact tutorial for routing, schemas, temporal objects, tables, and provenance."
+sidebar: cookbook
+---
+
+## Use when
+
+You want a guided example that covers five feature families without turning into a catalogue. The same small text, audio, and video inputs are used throughout, so the focus stays on what the feature objects mean.
+
+This page uses one workflow shape:
+
+`stimulus -> extract_features() -> typed outputs -> align_to() -> table or plot`
+
+The five feature routes are:
+
+- `text.tokenize` to turn text into word events.
+- `language.discourse` to show a feature that depends on word events.
+- `audio.rms` to show a dense sampled audio feature.
+- `speech.vad` to show audio-derived events.
+- `vision.dct` to show framewise visual features.
+
+```{python}
+#| echo: false
+import matplotlib.pyplot as plt
+import numpy as np
+
+from natural_features.core.interchange import as_event_table, as_feature_table
+from natural_features.core.stimulus import AudioStimulus, VideoStimulus
+from natural_features.workflows import extract_features
+
+plt.rcParams.update(
+    {
+        "figure.facecolor": "#111827",
+        "axes.facecolor": "#111827",
+        "axes.edgecolor": "#9ca3af",
+        "axes.labelcolor": "#e5e7eb",
+        "axes.titlecolor": "#f9fafb",
+        "xtick.color": "#d1d5db",
+        "ytick.color": "#d1d5db",
+        "grid.color": "#374151",
+        "text.color": "#f9fafb",
+        "legend.facecolor": "#111827",
+        "legend.edgecolor": "#4b5563",
+    }
+)
+
+
+def md_table(headers, rows):
+    print("| " + " | ".join(headers) + " |")
+    print("|" + "|".join("---" for _ in headers) + "|")
+    for row in rows:
+        print("| " + " | ".join(str(value) for value in row) + " |")
+    print()
+
+
+def feature_names(series):
+    return [str(x) for x in series.coords.get("feature", [])]
+
+
+def normalize(values):
+    values = np.asarray(values, dtype=float)
+    lo = np.nanmin(values)
+    hi = np.nanmax(values)
+    return (values - lo) / max(hi - lo, 1e-8)
+
+
+text = "A bright face appears. The quiet voice returns."
+
+sr = 8000
+t = np.arange(sr, dtype=np.float32) / sr
+tone = 0.35 * np.sin(2 * np.pi * 220 * t[: sr // 2])
+samples = np.concatenate(
+    [
+        np.zeros(sr // 4, dtype=np.float32),
+        tone.astype(np.float32),
+        np.zeros(sr // 4, dtype=np.float32),
+    ]
+)
+audio = AudioStimulus.from_array(samples, sr_hz=sr)
+
+rng = np.random.default_rng(123)
+frames = rng.uniform(0, 0.25, size=(8, 20, 20, 3)).astype(np.float32)
+for i in range(frames.shape[0]):
+    frames[i, 4:12, 3 + i : 7 + i, 1] = 1.0
+video = VideoStimulus.from_array(frames, fps=4.0)
+
+text_result = extract_features(
+    text,
+    features=["text.tokenize", "language.discourse"],
+    budget="allow_python",
+)
+audio_result = extract_features(
+    audio,
+    features=["audio.rms", "speech.vad"],
+    budget="allow_python",
+)
+video_result = extract_features(
+    video,
+    features=["vision.dct"],
+    budget="all",
+    feature_params={"vision.dct": {"k": 6, "size": 8}},
+)
+
+words = text_result.features["text.tokenize"]
+discourse = text_result.features["language.discourse"]
+word_alignment = text_result.align_to("text.tokenize", features="language.discourse")
+rms = audio_result.features["audio.rms"]
+vad = audio_result.features["speech.vad"]
+dct = video_result.features["vision.dct"]
+frame_alignment = video_result.align_to("video_frames", features="vision.dct")
+
+feature_objects = [
+    ("text.tokenize", words, "text events"),
+    ("language.discourse", discourse, "word-aligned features"),
+    ("audio.rms", rms, "sampled audio feature"),
+    ("speech.vad", vad, "speech intervals"),
+    ("vision.dct", dct, "framewise visual features"),
+]
+```
+
+## Concept 1: feature IDs route between objects
+
+The planner resolves each feature ID to an input. The important row is `language.discourse`: it does not read the raw string. It reads the word events produced by `text.tokenize`.
+
+```{python}
+#| echo: false
+#| output: asis
+rows = []
+for result in [text_result, audio_result, video_result]:
+    for row in result.plan.rows:
+        rows.append(
+            [
+                row.feature_id,
+                row.input_token,
+                row.output_schema,
+                "yes" if row.requires_opt_in else "no",
+            ]
+        )
+
+md_table(["feature", "input", "returns", "opt-in"], rows)
+```
+
+The input column is a quick routing check. `input:text`, `input:audio`, and `input:video` come from the stimulus. `ref:text_tokenize.default` comes from an earlier step in the same plan.
+
+## Concept 2: schemas tell you how time is represented
+
+`EventSeries` stores intervals. `FeatureSeries` stores sampled values with a time axis. The summary below shows the object type before any table export.
+
+```{python}
+#| echo: false
+#| output: asis
+summary_rows = []
+for feature_id, obj, role in feature_objects:
+    if hasattr(obj, "values"):
+        size = " x ".join(str(dim) for dim in obj.values.shape)
+    else:
+        size = f"{len(obj)} events"
+    summary_rows.append(
+        [
+            feature_id,
+            type(obj).__name__,
+            obj.schema,
+            size,
+            role,
+        ]
+    )
+
+md_table(["feature", "object", "schema", "size", "role"], summary_rows)
+```
+
+## Concept 3: events and dense features align through timelines
+
+The alignment object records how a feature row maps to a target timeline. The target can be another feature output, such as `text.tokenize`, or an input-derived timeline, such as `video_frames`.
+
+```{python}
+#| echo: false
+#| output: asis
+alignment_rows = []
+for name, aligned in [
+    ("language.discourse -> text.tokenize", word_alignment),
+    ("vision.dct -> video_frames", frame_alignment),
+]:
+    first = aligned.to_rows()[0]
+    alignment_rows.append(
+        [
+            name,
+            first["source_kind"],
+            first["target_name"],
+            first["target_kind"],
+            first["policy"],
+        ]
+    )
+
+md_table(["alignment", "source", "target", "target kind", "policy"], alignment_rows)
+```
+
+The plot below uses the same objects, not separate plotting fixtures. Word events and VAD are intervals; discourse, RMS, and DCT are sampled feature arrays.
+
+```{python}
+#| echo: false
+#| fig-cap: "Five feature routes on three timelines: text/language, audio/speech, and vision."
+#| fig-width: 8
+#| fig-height: 6
+fig, axes = plt.subplots(3, 1, constrained_layout=True)
+
+labels = [str(label) for label in words.label]
+disc_names = feature_names(discourse)
+disc_col = disc_names.index("is_content_word") if "is_content_word" in disc_names else 0
+axes[0].plot(
+    discourse.times_s,
+    normalize(discourse.values[:, disc_col]),
+    color="#34d399",
+    label="language.discourse",
+)
+for i, label in enumerate(labels):
+    onset = float(words.onset_s[i])
+    duration = float(words.offset_s[i] - words.onset_s[i])
+    axes[0].broken_barh([(onset, duration)], (0.05, 0.28), facecolors="#60a5fa", alpha=0.65)
+    axes[0].text(onset + duration / 2, 0.18, label, ha="center", va="center", fontsize=7)
+axes[0].set_ylim(0, 1.08)
+axes[0].set_yticks([])
+axes[0].set_title("text.tokenize -> language.discourse")
+axes[0].legend(loc="upper right")
+
+axes[1].plot(t, samples, color="#60a5fa", linewidth=0.7, label="audio waveform")
+axes[1].plot(rms.times_s, normalize(rms.values[:, 0]), color="#f59e0b", label="audio.rms")
+for onset, offset in zip(vad.onset_s, vad.offset_s, strict=True):
+    axes[1].axvspan(onset, offset, color="#f472b6", alpha=0.22)
+axes[1].set_title("audio.rms with speech.vad spans")
+axes[1].set_ylabel("value")
+axes[1].legend(loc="upper right")
+
+for col in range(min(3, dct.values.shape[1])):
+    axes[2].plot(dct.times_s, normalize(dct.values[:, col]), linewidth=1.2, label=f"vision.dct {col}")
+axes[2].set_title("vision.dct framewise features")
+axes[2].set_xlabel("time (s)")
+axes[2].set_ylabel("scaled value")
+axes[2].legend(loc="upper right")
+
+plt.show()
+```
+
+## Concept 4: table export is a view
+
+Use table helpers when a modeling or QC step wants rows. The event table keeps interval columns; the feature table has one row per time-feature pair; the alignment table records source-to-target row mappings.
+
+```{python}
+#| echo: false
+#| output: asis
+event_table = as_event_table(words).loc[:, ["onset_s", "offset_s", "label", "schema"]].head(4)
+feature_table = as_feature_table(discourse).loc[:, ["time_s", "feature", "value", "schema"]].head(4)
+alignment_table = word_alignment.to_dataframe().loc[
+    :,
+    ["source_name", "source_row", "target_index_start", "target_time_s"],
+].head(4)
+
+print("Word-event table:\n")
+md_table(event_table.columns.tolist(), event_table.itertuples(index=False, name=None))
+
+print("Discourse feature table:\n")
+rounded_rows = []
+for row in feature_table.itertuples(index=False):
+    rounded_rows.append([f"{row.time_s:g}", row.feature, f"{row.value:.3f}", row.schema])
+md_table(feature_table.columns.tolist(), rounded_rows)
+
+print("Alignment table:\n")
+md_table(alignment_table.columns.tolist(), alignment_table.itertuples(index=False, name=None))
+```
+
+## Concept 5: provenance travels with the object
+
+Every feature object carries extractor metadata. The metadata is what lets a downstream table or cache entry point back to the extractor and parameter hash that produced it.
+
+```{python}
+#| echo: false
+#| output: asis
+provenance_rows = []
+for feature_id, obj, _role in feature_objects:
+    provenance_rows.append(
+        [
+            feature_id,
+            obj.metadata.get("extractor_name", ""),
+            obj.metadata.get("params_hash", "")[:10],
+            obj.metadata.get("backend", obj.metadata.get("execution_mode", "")),
+        ]
+    )
+
+md_table(["feature", "extractor", "params hash", "backend/mode"], provenance_rows)
+```
+
+## Boundary it closes
+
+This tutorial separates five questions that are often mixed together:
+
+- Which feature ID should I request?
+- Does the feature read a stimulus or another feature object?
+- Am I holding intervals or sampled values?
+- Which timeline should these rows align to?
+- Which table shape should I export?
+- What metadata follows the result?
+
+For a wider inventory with more plots, see [Inspect and plot feature types](feature-type-gallery.qmd).

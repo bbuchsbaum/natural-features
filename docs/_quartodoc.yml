@@ -14,6 +14,20 @@ quartodoc:
         - FeatureSeries
         - EventSeries
         - TrackSeries
+        - Timeline
+        - FeatureAlignment
+    - title: "Unified extraction workflow"
+      desc: "Plan, extract, align, and export feature bundles. Concept: [Unified workflow](../concepts/unified-workflow.qmd) · Recipe: [Align features to a timeline](../cookbook/timeline-alignment.qmd)."
+      contents:
+        - available_features
+        - feature_catalog
+        - plan_features
+        - extract_features
+        - ExtractFeaturesResult
+        - AlignedFeatureSet
+        - FrameTimeline
+        - VideoTextResult
+        - extract_video_text
     - title: "Audio and language workflows"
       desc: "Stable workflow entry points for extracted feature bundles."
       contents:

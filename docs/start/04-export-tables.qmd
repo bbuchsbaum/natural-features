@@ -1,46 +1,51 @@
 ---
 title: "Export tables"
-subtitle: "`as_event_table()` turns feature objects into rows."
+subtitle: "`to_table()` and `FeatureAlignment.to_dataframe()` turn workflow objects into rows."
 sidebar: start
 ---
 
 ## From object to table
 
-Feature objects are the in-memory contract. Table helpers provide an interchange surface for modeling, inspection, and downstream joins.
+Feature objects and alignments are the in-memory contract. Table helpers provide an interchange surface for modeling, inspection, and downstream joins.
 
 ```{python}
-from natural_features.core.interchange import as_event_table
 from natural_features.workflows import extract_features
 
 result = extract_features(
     "The scene opens on a quiet room.",
-    features=["text.tokenize"],
+    features=["text.tokenize", "language.surface"],
 )
 words = result.features["text.tokenize"]
 
-table = as_event_table(words)
-table.loc[:, ["onset_s", "offset_s", "duration_s", "label", "schema"]]
+table = result.to_table(include_metadata=False)
+table.loc[:, ["output_name", "output_type", "onset_s", "time_s", "label", "feature", "value"]].head(8)
 ```
 
 ## What gets added
 
-The table includes event timing, labels, confidence when present, object columns when present, and provenance columns copied from metadata.
+The table includes event timing, labels, feature names, values, object columns when present, and provenance columns copied from metadata.
 
 ```{python}
-sorted(set(table.columns) & {
-    "extractor_id",
-    "extractor_name",
-    "params_hash",
-    "code_version",
-    "model_revision",
-    "schema",
-})
+sorted(set(table.columns) & {"output_name", "output_type", "schema", "object_id", "feature", "value"})
+```
+
+## Export an alignment table
+
+Alignment rows answer a different question: which source row maps to which target timeline row?
+
+```{python}
+aligned = result.align_to("text.tokenize", features="language.surface")
+aligned.to_dataframe().loc[
+    :,
+    ["source_name", "source_row", "target_name", "target_index_start", "target_time_s"],
+]
 ```
 
 ## Refuses to
 
 - Table helpers require pandas through the storage/docs dependency path.
 - Event-level arrays in `extra` must have compatible lengths.
+- Alignment table export requires a temporal source and a timeline target.
 
 ## Read next
 

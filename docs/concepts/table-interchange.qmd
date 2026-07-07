@@ -24,7 +24,7 @@ Table interchange turns typed feature objects into pandas tables for inspection,
 
 ## What it doesn't do
 
-Table helpers do not resample or align features. They expose the rows implied by the object they receive.
+Table helpers do not resample features or invent timeline mappings. Use `ExtractFeaturesResult.align_to()` first when you need to record how source rows map to word, event, frame, or custom timelines.
 
 ## Canonical event columns
 
@@ -36,4 +36,4 @@ OBJECT_CANONICAL_COLUMNS[:10]
 
 ## See also
 
-[Export events to a table](../cookbook/event-table-export.qmd) · [Merge feature tables](../cookbook/feature-table-merge.qmd)
+[Align features to a timeline](../cookbook/timeline-alignment.qmd) · [Export events to a table](../cookbook/event-table-export.qmd) · [Merge feature tables](../cookbook/feature-table-merge.qmd)

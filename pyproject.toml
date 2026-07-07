@@ -55,6 +55,7 @@ docs = [
   "griffe<2",
   "ipykernel>=6.29",
   "jupyter-cache>=1.0",
+  "matplotlib>=3.8",
   "pandas>=2.0",
   "quartodoc>=0.9",
 ]
@@ -87,6 +88,7 @@ docs = [
     "griffe<2",
     "ipykernel>=6.29",
     "jupyter-cache>=1.0",
+    "matplotlib>=3.8",
     "pandas>=2.0",
     "quartodoc>=0.9",
 ]

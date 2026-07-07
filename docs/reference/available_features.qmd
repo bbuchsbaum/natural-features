@@ -1,0 +1,14 @@
+# available_features { #natural_features.available_features }
+
+```python
+available_features(
+    modality=None,
+    budget='default',
+    bundle=None,
+    tags=None,
+    include_placeholders=False,
+    public_only=True,
+    as_dataframe=False,
+    registry=None,
+)
+```

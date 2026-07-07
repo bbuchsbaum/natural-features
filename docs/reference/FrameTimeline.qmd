@@ -1,0 +1,63 @@
+# FrameTimeline { #natural_features.FrameTimeline }
+
+```python
+FrameTimeline(frame_index, onset_s, offset_s, source=None, fps=None)
+```
+
+A non-lossy map between continuous seconds and discrete video frames.
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [annotate_events](#natural_features.FrameTimeline.annotate_events) | Return a copy of ``events`` with frame index/time columns in ``extra``. |
+| [from_fps](#natural_features.FrameTimeline.from_fps) | Build a regular timeline covering a clip duration at a known FPS. |
+| [from_video_stimulus](#natural_features.FrameTimeline.from_video_stimulus) | Build a timeline from a materialized ``VideoStimulus``. |
+| [map_events](#natural_features.FrameTimeline.map_events) | Map event intervals to frame indices using an explicit policy. |
+| [to_rows](#natural_features.FrameTimeline.to_rows) | Return a dependency-light table representation. |
+
+### annotate_events { #natural_features.FrameTimeline.annotate_events }
+
+```python
+FrameTimeline.annotate_events(events, *, policy='overlap')
+```
+
+Return a copy of ``events`` with frame index/time columns in ``extra``.
+
+### from_fps { #natural_features.FrameTimeline.from_fps }
+
+```python
+FrameTimeline.from_fps(
+    duration_s,
+    fps,
+    start_s=0.0,
+    first_frame_index=0,
+    source=None,
+)
+```
+
+Build a regular timeline covering a clip duration at a known FPS.
+
+### from_video_stimulus { #natural_features.FrameTimeline.from_video_stimulus }
+
+```python
+FrameTimeline.from_video_stimulus(video, *, source=None)
+```
+
+Build a timeline from a materialized ``VideoStimulus``.
+
+### map_events { #natural_features.FrameTimeline.map_events }
+
+```python
+FrameTimeline.map_events(events, *, policy='overlap')
+```
+
+Map event intervals to frame indices using an explicit policy.
+
+### to_rows { #natural_features.FrameTimeline.to_rows }
+
+```python
+FrameTimeline.to_rows()
+```
+
+Return a dependency-light table representation.

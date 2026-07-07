@@ -1,0 +1,18 @@
+# extract_features { #natural_features.extract_features }
+
+```python
+extract_features(
+    stimulus,
+    *,
+    features=None,
+    bundle=None,
+    budget='default',
+    feature_params=None,
+    format='features',
+    table_format='long',
+    include_objects=True,
+    include_placeholders=False,
+    video_fps=10.0,
+    registry=None,
+)
+```

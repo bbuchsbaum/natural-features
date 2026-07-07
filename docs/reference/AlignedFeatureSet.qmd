@@ -1,0 +1,5 @@
+# AlignedFeatureSet { #natural_features.AlignedFeatureSet }
+
+```python
+AlignedFeatureSet(features, target, alignments, policy='overlap')
+```

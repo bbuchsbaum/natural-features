@@ -1,0 +1,370 @@
+---
+title: "Inspect and plot feature types"
+subtitle: "Catalogue coverage plus deterministic examples for `FeatureSeries`, `EventSeries`, and `TrackSeries`."
+sidebar: cookbook
+---
+
+## Use when
+
+You want one docs page that covers every public feature family and shows what the main output schemas look like. Model-backed and API-backed feature IDs are listed from the live catalogue; the plotted examples use local synthetic inputs or deterministic fallback routes so the page can render without external datasets.
+
+```{python}
+#| echo: false
+from collections import defaultdict
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+from natural_features.core.feature_types import TrackSeries
+from natural_features.core.stimulus import AudioStimulus, VideoStimulus
+from natural_features.features.common import extractor_metadata
+from natural_features.workflows import available_features, extract_features
+
+plt.rcParams.update(
+    {
+        "figure.facecolor": "#111827",
+        "axes.facecolor": "#111827",
+        "axes.edgecolor": "#9ca3af",
+        "axes.labelcolor": "#e5e7eb",
+        "axes.titlecolor": "#f9fafb",
+        "xtick.color": "#d1d5db",
+        "ytick.color": "#d1d5db",
+        "grid.color": "#374151",
+        "text.color": "#f9fafb",
+        "legend.facecolor": "#111827",
+        "legend.edgecolor": "#4b5563",
+    }
+)
+
+
+def _feature_names(series, limit=None):
+    names = [str(x) for x in series.coords.get("feature", [])]
+    if not names:
+        names = [f"f{i}" for i in range(series.values.reshape(series.values.shape[0], -1).shape[1])]
+    return names[:limit] if limit is not None else names
+
+
+def _column(series, name):
+    names = _feature_names(series)
+    return series.values[:, names.index(name)]
+
+
+def _normalize_columns(values):
+    values = np.asarray(values, dtype=np.float32)
+    lo = np.nanmin(values, axis=0, keepdims=True)
+    hi = np.nanmax(values, axis=0, keepdims=True)
+    return (values - lo) / np.maximum(hi - lo, 1e-8)
+```
+
+## Catalogue coverage
+
+This grid is generated from `available_features(budget="all", include_placeholders=True)` when the site renders. It covers the public feature catalogue, including routes that need optional runtimes.
+
+```{python}
+#| echo: false
+#| output: asis
+entries = available_features(budget="all", include_placeholders=True)
+groups = defaultdict(list)
+for entry in entries:
+    groups[entry.feature_id.split(".", 1)[0]].append(entry)
+
+print("::: {.catalogue-grid}")
+for family in sorted(groups):
+    rows = sorted(groups[family], key=lambda item: item.feature_id)
+    schemas = ", ".join(f"`{schema}`" for schema in sorted({row.output_schema for row in rows}))
+    examples = ", ".join(f"`{row.feature_id}`" for row in rows[:5])
+    if len(rows) > 5:
+        examples += f", +{len(rows) - 5} more"
+    opt_in = sum(1 for row in rows if row.requires_opt_in)
+    id_word = "public ID" if len(rows) == 1 else "public IDs"
+    opt_word = "ID" if opt_in == 1 else "IDs"
+    print(f"""
+::: {{.catalogue-card}}
+#### {family}
+
+{len(rows)} {id_word} · {opt_in} opt-in {opt_word}
+
+**Schemas:** {schemas}
+
+**Examples:** {examples}
+:::
+""")
+print(":::")
+
+schemas = sorted({entry.output_schema for entry in entries})
+print(f"\n*{len(entries)} public feature IDs across {len(groups)} families. Output schemas: " + ", ".join(f"`{s}`" for s in schemas) + ".*")
+```
+
+## Audio and speech
+
+The audio example uses a synthetic amplitude-modulated tone. It exercises dense acoustic features and event extraction without reading a WAV file.
+
+```{python}
+#| echo: false
+sr = 8000
+t = np.arange(0, 2.4, 1 / sr, dtype=np.float32)
+envelope = np.where(
+    ((t > 0.25) & (t < 0.95)) | ((t > 1.35) & (t < 2.05)),
+    1.0,
+    0.25,
+)
+samples = envelope * (
+    0.45 * np.sin(2 * np.pi * (180 + 45 * np.sin(2 * np.pi * 0.5 * t)) * t)
+    + 0.12 * np.sin(2 * np.pi * 520 * t)
+)
+audio = AudioStimulus.from_array(samples.astype(np.float32), sr_hz=sr)
+
+audio_result = extract_features(
+    audio,
+    features=[
+        "audio.rms",
+        "audio.mel",
+        "audio.pitch",
+        "audio.prosody",
+        "audio.clap",
+        "speech.vad",
+        "speech.ctc",
+    ],
+    budget="allow_python",
+    feature_params={
+        "audio.mel": {"n_mels": 24},
+        "audio.clap": {"dim": 12, "stride_s": 0.25},
+        "speech.ctc": {"stride_s": 0.05},
+    },
+)
+```
+
+```{python}
+#| fig-cap: "Synthetic audio plotted as waveform, event spans, RMS, pitch, and mel energy."
+#| fig-width: 8
+#| fig-height: 6
+rms = audio_result.features["audio.rms"]
+mel = audio_result.features["audio.mel"]
+pitch = audio_result.features["audio.pitch"]
+vad = audio_result.features["speech.vad"]
+
+fig, axes = plt.subplots(3, 1, sharex=False, constrained_layout=True)
+axes[0].plot(t, samples, color="#38bdf8", linewidth=0.8)
+for onset, offset in zip(vad.onset_s, vad.offset_s, strict=True):
+    axes[0].axvspan(onset, offset, color="#f59e0b", alpha=0.24)
+axes[0].set_title("waveform with speech-event spans")
+axes[0].set_ylabel("amplitude")
+
+axes[1].plot(rms.times_s, rms.values[:, 0], label="audio.rms", color="#34d399")
+f0 = pitch.values[:, 0]
+if np.nanmax(f0) > 0:
+    axes[1].plot(pitch.times_s, f0 / np.nanmax(f0), label="audio.pitch scaled", color="#f472b6")
+axes[1].set_title("dense FeatureSeries")
+axes[1].set_ylabel("value")
+axes[1].legend(loc="upper right")
+
+extent = [float(mel.times_s[0]), float(mel.times_s[-1]), 0, mel.values.shape[1]]
+axes[2].imshow(mel.values.T, origin="lower", aspect="auto", extent=extent, cmap="magma")
+axes[2].set_title("audio.mel")
+axes[2].set_xlabel("time (s)")
+axes[2].set_ylabel("mel bin")
+plt.show()
+```
+
+The same source also has fallback-friendly embedding and posterior routes in the catalogue. The build runs compact examples for `audio.clap` and `speech.ctc`, but keeps the plot focused on low-dimensional diagnostics.
+
+## Text, events, and language
+
+Text starts as word events, then feeds language and speech-derived token features. This route covers `EventSeries` and word-aligned `FeatureSeries` objects.
+
+```{python}
+#| echo: false
+text = "A bright face appears. The quiet voice returns as the room brightens again."
+text_result = extract_features(
+    text,
+    features=[
+        "text.tokenize",
+        "language.surface",
+        "language.syntax",
+        "language.surprisal",
+        "speech.phonemes",
+        "speech.articulatory",
+    ],
+    budget="allow_python",
+)
+words = text_result.features["text.tokenize"]
+surface = text_result.features["language.surface"]
+syntax = text_result.features["language.syntax"]
+surprisal = text_result.features["language.surprisal"]
+articulatory = text_result.features["speech.articulatory"]
+```
+
+```{python}
+#| fig-cap: "Word events and normalized word-aligned feature values from language and speech routes."
+#| fig-width: 8
+#| fig-height: 5
+labels = [str(x) for x in words.label]
+matrix_parts = [
+    ("surface", surface.values[:, :3], _feature_names(surface, 3)),
+    ("syntax", syntax.values[:, :4], _feature_names(syntax, 4)),
+    ("surprisal", surprisal.values[:, :1], _feature_names(surprisal, 1)),
+    ("artic", articulatory.values[:, :3], _feature_names(articulatory, 3)),
+]
+matrix = np.concatenate([part[1] for part in matrix_parts], axis=1)
+row_labels = [f"{prefix}.{name}" for prefix, _values, names in matrix_parts for name in names]
+matrix = _normalize_columns(matrix)
+
+fig, axes = plt.subplots(2, 1, constrained_layout=True, height_ratios=[1.0, 2.0])
+for i, label in enumerate(labels):
+    onset = float(words.onset_s[i])
+    duration = float(words.offset_s[i] - words.onset_s[i])
+    axes[0].broken_barh([(onset, duration)], (0.15, 0.7), facecolors="#60a5fa", alpha=0.62)
+    axes[0].text(onset + duration / 2, 0.52, label, ha="center", va="center", fontsize=8)
+axes[0].set_ylim(0, 1)
+axes[0].set_yticks([])
+axes[0].set_title("text.tokenize events")
+axes[0].set_xlabel("time (s)")
+
+axes[1].imshow(matrix.T, aspect="auto", origin="lower", cmap="viridis")
+axes[1].set_yticks(np.arange(len(row_labels)))
+axes[1].set_yticklabels(row_labels, fontsize=8)
+axes[1].set_xticks(np.arange(len(labels)))
+axes[1].set_xticklabels(labels, rotation=35, ha="right")
+axes[1].set_title("word-aligned FeatureSeries values")
+plt.show()
+```
+
+## Video and vision
+
+The video example uses a moving synthetic blob with color variation. It exercises low-level vision, spatial, motion, face-proxy, and social-proxy routes from the public catalogue.
+
+```{python}
+#| echo: false
+n_frames, height, width = 28, 36, 52
+yy, xx = np.mgrid[0:height, 0:width]
+frames = np.zeros((n_frames, height, width, 3), dtype=np.float32)
+for i in range(n_frames):
+    cx = 8 + i * (width - 16) / max(1, n_frames - 1)
+    cy = height / 2 + 7 * np.sin(i / 4)
+    blob = np.exp(-(((xx - cx) ** 2) + ((yy - cy) ** 2)) / 52.0)
+    stripe = ((xx + i * 2) % 18 < 5).astype(np.float32) * 0.25
+    frames[i, ..., 0] = np.clip(0.18 + blob * 0.75, 0, 1)
+    frames[i, ..., 1] = np.clip(0.12 + stripe + blob * 0.25, 0, 1)
+    frames[i, ..., 2] = np.clip(0.22 + (1 - blob) * 0.2, 0, 1)
+video = VideoStimulus.from_array(frames, fps=8)
+
+vision_result = extract_features(
+    video,
+    features=[
+        "vision.energy",
+        "vision.frame_diffs",
+        "vision.motion",
+        "vision.dct",
+        "vision.face",
+        "vision.social_proxies",
+    ],
+    budget="allow_python",
+    feature_params={"vision.dct": {"k": 12, "size": 16}},
+)
+```
+
+```{python}
+#| fig-cap: "Synthetic video frames plus visual energy, motion, face proxy, and DCT coefficients."
+#| fig-width: 8
+#| fig-height: 6
+energy = vision_result.features["vision.energy"]
+motion = vision_result.features["vision.motion"]
+face = vision_result.features["vision.face"]
+social = vision_result.features["vision.social_proxies"]
+dct = vision_result.features["vision.dct"]
+
+fig, axes = plt.subplots(2, 2, constrained_layout=True)
+axes[0, 0].imshow(frames[0])
+axes[0, 0].set_title("first frame")
+axes[0, 0].axis("off")
+axes[0, 1].imshow(frames[-1])
+axes[0, 1].set_title("last frame")
+axes[0, 1].axis("off")
+
+axes[1, 0].plot(energy.times_s, _column(energy, "luminance"), label="luminance", color="#38bdf8")
+axes[1, 0].plot(motion.times_s, _column(motion, "flow_mag_mean"), label="motion", color="#f59e0b")
+axes[1, 0].plot(face.times_s, _column(face, "face_presence"), label="face proxy", color="#f472b6")
+axes[1, 0].plot(social.times_s, _column(social, "social_intensity_proxy"), label="social proxy", color="#34d399")
+axes[1, 0].set_title("framewise summaries")
+axes[1, 0].set_xlabel("time (s)")
+axes[1, 0].legend(fontsize=8)
+
+axes[1, 1].imshow(dct.values.T, aspect="auto", origin="lower", cmap="cividis")
+axes[1, 1].set_title("vision.dct coefficients")
+axes[1, 1].set_xlabel("frame")
+axes[1, 1].set_ylabel("coefficient")
+plt.show()
+```
+
+## Feature transforms and tracks
+
+Feature transform IDs operate on existing `FeatureSeries` objects. The public `TrackSeries` route is diarization, which normally needs an optional backend, so this page uses a synthetic two-track object to show the schema and plot shape.
+
+```{python}
+#| echo: false
+rms_feature = audio_result.features["audio.rms"]
+transform_result = extract_features(
+    {"features": rms_feature},
+    features=["features.resample", "features.hrf", "features.lag"],
+    budget="allow_python",
+    feature_params={
+        "features.resample": {"step_s": 0.25},
+        "features.hrf": {"tr_s": 0.2},
+        "features.lag": {"lags": [0, 2, 4]},
+    },
+)
+
+track_times = np.linspace(0, 2.5, 18)
+track_ids = np.array(["speaker_a", "speaker_b"], dtype=object)
+track_values = np.zeros((len(track_times), len(track_ids), 3), dtype=np.float32)
+track_values[:, 0, 0] = 0.2 + 0.45 * track_times / track_times[-1]
+track_values[:, 0, 1] = 0.55 + 0.12 * np.sin(track_times * 2.5)
+track_values[:, 0, 2] = 0.9
+track_values[:, 1, 0] = 0.8 - 0.35 * track_times / track_times[-1]
+track_values[:, 1, 1] = 0.35 + 0.10 * np.cos(track_times * 2.0)
+track_values[:, 1, 2] = 0.72
+tracks = TrackSeries(
+    times_s=track_times,
+    track_id=track_ids,
+    values=track_values,
+    coords={"feature": ["x", "y", "confidence"]},
+    metadata=extractor_metadata("docs.synthetic.tracks", params={"tracks": 2}),
+)
+```
+
+```{python}
+#| fig-cap: "FeatureSeries transforms and a synthetic TrackSeries trajectory plot."
+#| fig-width: 8
+#| fig-height: 4
+resampled = transform_result.features["features.resample"]
+hrf = transform_result.features["features.hrf"]
+lagged = transform_result.features["features.lag"]
+
+fig, axes = plt.subplots(1, 2, constrained_layout=True)
+axes[0].plot(rms_feature.times_s, rms_feature.values[:, 0], label="input rms", color="#38bdf8", alpha=0.7)
+axes[0].plot(resampled.times_s, resampled.values[:, 0], "o-", label="resampled", color="#34d399")
+axes[0].plot(hrf.times_s, hrf.values[:, 0], label="hrf", color="#f59e0b")
+axes[0].plot(lagged.times_s, lagged.values[:, 0], label="lag 0", color="#f472b6")
+axes[0].set_title("features.* routes")
+axes[0].set_xlabel("time (s)")
+axes[0].legend(fontsize=8)
+
+for track_index, track_id in enumerate(tracks.track_id):
+    axes[1].plot(
+        tracks.values[:, track_index, 0],
+        tracks.values[:, track_index, 1],
+        "o-",
+        label=str(track_id),
+    )
+axes[1].set_xlim(0, 1)
+axes[1].set_ylim(0, 1)
+axes[1].set_title("TrackSeries coordinates")
+axes[1].set_xlabel("x")
+axes[1].set_ylabel("y")
+axes[1].legend(fontsize=8)
+plt.show()
+```
+
+## Boundary it closes
+
+The generated catalogue grid keeps coverage tied to registered specs. The plots keep schema coverage tied to executed objects. When a new public feature family is added, it appears in the grid automatically; when a new schema is added, this page should gain a plotted object for that schema.

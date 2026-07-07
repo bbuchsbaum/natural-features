@@ -9,6 +9,24 @@ Typed time-aligned containers. Concept: [Feature objects](../concepts/feature-ob
 | [FeatureSeries](FeatureSeries.qmd#natural_features.FeatureSeries) |  |
 | [EventSeries](EventSeries.qmd#natural_features.EventSeries) |  |
 | [TrackSeries](TrackSeries.qmd#natural_features.TrackSeries) |  |
+| [Timeline](Timeline.qmd#natural_features.Timeline) | A named interval timeline used as an alignment target. |
+| [FeatureAlignment](FeatureAlignment.qmd#natural_features.FeatureAlignment) | Alignment of one temporal feature output to a target timeline. |
+
+## Unified extraction workflow
+
+Plan, extract, align, and export feature bundles. Concept: [Unified workflow](../concepts/unified-workflow.qmd) · Recipe: [Align features to a timeline](../cookbook/timeline-alignment.qmd).
+
+| | |
+| --- | --- |
+| [available_features](available_features.qmd#natural_features.available_features) |  |
+| [feature_catalog](feature_catalog.qmd#natural_features.feature_catalog) |  |
+| [plan_features](plan_features.qmd#natural_features.plan_features) |  |
+| [extract_features](extract_features.qmd#natural_features.extract_features) |  |
+| [ExtractFeaturesResult](ExtractFeaturesResult.qmd#natural_features.ExtractFeaturesResult) |  |
+| [AlignedFeatureSet](AlignedFeatureSet.qmd#natural_features.AlignedFeatureSet) |  |
+| [FrameTimeline](FrameTimeline.qmd#natural_features.FrameTimeline) | A non-lossy map between continuous seconds and discrete video frames. |
+| [VideoTextResult](VideoTextResult.qmd#natural_features.VideoTextResult) | Result bundle for speech-derived text aligned to video time. |
+| [extract_video_text](extract_video_text.qmd#natural_features.extract_video_text) | Extract speech text from a video and align word events to frame indices. |
 
 ## Audio and language workflows
 

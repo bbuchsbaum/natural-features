@@ -618,6 +618,35 @@ extractors:
       words: { schema: EventSeries/v1, kind: words }
       qc: { schema: dict, kind: qc }
 
+  - name: video.speech.words
+    impl: natural_features.workflows.video_text:video_speech_words
+    version: "1.0"
+    label: Video speech word events
+    modalities: [video]
+    requires: [ffmpeg, speech_asr]
+    dependency_class: optional_python
+    cost_class: expensive
+    bundles: [speech_encoding, movie_encoding]
+    tags: [video, speech, asr, words, frame-aligned]
+    params:
+      model: { type: str, default: small }
+      language: { type: str, default: auto }
+      align: { type: str, default: auto }
+      chunked: { type: bool, default: false }
+      chunk_window_s: { type: float, default: 30.0 }
+      chunk_overlap_s: { type: float, default: 1.0 }
+      audio_sr_hz: { type: int, default: 16000 }
+      start_s: { type: float, default: 0.0 }
+      duration_s: { type: float, default: null, nullable: true }
+      video_fps: { type: float, default: null, nullable: true }
+      frame_policy: { type: str, default: overlap }
+      execution_mode: { type: str, default: fallback }
+      strict_dependency: { type: bool, default: false }
+    outputs:
+      words: { schema: EventSeries/v1, kind: words }
+      segments: { schema: EventSeries/v1, kind: events }
+      qc: { schema: dict, kind: qc }
+
   - name: speech.asr.whisper_chunked
     impl: natural_features.features.speech.asr:whisper_transcribe_chunked
     version: "1.0"

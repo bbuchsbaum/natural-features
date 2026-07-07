@@ -1,0 +1,101 @@
+---
+title: "Align features to a timeline"
+subtitle: "Use `ExtractFeaturesResult.align_to()` before joining or modeling rows."
+sidebar: cookbook
+---
+
+## Use when
+
+You have extracted more than one feature type and want a clear mapping between them. Common examples are dense language features aligned to words, audio features aligned to events, or visual features aligned to video frames.
+
+## Text features aligned to word events
+
+```{python}
+from natural_features.workflows import extract_features
+
+result = extract_features(
+    "alpha beta beta",
+    features=["text.tokenize", "language.surface"],
+)
+
+aligned = result.align_to(
+    "text.tokenize",
+    features="language.surface",
+)
+
+alignment_table = aligned.to_dataframe()
+alignment_table.loc[
+    :,
+    [
+        "source_name",
+        "source_row",
+        "source_onset_s",
+        "source_offset_s",
+        "target_index_start",
+        "target_index_end",
+        "target_time_s",
+    ],
+]
+```
+
+The source feature remains a `FeatureSeries`; the target is a `Timeline` derived from `text.tokenize`.
+
+```{python}
+{
+    "source_type": type(result.features["language.surface"]).__name__,
+    "target_kind": aligned.target.kind,
+    "alignment_type": type(aligned.alignments["language.surface"]).__name__,
+}
+```
+
+## Annotate events when that is useful
+
+Event outputs can receive alignment columns because their row shape is already event-like.
+
+```{python}
+word_aligned = result.align_to(
+    "text.tokenize",
+    features="text.tokenize",
+).annotated_features(prefix="word")
+
+word_aligned["text.tokenize"].extra["word_index_start"].tolist()
+```
+
+Dense feature outputs are not rewritten into events. Use `FeatureAlignment.to_dataframe()` when you want a rectangular join surface.
+
+## Video features aligned to frames
+
+`VideoStimulus` inputs automatically provide a `video_frames` timeline. This example uses synthetic frames, so it does not need ffmpeg or model downloads.
+
+```{python}
+import numpy as np
+
+from natural_features.core.stimulus import VideoStimulus
+from natural_features.workflows import extract_features
+
+frames = np.zeros((4, 12, 12, 3), dtype=np.float32)
+frames[:, 3:8, 4:9, 0] = np.linspace(0.1, 1.0, 4)[:, None, None]
+video = VideoStimulus.from_array(frames, fps=2.0)
+
+video_result = extract_features(video, features=["vision.energy"])
+frame_aligned = video_result.align_to("video_frames", features="vision.energy")
+
+frame_aligned.to_dataframe().loc[
+    :,
+    [
+        "source_name",
+        "source_row",
+        "source_onset_s",
+        "target_index_start",
+        "target_time_s",
+    ],
+]
+```
+
+## Boundary it closes
+
+Alignment is not a table merge. It is a recorded mapping between a source feature object's time coordinates and a target timeline. Export to a table after the mapping exists.
+
+## See also
+
+[Unified workflow](../concepts/unified-workflow.qmd) · [Five feature types, five concepts](five-feature-concepts.qmd) · [Feature table merge](feature-table-merge.qmd)

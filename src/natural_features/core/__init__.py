@@ -1,6 +1,7 @@
 """Core contracts and utilities."""
 
 from .feature_types import EventSeries, FeatureSeries, TrackSeries
+from .frame_timeline import FramePolicy, FrameTimeline
 from .interchange import (
     as_event_table,
     as_feature_table,
@@ -22,10 +23,13 @@ from .stimulus import (
     image_from_array,
     image_from_file,
 )
+from .timeline import AlignmentPolicy, FeatureAlignment, Timeline, align_feature_to_timeline
 
 __all__ = [
     "AudioStimulus",
+    "AlignmentPolicy",
     "EventSeries",
+    "FeatureAlignment",
     "as_mermaid",
     "as_event_table",
     "as_feature_table",
@@ -35,6 +39,8 @@ __all__ = [
     "ensure_object_ids",
     "execute_recipe",
     "FeatureSeries",
+    "FramePolicy",
+    "FrameTimeline",
     "ImageStimulus",
     "image_from_array",
     "image_from_file",
@@ -47,6 +53,8 @@ __all__ = [
     "Registry",
     "TextStimulus",
     "TrackSeries",
+    "Timeline",
+    "align_feature_to_timeline",
     "validate_recipe",
     "VideoStimulus",
 ]

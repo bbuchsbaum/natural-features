@@ -1,0 +1,13 @@
+# ExtractFeaturesResult { #natural_features.ExtractFeaturesResult }
+
+```python
+ExtractFeaturesResult(
+    features,
+    plan,
+    recipe,
+    steps,
+    table=None,
+    inputs=dict(),
+    timelines=dict(),
+)
+```

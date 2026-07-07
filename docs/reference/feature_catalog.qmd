@@ -1,0 +1,5 @@
+# feature_catalog { #natural_features.feature_catalog }
+
+```python
+feature_catalog(registry=None)
+```

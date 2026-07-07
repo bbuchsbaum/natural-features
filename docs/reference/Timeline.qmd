@@ -1,0 +1,29 @@
+# Timeline { #natural_features.Timeline }
+
+```python
+Timeline(
+    name,
+    onset_s,
+    offset_s,
+    index=None,
+    kind='intervals',
+    source=None,
+    metadata=dict(),
+)
+```
+
+A named interval timeline used as an alignment target.
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [map_intervals](#natural_features.Timeline.map_intervals) | Map source intervals to this timeline. |
+
+### map_intervals { #natural_features.Timeline.map_intervals }
+
+```python
+Timeline.map_intervals(onset_s, offset_s=None, *, policy='overlap')
+```
+
+Map source intervals to this timeline.

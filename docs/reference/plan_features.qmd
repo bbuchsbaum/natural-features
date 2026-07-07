@@ -1,0 +1,15 @@
+# plan_features { #natural_features.plan_features }
+
+```python
+plan_features(
+    stimulus=None,
+    *,
+    features=None,
+    bundle=None,
+    budget='default',
+    feature_params=None,
+    include_placeholders=False,
+    as_dataframe=False,
+    registry=None,
+)
+```
