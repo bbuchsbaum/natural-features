@@ -62,11 +62,28 @@ def _check_ruff(root: Path, problems: list[str]) -> None:
         "src",
         "tests",
         "scripts",
+        "tools",
     ]
     proc = subprocess.run(cmd, cwd=root, capture_output=True, text=True)
     if proc.returncode != 0:
         diagnostics = proc.stdout.strip() or proc.stderr.strip() or "no diagnostics"
         problems.append("Ruff check failed:\n" + diagnostics)
+
+
+def _check_r_public_parity(root: Path, *, no_r_compare: bool, problems: list[str]) -> None:
+    parity_script = root / "tools" / "parity" / "check_r_catalog_parity.py"
+    if not parity_script.exists():
+        problems.append("Missing tools/parity/check_r_catalog_parity.py")
+        return
+    cmd = [sys.executable, str(parity_script)]
+    if no_r_compare:
+        cmd.append("--no-r-compare")
+    proc = subprocess.run(cmd, cwd=root, capture_output=True, text=True)
+    if proc.returncode != 0:
+        diagnostics = proc.stdout.strip() or proc.stderr.strip() or "no diagnostics"
+        problems.append("R public feature parity check failed:\n" + diagnostics)
+    elif proc.stdout.strip():
+        print(proc.stdout.strip())
 
 
 def _check_alignment_gate(root: Path, report_path: Path, problems: list[str]) -> None:
@@ -96,6 +113,11 @@ def main() -> int:
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--with-tests", action="store_true", help="Run full pytest suite after static checks")
     parser.add_argument(
+        "--no-r-compare",
+        action="store_true",
+        help="Run Python parity checks without comparing to a live ~/code/natfeatures checkout",
+    )
+    parser.add_argument(
         "--alignment-report",
         type=Path,
         default=None,
@@ -112,6 +134,14 @@ def main() -> int:
         _check_golden(root, problems)
         _check_changelog(root, problems)
         _check_ruff(root, problems)
+        no_r_compare = args.no_r_compare or os.environ.get("NF_PARITY_NO_R_COMPARE", "").strip() in {
+            "1",
+            "true",
+            "TRUE",
+            "yes",
+            "YES",
+        }
+        _check_r_public_parity(root, no_r_compare=no_r_compare, problems=problems)
         report_arg = args.alignment_report
         report_env = os.environ.get("NF_ALIGNMENT_BENCHMARK_REPORT", "").strip()
         report_path = report_arg or (Path(report_env) if report_env else None)

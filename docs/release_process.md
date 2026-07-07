@@ -21,6 +21,9 @@ Breaking stable API changes require:
    - `uv run pytest -q tests/unit/test_golden_regressions.py`
 3. Run release gates:
    - `make release-check`
+   - `make parity-check`
+   - CI-only parity mode, when `~/code/natfeatures` is unavailable:
+     - `uv run python scripts/release_check.py --no-r-compare`
    - Optional hard benchmark gate:
      - `nf speech-benchmark --manifest tests/benchmarks/manifests/tier_a_alignment_manifest.json --json > /tmp/alignment_report.json`
      - `NF_ALIGNMENT_BENCHMARK_REPORT=/tmp/alignment_report.json make release-check`

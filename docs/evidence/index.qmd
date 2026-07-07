@@ -52,6 +52,7 @@ The docs slice should be reviewed with:
 ```bash
 uv run pytest -q
 uv run python scripts/release_check.py
+uv run python tools/parity/check_r_catalog_parity.py
 uv run python scripts/validate_tier_a_stimuli.py
 cd docs && make quarto
 ```

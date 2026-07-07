@@ -52,6 +52,9 @@ jobs:
       - name: Validate Tier A fixtures
         run: make validate-tier-a
 
+      - name: Run static release gate
+        run: python scripts/release_check.py --no-r-compare
+
       - name: Run deterministic unit tests
         run: pytest -q tests/unit
 

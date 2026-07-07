@@ -4,7 +4,7 @@ PIP ?= pip
 .PHONY: install test test-smoke test-media test-nightly test-external import-snl \
 	generate-tier-a validate-tier-a fetch-tier-b prepare-tier-b generate-golden \
 	lint release-check ci-smoke ci-media ci-nightly setup-mfa-conda \
-	benchmark-tier-a benchmark-gate
+	benchmark-tier-a benchmark-gate parity-check parity-check-ci
 
 install:
 	$(PIP) install -e ".[dev,storage,vision]"
@@ -41,10 +41,16 @@ generate-golden:
 	$(PYTHON) scripts/generate_golden_references.py
 
 lint:
-	ruff check src tests scripts
+	ruff check src tests scripts tools
 
 release-check:
 	$(PYTHON) scripts/release_check.py
+
+parity-check:
+	$(PYTHON) tools/parity/check_r_catalog_parity.py
+
+parity-check-ci:
+	$(PYTHON) tools/parity/check_r_catalog_parity.py --no-r-compare
 
 import-snl:
 	$(PYTHON) scripts/import_snl_dataset.py

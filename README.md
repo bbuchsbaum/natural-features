@@ -88,6 +88,7 @@ make test-smoke
 make test-media
 make test-nightly
 make release-check
+make parity-check
 ```
 
 Optional benchmark gate:
