@@ -15,6 +15,7 @@ from natural_features.features.speech.emotion import speech_emotion
 from natural_features.features.speech.ssl import hubert_hidden_states, wavlm_hidden_states
 from natural_features.features.speech.vad import neural_vad
 from natural_features.features.vision.neural import vision_clip_embeddings, vision_dino_embeddings
+from natural_features.features.vision.semantic import vision_semantic_views
 
 
 pytestmark = [pytest.mark.external, pytest.mark.nightly]
@@ -225,6 +226,30 @@ def test_real_dino_backend_local_model_contract() -> None:
 
     _assert_real_feature_series(out, feature_id="vision.dino")
     assert out.values.shape == (2, 8)
+
+
+def test_real_semantic_views_backend_local_model_contract() -> None:
+    pytest.importorskip("PIL")
+    pytest.importorskip("torch")
+    pytest.importorskip("transformers")
+    model = _env_required("NF_TEST_SEMANTIC_VIEWS_MODEL")
+
+    out = vision_semantic_views(
+        _video(),
+        model=model,
+        labels=["gradient_frame", "flipped_gradient_frame"],
+        local_files_only=True,
+        execution_mode="strict",
+        strict_dependency=True,
+    )
+
+    assert isinstance(out, EventSeries)
+    assert out.metadata["extractor_name"] == "vision.semantic_views"
+    assert out.metadata["fallback_used"] is False
+    assert out.metadata["backend"] == "transformers_clip_zero_shot"
+    assert len(out) == 2
+    assert out.confidence is not None
+    assert np.isfinite(out.confidence).all()
 
 
 def test_real_spacy_syntax_backend_contract() -> None:

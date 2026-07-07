@@ -248,7 +248,7 @@ features:
     expected_python_schema: "EventSeries/v1"
     bundles: ["social_vision"]
     required_default_keys: ["execution_mode"]
-    allowed_python_default_extras: ["strict_dependency", "stride_frames"]
+    allowed_python_default_extras: ["batch_size", "labels", "local_files_only", "model", "strict_dependency", "stride_frames"]
   vision.social_proxies:
     expected_python_schema: "FeatureSeries/v1"
     bundles: ["social_vision"]

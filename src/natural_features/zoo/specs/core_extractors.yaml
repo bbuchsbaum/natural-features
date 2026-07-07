@@ -371,13 +371,19 @@ extractors:
     version: "1.0"
     label: Semantic view events
     modalities: [video]
-    requires: [vision, api_optional]
-    dependency_class: optional_api
+    requires: [vision, transformers, torch]
+    dependency_class: optional_python
     cost_class: expensive
     bundles: [social_vision]
     tags: [vision, semantic, fallback]
     params:
+      model: { type: str, default: openai/clip-vit-base-patch32 }
+      labels:
+        type: "list[str]"
+        default: [indoor_scene, outdoor_scene, person_or_face, text_or_graphics, object_closeup, landscape]
       stride_frames: { type: int, default: 1 }
+      batch_size: { type: int, default: 32 }
+      local_files_only: { type: bool, default: true }
       execution_mode: { type: str, default: fallback }
       strict_dependency: { type: bool, default: false }
     outputs:

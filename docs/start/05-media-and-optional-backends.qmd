@@ -29,6 +29,7 @@ plan.to_recipe()
 | `vision.face` | image or video | MediaPipe | face count and geometry summaries |
 | `vision.clip` | image or video | transformers + torch | frame/image embeddings |
 | `vision.dino` | image or video | transformers + torch | frame/image embeddings |
+| `vision.semantic_views` | video | CLIP via transformers + torch | semantic frame labels or scene-proxy fallback |
 | `speech.neural_vad` | audio | silero-vad + torch | speech probability track or energy fallback |
 | `speech.diarization` | audio | pyannote.audio | speaker activity tracks or single-speaker fallback |
 

@@ -9,6 +9,7 @@ import numpy as np
 from natural_features.core.stimulus import ImageStimulus, VideoStimulus
 from natural_features.features.vision.face import face_detection
 from natural_features.features.vision.neural import vision_clip_embeddings, vision_dino_embeddings
+from natural_features.features.vision.semantic import vision_semantic_views
 
 
 class _FakeTensor:
@@ -112,6 +113,71 @@ def test_clip_backend_with_fake_transformers(monkeypatch) -> None:  # noqa: ANN0
     assert out.values.shape == (1, 3)
     np.testing.assert_allclose(out.values[0], np.array([1.0, 2.0, 3.0], dtype=np.float32))
     assert out.metadata["backend"] == "transformers_clip"
+
+
+def test_semantic_views_backend_with_fake_clip(monkeypatch) -> None:  # noqa: ANN001
+    _install_fake_torch(monkeypatch)
+
+    class FakeProcessor:
+        @classmethod
+        def from_pretrained(cls, model: str, local_files_only: bool):  # noqa: ANN102, ANN202
+            assert model == "fake-clip"
+            assert local_files_only
+            return cls()
+
+        def __call__(
+            self,
+            text: list[str],
+            images: list[object],
+            return_tensors: str,
+            padding: bool,
+        ) -> dict[str, _FakeTensor]:
+            assert text == ["a video frame showing cat", "a video frame showing dog"]
+            assert return_tensors == "pt"
+            assert padding is True
+            return {
+                "pixel_values": _FakeTensor(np.zeros((len(images), 3, 2, 2), dtype=np.float32)),
+                "input_ids": _FakeTensor(np.zeros((len(text), 4), dtype=np.float32)),
+            }
+
+    class FakeModel:
+        @classmethod
+        def from_pretrained(cls, model: str, local_files_only: bool):  # noqa: ANN102, ANN202
+            assert model == "fake-clip"
+            assert local_files_only
+            return cls()
+
+        def to(self, _device: object) -> "FakeModel":
+            return self
+
+        def eval(self) -> None:
+            return None
+
+        def __call__(self, pixel_values: _FakeTensor, input_ids: _FakeTensor) -> object:
+            assert pixel_values.array.shape[0] == 2
+            assert input_ids.array.shape[0] == 2
+            return SimpleNamespace(logits_per_image=_FakeTensor(np.asarray([[0.0, 2.0], [3.0, 0.0]], dtype=np.float32)))
+
+    transformers = types.ModuleType("transformers")
+    transformers.CLIPProcessor = FakeProcessor
+    transformers.CLIPModel = FakeModel
+    monkeypatch.setitem(sys.modules, "transformers", transformers)
+
+    stim = VideoStimulus.from_array(np.ones((2, 4, 4, 3), dtype=np.float32), fps=2.0)
+    out = vision_semantic_views(
+        stim,
+        model="fake-clip",
+        labels=["cat", "dog"],
+        execution_mode="strict",
+        strict_dependency=True,
+    )
+
+    assert out.metadata["backend"] == "transformers_clip_zero_shot"
+    assert out.metadata["fallback_used"] is False
+    assert out.label.tolist() == ["dog", "cat"]
+    assert out.extra["label_index"].tolist() == [1, 0]
+    assert out.confidence is not None
+    assert np.all(out.confidence > 0.8)
 
 
 def test_dino_backend_with_fake_transformers(monkeypatch) -> None:  # noqa: ANN001

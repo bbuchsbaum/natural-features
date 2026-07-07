@@ -80,6 +80,7 @@ NF_TEST_NEURAL_VAD_MODEL=silero_vad \
 NF_TEST_PYANNOTE_DIARIZATION_MODEL=/path/to/pyannote/config.yaml \
 NF_TEST_CLIP_MODEL=/path-or-local-id/to/clip \
 NF_TEST_DINO_MODEL=/path-or-local-id/to/dino \
+NF_TEST_SEMANTIC_VIEWS_MODEL=/path-or-local-id/to/clip \
 NF_TEST_SPACY_MODEL=en_core_web_sm \
 NF_TEST_ENABLE_TESSERACT_OCR=1 \
 pytest -q tests/external/test_real_optional_backends.py
