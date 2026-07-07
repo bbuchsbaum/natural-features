@@ -8,12 +8,14 @@ import pytest
 from natural_features.core.feature_types import EventSeries, FeatureSeries, TrackSeries
 from natural_features.core.stimulus import AudioStimulus, ImageStimulus, VideoStimulus
 from natural_features.features.audio.neural import audio_ast_embeddings, audio_clap_embeddings
+from natural_features.features.audio.opensmile import egemaps_lld
 from natural_features.features.preprocess import image_ocr, text_tokenize
 from natural_features.features.language.syntax import syntactic_features
 from natural_features.features.speech.diarization import speaker_diarization
 from natural_features.features.speech.emotion import speech_emotion
 from natural_features.features.speech.ssl import hubert_hidden_states, wavlm_hidden_states
 from natural_features.features.speech.vad import neural_vad
+from natural_features.features.vision.motion_energy import motion_energy_pymoten
 from natural_features.features.vision.neural import vision_clip_embeddings, vision_dino_embeddings
 from natural_features.features.vision.semantic import vision_semantic_views
 
@@ -91,6 +93,19 @@ def test_real_clap_backend_local_model_contract() -> None:
 
     _assert_real_feature_series(out, feature_id="audio.clap")
     assert out.values.shape[1] == 8
+
+
+def test_real_opensmile_egemaps_backend_contract() -> None:
+    if os.environ.get("NF_TEST_ENABLE_OPENSMILE", "").strip() != "1":
+        pytest.skip("Set NF_TEST_ENABLE_OPENSMILE=1 to run the real openSMILE backend test.")
+    pytest.importorskip("opensmile")
+
+    out = egemaps_lld(_audio(), frame_s=0.02, execution_mode="strict", strict_dependency=True)
+
+    _assert_real_feature_series(out, feature_id="audio.opensmile.egemaps_lld")
+    assert out.schema == "FeatureSeries/v1"
+    assert out.metadata["backend"] == "opensmile"
+    assert out.values.shape[1] >= 1
 
 
 def test_real_hubert_backend_local_model_contract() -> None:
@@ -250,6 +265,24 @@ def test_real_semantic_views_backend_local_model_contract() -> None:
     assert len(out) == 2
     assert out.confidence is not None
     assert np.isfinite(out.confidence).all()
+
+
+def test_real_moten_motion_energy_backend_contract() -> None:
+    if os.environ.get("NF_TEST_ENABLE_MOTEN", "").strip() != "1":
+        pytest.skip("Set NF_TEST_ENABLE_MOTEN=1 to run the real moten backend test.")
+    pytest.importorskip("moten")
+
+    out = motion_energy_pymoten(
+        _video(),
+        fps_downsample=None,
+        execution_mode="strict",
+        strict_dependency=True,
+    )
+
+    _assert_real_feature_series(out, feature_id="vision.motion.motion_energy")
+    assert out.schema == "FeatureSeries/v1"
+    assert out.metadata["backend"] == "pymoten"
+    assert out.values.shape[1] >= 1
 
 
 def test_real_spacy_syntax_backend_contract() -> None:
