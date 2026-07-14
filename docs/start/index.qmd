@@ -12,10 +12,13 @@ Work through these pages in order:
 4. [Export tables](04-export-tables.qmd) - turn feature objects and alignments into modeling-ready rows.
 5. [Media and optional backends](05-media-and-optional-backends.qmd) - plan OCR, face, CLIP, DINO, and video-audio routes without accidentally running them.
 
-The package name and import name intentionally differ:
+The package name and import name intentionally differ. The package is not yet
+published on PyPI, so install it from a checkout:
 
 ```bash
-pip install natural-features
+git clone https://github.com/bbuchsbaum/natural-features.git
+cd natural-features
+python -m pip install -e .
 ```
 
 ```python

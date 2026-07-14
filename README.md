@@ -1,87 +1,140 @@
 # natural_features
 
-`natural_features` provides core, time-aligned feature data structures and storage primitives for naturalistic stimuli workflows.
+`natural_features` turns naturalistic stimuli into typed, time-aligned feature
+objects for analysis and modeling. It provides a feature catalogue and planner,
+high-level extraction workflows, explicit timeline alignment, table export, and
+provenance-aware storage.
 
-This initial scaffold includes:
+[Documentation](https://bbuchsbaum.github.io/natural-features/) ·
+[Start guide](https://bbuchsbaum.github.io/natural-features/start/) ·
+[API reference](https://bbuchsbaum.github.io/natural-features/reference/)
 
-- Canonical feature object types (`FeatureSeries`, `EventSeries`, `TrackSeries`)
-- Deterministic timebase utilities
-- Stimulus wrappers with chunked streams
-- Minimal storage/catalog support (`zarr`, `parquet`, `npz`)
-- Deterministic hashing for IDs and cache fingerprints
+The package is currently at version `0.0.1` and is under active development.
+Its versioned public contract is exported from `natural_features.public_api`
+and re-exported at package root.
 
-## Documentation
+## What it provides
 
-- `docs/onboarding.md`
-- `docs/audio_batch_quickstart.md`
-- `docs/acoustic_phonetics_quickstart.md`
-- `docs/multiscale_language_quickstart.md`
-- `docs/public_api_policy.md`
-- `docs/testing_strategy.md`
-- `docs/alignment_benchmarking.md`
-- `docs/mfa_runtime_setup.md`
-- `docs/fmri_querying.md`
-- `docs/api_fmri_query_reference.md`
+- Typed temporal objects: `FeatureSeries`, `EventSeries`, and `TrackSeries`
+- Stimulus wrappers for text, image, audio, video, and multimodal inputs
+- A queryable feature catalogue with planning before execution
+- One-call extraction through `extract_features(...)`
+- Explicit alignment to event, frame, regular, or custom timelines
+- Audio-batch, acoustic-phonetics, multiscale-language, and video-text workflows
+- Run-aware fMRI window queries and optional `fmrimod` adapters
+- Storage and interchange through NPZ, Zarr, Parquet, and tabular exports
+- A CLI for catalogue inspection, recipes, media preparation, and speech alignment
 
-## Public API Stability
+## Installation
 
-The stable public contract is exported from `natural_features.public_api` and
-re-exported at package root (`import natural_features as nf`).
+The project is not yet published on PyPI. Install it from a checkout:
 
-- Stable symbols: `nf.STABLE_EXPORTS`
-- Compatibility version: `nf.API_COMPAT_VERSION`
-- Experimental namespaces: `nf.EXPERIMENTAL_NAMESPACES`
+```bash
+git clone https://github.com/bbuchsbaum/natural-features.git
+cd natural-features
+python -m pip install -e .
+```
 
-Policy details: `docs/public_api_policy.md`.
+For development with `uv`:
 
-## Execution Modes
+```bash
+uv sync
+uv run nf --help
+```
 
-Fallback-capable extractors/workflows support:
+Optional dependency groups are defined in `pyproject.toml`, including
+`storage`, `vision`, `speech`, `alignment`, `alignment_mfa`,
+`alignment_legacy`, `llm`, `dev`, and `docs`.
 
-- `execution_mode="fallback"` (default): use deterministic proxies/fallbacks and annotate provenance.
-- `execution_mode="strict"`: fail loudly if optional dependencies/models are unavailable.
+## Quick start
 
-Legacy `strict_dependency=True|False` remains supported for backwards compatibility.
+The high-level workflow accepts a stimulus, resolves the requested feature
+route, and returns typed feature objects:
 
-## fmrimod Compatibility
+```python
+import natural_features as nf
 
-The `natural_features.fmri` module is designed to stay compatible with
-`fmrimod` for complex HRF/design logic:
+result = nf.extract_features(
+    "The scene opens on a quiet room.",
+    features=["text.tokenize", "language.surface"],
+)
 
-- `natural_features.fmri.to_sampling_frame(...)`
-- `natural_features.fmri.render_events_with_fmrimod(...)`
-- `natural_features.fmri.hrf_kernel(..., backend=\"fmrimod\")`
+words = result.features["text.tokenize"]
+surface = result.features["language.surface"]
 
-If `fmrimod` is installed, these adapters let you dogfood existing modeling
-interfaces while keeping `natural_features` feature extraction contracts stable.
+aligned = result.align_to(
+    "text.tokenize",
+    features="language.surface",
+)
+rows = aligned.to_rows()
+```
+
+Inspect available features before running a workflow:
+
+```bash
+nf features --modality text --json
+nf features --modality audio --budget all --csv
+nf describe vision.lowlevel.visual_energy
+```
+
+See the [feature tour](https://bbuchsbaum.github.io/natural-features/tour/)
+for the catalogue, output schemas, dependency classes, and cost classes.
+
+## Execution modes
+
+Fallback-capable extractors and workflows support two execution modes:
+
+- `execution_mode="fallback"` uses deterministic fallbacks when an optional
+  backend is unavailable and records that choice in provenance.
+- `execution_mode="strict"` raises an error when the requested backend or model
+  is unavailable.
+
+Legacy `strict_dependency=True|False` arguments remain supported for backward
+compatibility.
+
+## Stable public API
+
+The compatibility policy covers the symbols in `nf.STABLE_EXPORTS`, including
+the core temporal types, timeline types, catalogue and extraction functions,
+workflow entry points, and fMRI query helpers.
+
+```python
+import natural_features as nf
+
+print(nf.API_COMPAT_VERSION)
+print(nf.STABLE_EXPORTS)
+print(nf.EXPERIMENTAL_NAMESPACES)
+```
+
+See the [public API policy](https://github.com/bbuchsbaum/natural-features/blob/main/docs/public_api_policy.md)
+for the compatibility boundary. Experimental namespaces are explicitly listed
+in `nf.EXPERIMENTAL_NAMESPACES`.
 
 ## CLI
 
+The `nf` command exposes catalogue, recipe, media, and speech workflows:
+
 ```bash
 nf list
+nf features --modality video
 nf describe vision.lowlevel.visual_energy
 nf validate tests/fixtures/recipe_baseline.yaml --have video --have audio
 nf preset-list
 nf preset-show fmri_speech_language
 nf prep-video movie.mp4 --video-fps 2 --audio-sr 16000 --video-npy movie.npy --audio-wav movie.wav
 nf extract tests/fixtures/recipe_baseline.yaml --video-npy clip.npy --video-fps 10 --audio-wav clip.wav --out nf_catalog
+nf video-text movie.mp4 --video-fps 24 --table-out words.csv --json
 nf speech-validate-backends --json
 nf speech-doctor --json
 nf speech-benchmark --manifest tests/benchmarks/manifests/tier_a_alignment_manifest.json --json
 ```
 
-## Tier A Test Stimuli
+Run `nf <command> --help` for command-specific options.
 
-Deterministic, synthetic fixtures live in `tests/stimuli/tier_a/`.
+## Development and verification
 
-```bash
-python scripts/generate_tier_a_stimuli.py
-python scripts/validate_tier_a_stimuli.py
-```
-
-For broader real-world diagnostics, see Tier B acquisition in `docs/testing_strategy.md`.
-
-Quick test commands:
+Deterministic synthetic fixtures live in `tests/stimuli/tier_a/`. Common checks
+are:
 
 ```bash
 make test-smoke
@@ -91,88 +144,10 @@ make release-check
 make parity-check
 ```
 
-Optional benchmark gate:
+Build the Quarto documentation locally with:
 
 ```bash
-nf speech-benchmark --manifest tests/benchmarks/manifests/tier_a_alignment_manifest.json --json > /tmp/alignment_report.json
-NF_ALIGNMENT_BENCHMARK_REPORT=/tmp/alignment_report.json make release-check
+make -C docs quarto
 ```
 
-Local external dataset tests (SNL sentence stimuli):
-
-```bash
-make import-snl       # imports into data/snl_2023_task
-make test-external    # runs external-marked tests with dataset enabled
-```
-
-## Audio Batch Workflow
-
-For short audio clips (2-6s), there is now a one-call workflow:
-
-```python
-from natural_features.workflows.audio_batch import extract_audio_dir
-
-result = extract_audio_dir(
-    "data/audio_clips",
-    resolution_s=1.0,
-    selected_features=["rms", "mfcc", "spectral_stats", "vad"],
-    collapse="mean+sd",
-    as_dataframe=True,
-)
-```
-
-See `docs/audio_batch_quickstart.md` for full usage.
-
-## Acoustic Phonetics (Audio-Only)
-
-Option-1 pipeline (`posteriors -> articulatory probabilities`) is available as:
-
-```python
-from natural_features.workflows import extract_acoustic_phonetics
-
-res = extract_acoustic_phonetics(
-    "data/audio_clips/clip01.wav",
-    posterior_backend="ctc",  # "ctc" (preferred) or "acoustic"
-    ctc_model="bobboyms/wav2vec2-base-en-phoneme-ctc-41h",
-    ctc_local_files_only=True,
-    ctc_strict_dependency=False,  # fallback to acoustic backend if unavailable
-    resolution_s=0.5,             # optional: 0.5, 1.0, 2.0, ...
-)
-
-P = res.posteriorgrams.values  # time x phone-like classes
-A = res.articulatory.values    # time x articulatory features (bilabial, alveolar, voiced, ...)
-```
-
-For strict CTC-only behavior (no fallback), set `ctc_strict_dependency=True`.
-
-## Multiscale Language Features
-
-Use `extract_multiscale_language` to build language features at multiple scales
-(e.g., `2s`, `4s`, `16s`) from transcript text, word events, or audio.
-
-```python
-from natural_features.workflows import extract_multiscale_language
-
-res = extract_multiscale_language(
-    "data/speech.wav",
-    scales_s=[2.0, 4.0, 16.0],
-    provider_config={"provider": "local_bow", "dim": 1024},  # or provider="openai"
-)
-```
-
-See `docs/multiscale_language_quickstart.md` for full usage.
-
-## End-to-End Movie Example
-
-Use `examples/end_to_end_movie_pipeline.py` to go from prepared movie/audio sidecars
-to a TR-sampled design matrix (`.npz`) plus metadata:
-
-```bash
-python examples/end_to_end_movie_pipeline.py \
-  --video-npy movie.npy \
-  --video-fps 10 \
-  --audio-wav movie.wav \
-  --tr-s 1.5 \
-  --feature-t0-s 22.3 \
-  --out-prefix out/design_run1
-```
+The documentation site is deployed from `main` by GitHub Actions.
