@@ -19,6 +19,8 @@ def add_lags(feature: FeatureSeries, lags: list[int]) -> FeatureSeries:
     if feature.values.ndim != 2:
         raise ValueError("add_lags currently supports 2-D FeatureSeries only")
     lags_sorted = sorted(set(lags))
+    if not lags_sorted:
+        raise ValueError("lags cannot be empty")
     cols = []
     names = feature.coords.get("feature", [f"f{i}" for i in range(feature.values.shape[1])])
     out_names: list[str] = []
@@ -27,6 +29,8 @@ def add_lags(feature: FeatureSeries, lags: list[int]) -> FeatureSeries:
             raise ValueError("Negative lags are not supported")
         if lag == 0:
             shifted = feature.values
+        elif lag >= feature.values.shape[0]:
+            shifted = np.zeros_like(feature.values, dtype=np.float32)
         else:
             shifted = np.vstack([np.zeros((lag, feature.values.shape[1]), dtype=np.float32), feature.values[:-lag]])
         cols.append(shifted)
@@ -82,4 +86,3 @@ def concat_feature_series(
         metadata=metadata,
         timebase=TimebaseSpec(kind="windows"),
     )
-

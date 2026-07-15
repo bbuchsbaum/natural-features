@@ -98,6 +98,8 @@ class Timeline:
         offset_s = _as_1d_float(self.offset_s, "offset_s")
         if onset_s.shape != offset_s.shape:
             raise ValueError("onset_s and offset_s must have the same length")
+        if not np.all(np.isfinite(onset_s)) or not np.all(np.isfinite(offset_s)):
+            raise ValueError("onset_s and offset_s must contain only finite values")
         if np.any(offset_s < onset_s):
             raise ValueError("offset_s must be >= onset_s")
         if len(onset_s) > 1 and np.any(np.diff(onset_s) < 0):
@@ -212,6 +214,8 @@ class Timeline:
         offset = onset if offset_s is None else _as_1d_float(offset_s, "offset_s")
         if onset.shape != offset.shape:
             raise ValueError("onset_s and offset_s must have the same length")
+        if not np.all(np.isfinite(onset)) or not np.all(np.isfinite(offset)):
+            raise ValueError("onset_s and offset_s must contain only finite values")
         if np.any(offset < onset):
             raise ValueError("offset_s must be >= onset_s")
         n = len(onset)

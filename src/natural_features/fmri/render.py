@@ -10,6 +10,10 @@ from natural_features.features.common import extractor_metadata
 
 
 def _grid_edges(grid: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    if grid.ndim != 1:
+        raise ValueError("time_grid_s must be 1-D")
+    if not np.all(np.isfinite(grid)):
+        raise ValueError("time_grid_s must contain only finite values")
     if len(grid) == 0:
         return np.array([], dtype=np.float64), np.array([], dtype=np.float64)
     if len(grid) == 1:
@@ -34,6 +38,17 @@ def render_events(
     value: str = "count",
 ) -> FeatureSeries:
     grid = np.asarray(time_grid_s, dtype=np.float64)
+    valid_values = {
+        "impulse": {"count", "confidence"},
+        "boxcar": {"count", "confidence", "duration"},
+    }
+    if mode not in valid_values:
+        raise ValueError(f"Unsupported mode: {mode}")
+    if value not in valid_values[mode]:
+        raise ValueError(f"Unsupported value for {mode} mode: {value}")
+    if value == "confidence" and events.confidence is None:
+        raise ValueError("value='confidence' requires EventSeries.confidence")
+    left_edges, right_edges = _grid_edges(grid)
     out = np.zeros((len(grid), 1), dtype=np.float32)
     if len(events) == 0:
         metadata = extractor_metadata("fmri.render_events", params={"mode": mode, "value": value})
@@ -46,7 +61,6 @@ def render_events(
             timebase=TimebaseSpec(kind="windows"),
         )
 
-    left_edges, right_edges = _grid_edges(grid)
     for i in range(len(grid)):
         lo = left_edges[i]
         hi = right_edges[i]
@@ -54,13 +68,9 @@ def render_events(
             m = (events.onset_s >= lo) & (events.onset_s < hi)
             if value == "count":
                 out[i, 0] = float(np.sum(m))
-            elif value == "confidence":
-                if events.confidence is None:
-                    raise ValueError("value='confidence' requires EventSeries.confidence")
-                out[i, 0] = float(np.sum(events.confidence[m]))
             else:
-                raise ValueError(f"Unsupported value for impulse mode: {value}")
-        elif mode == "boxcar":
+                out[i, 0] = float(np.sum(events.confidence[m]))
+        else:
             overlaps = np.maximum(
                 0.0,
                 np.minimum(events.offset_s, hi) - np.maximum(events.onset_s, lo),
@@ -69,14 +79,8 @@ def render_events(
                 out[i, 0] = float(np.sum(overlaps))
             elif value == "count":
                 out[i, 0] = float(np.sum(overlaps > 0))
-            elif value == "confidence":
-                if events.confidence is None:
-                    raise ValueError("value='confidence' requires EventSeries.confidence")
-                out[i, 0] = float(np.sum((overlaps > 0) * events.confidence))
             else:
-                raise ValueError(f"Unsupported value for boxcar mode: {value}")
-        else:
-            raise ValueError(f"Unsupported mode: {mode}")
+                out[i, 0] = float(np.sum((overlaps > 0) * events.confidence))
     metadata = extractor_metadata("fmri.render_events", params={"mode": mode, "value": value})
     return FeatureSeries(
         values=out,
