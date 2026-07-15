@@ -8,9 +8,13 @@ sidebar: concepts
 
 The feature catalogue is generated from registered extractor specs. It is the reader-facing inventory of feature IDs, modalities, output schemas, dependency classes, and opt-in status.
 
+Use the [complete feature catalog](../tour/index.qmd) when choosing an
+extractor. It adds a source-checked interpretation, output type, extraction
+pattern, fallback warning, and method reference for every public feature ID.
+
 By default, `available_features()` returns the public catalogue: the stable feature IDs that match the R package compatibility surface. Internal extractor IDs remain registered for recipes, debugging, and lower-level workflows, but they are hidden from the high-level catalogue unless you request them with `public_only=False`.
 
-For an executable gallery that lists every public family and plots representative outputs, see [Inspect and plot feature types](../cookbook/feature-type-gallery.qmd).
+For an executable gallery that plots representative outputs, see [Inspect and plot feature types](../cookbook/feature-type-gallery.qmd).
 
 ## Current families
 

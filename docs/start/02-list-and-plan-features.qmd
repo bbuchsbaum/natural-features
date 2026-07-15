@@ -8,6 +8,10 @@ sidebar: start
 
 The high-level workflow catalogue reports public feature IDs, supported modalities, required dependencies, output schemas, and whether a feature needs explicit opt-in. Use `public_only=False` when you need to inspect every registered extractor, including internal aliases used by older recipes and implementation tests.
 
+Before selecting an ID, consult the [complete feature catalog](../tour/index.qmd)
+for its brief scientific meaning, exact fallback semantics, extraction pattern,
+and primary method or model reference where applicable.
+
 ```{python}
 from natural_features.workflows import available_features
 

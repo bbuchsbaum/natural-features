@@ -16,7 +16,7 @@ title-block-style: none
 [Extract features from media or transcripts, align them to explicit timelines, and export tables without losing stimulus time or provenance.]{.lead}
 
 [Start here](start/index.qmd){.btn .btn-primary}
-[Feature tour](tour/index.qmd){.btn .btn-outline-secondary}
+[Browse features](tour/index.qmd){.btn .btn-outline-secondary}
 [API reference](reference/index.qmd){.btn .btn-outline-secondary}
 
 [stimuli]{.kicker} [features]{.kicker} [timelines]{.kicker} [alignment]{.kicker}

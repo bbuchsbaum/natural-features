@@ -77,8 +77,9 @@ nf features --modality audio --budget all --csv
 nf describe vision.lowlevel.visual_energy
 ```
 
-See the [feature tour](https://bbuchsbaum.github.io/natural-features/tour/)
-for the catalogue, output schemas, dependency classes, and cost classes.
+See the [feature catalog](https://bbuchsbaum.github.io/natural-features/tour/)
+for all public feature IDs, brief interpretations, extraction patterns, output
+types, dependency and cost classes, fallback semantics, and method references.
 
 ## Execution modes
 

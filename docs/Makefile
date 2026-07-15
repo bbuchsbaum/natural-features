@@ -8,6 +8,7 @@ QUARTODOC_CONFIG = _quartodoc.yml
 
 lint:
 	cd .. && $(PYTHON) tools/docs_lint.py
+	cd .. && $(PYTHON) docs/catalog_data.py
 
 quarto: lint
 	$(QUARTODOC) build --config $(QUARTODOC_CONFIG) && quarto render
