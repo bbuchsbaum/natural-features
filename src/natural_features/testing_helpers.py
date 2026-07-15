@@ -45,6 +45,35 @@ def _array_fingerprint(x: np.ndarray) -> str:
     return stable_hash(payload, length=20)
 
 
+def _array_numeric_oracle(
+    x: np.ndarray,
+    *,
+    landmark_count: int = 64,
+    include_feature_moments: bool = False,
+) -> dict[str, Any]:
+    """Return a compact numeric oracle suitable for tolerant cross-platform checks."""
+    arr = np.asarray(x, dtype=np.float64)
+    if arr.ndim not in {1, 2}:
+        raise ValueError("numeric array oracle requires a 1-D or 2-D array")
+    flat = arr.reshape(-1)
+    count = min(max(1, int(landmark_count)), flat.size)
+    indices = np.linspace(0, flat.size - 1, count, dtype=np.int64)
+    oracle = {
+        "mean": float(np.mean(arr)),
+        "std": float(np.std(arr)),
+        "minimum": float(np.min(arr)),
+        "maximum": float(np.max(arr)),
+        "landmark_count": count,
+        "landmark_values": flat[indices].tolist(),
+    }
+    if include_feature_moments:
+        if arr.ndim != 2:
+            raise ValueError("feature moments require a 2-D array")
+        oracle["mean_by_feature"] = np.mean(arr, axis=0).tolist()
+        oracle["std_by_feature"] = np.std(arr, axis=0).tolist()
+    return oracle
+
+
 def _feature_summary(values: np.ndarray, times_s: np.ndarray) -> dict[str, Any]:
     return {
         "shape": list(values.shape),
@@ -115,7 +144,12 @@ def build_tier_a_golden_reference(base_dir: str | Path) -> dict[str, Any]:
             "scipy": _package_version("scipy"),
         },
         "visual_energy": _feature_summary(ve.values, ve.times_s),
-        "mfcc": _feature_summary(m.values, m.times_s),
+        "mfcc": {
+            **_feature_summary(m.values, m.times_s),
+            "numeric_oracle": _array_numeric_oracle(
+                m.values, include_feature_moments=True
+            ),
+        },
         "acoustic_phonetics": {
             "posteriorgrams": _feature_summary(ap.posteriorgrams.values, ap.posteriorgrams.times_s),
             "articulatory": _feature_summary(ap.articulatory.values, ap.articulatory.times_s),
@@ -124,10 +158,23 @@ def build_tier_a_golden_reference(base_dir: str | Path) -> dict[str, Any]:
             str(scale): _feature_summary(fs.values, fs.times_s) for scale, fs in ml.by_scale.items()
         },
         "audio_batch": {
-            "matrix": _feature_summary(one.matrix, one.times_s),
+            "matrix": {
+                **_feature_summary(one.matrix, one.times_s),
+                "numeric_oracle": _array_numeric_oracle(
+                    one.matrix, include_feature_moments=True
+                ),
+            },
             "collapsed": {
                 "shape": list(one.collapsed_vector.shape) if one.collapsed_vector is not None else [0],
                 "fingerprint": _array_fingerprint(one.collapsed_vector) if one.collapsed_vector is not None else "",
+                "numeric_oracle": (
+                    _array_numeric_oracle(
+                        one.collapsed_vector,
+                        landmark_count=len(one.collapsed_vector),
+                    )
+                    if one.collapsed_vector is not None
+                    else {}
+                ),
             },
         },
     }
