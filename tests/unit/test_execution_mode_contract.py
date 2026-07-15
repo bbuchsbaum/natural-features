@@ -8,12 +8,14 @@ import numpy as np
 import pytest
 
 from natural_features.core.execution import resolve_execution_mode
-from natural_features.core.stimulus import AudioStimulus
+from natural_features.core.stimulus import AudioStimulus, ImageStimulus
 from natural_features.features.speech.asr import whisper_transcribe
 from natural_features.features.speech.diarization import speaker_diarization
 from natural_features.features.speech.emotion import speech_emotion
 from natural_features.features.speech.phonology import ctc_phone_posteriors
 from natural_features.features.speech.vad import neural_vad
+from natural_features.features.vision.neural import vision_clip_embeddings
+from natural_features.workflows import plan_features
 from natural_features.workflows.multiscale_language import extract_multiscale_language
 
 
@@ -26,6 +28,10 @@ def _audio() -> AudioStimulus:
 
 def test_resolve_execution_mode_defaults_and_conflicts() -> None:
     mode, strict = resolve_execution_mode()
+    assert mode == "strict"
+    assert strict is True
+
+    mode, strict = resolve_execution_mode(execution_mode="fallback")
     assert mode == "fallback"
     assert strict is False
 
@@ -35,6 +41,43 @@ def test_resolve_execution_mode_defaults_and_conflicts() -> None:
 
     with pytest.raises(ValueError):
         resolve_execution_mode(execution_mode="strict", strict_dependency=False)
+
+
+def test_catalog_plan_defaults_named_model_to_strict_without_legacy_flag() -> None:
+    plan = plan_features(
+        "image",
+        features=["vision.clip"],
+        budget="allow_python",
+    )
+
+    assert plan.rows[0].params["execution_mode"] == "strict"
+    assert "strict_dependency" not in plan.rows[0].params
+
+
+def test_catalog_plan_preserves_explicit_legacy_fallback_request() -> None:
+    plan = plan_features(
+        "image",
+        features=["vision.clip"],
+        budget="allow_python",
+        feature_params={"vision.clip": {"strict_dependency": False}},
+    )
+
+    assert plan.rows[0].params["strict_dependency"] is False
+    assert "execution_mode" not in plan.rows[0].params
+
+
+def test_named_model_fails_by_default_and_proxy_requires_explicit_request(monkeypatch) -> None:  # noqa: ANN001
+    image = ImageStimulus.from_array(np.zeros((8, 8, 3), dtype=np.uint8))
+    monkeypatch.setitem(sys.modules, "transformers", None)
+
+    with pytest.raises(RuntimeError, match=r"transformers\+torch are required"):
+        vision_clip_embeddings(image)
+
+    proxy = vision_clip_embeddings(image, execution_mode="fallback")
+    assert proxy.metadata["execution_mode"] == "fallback"
+    assert proxy.metadata["fallback_used"] is True
+    assert proxy.metadata["backend"] == "fallback_projection"
+    assert "CLIP" not in str(proxy.metadata["backend"])
 
 
 def test_asr_metadata_has_execution_mode() -> None:

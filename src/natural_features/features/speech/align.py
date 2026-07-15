@@ -321,13 +321,19 @@ def whisperx_align(
     asr_model_name = str(words.metadata.get("asr_model_name", "unknown"))
     stim_end_s = stimulus.start_offset_s + (stimulus.samples.shape[0] / stimulus.sr_hz)
 
-    def _passthrough(reason: str, *, aligner_backend: str, mode_name: str = "passthrough") -> dict[str, Any]:
+    def _passthrough(
+        reason: str,
+        *,
+        aligner_backend: str,
+        fallback_used: bool = True,
+        mode_name: str = "passthrough",
+    ) -> dict[str, Any]:
         md = ensure_word_event_metadata(
             add_execution_provenance(
-                {**words.metadata, **base_md},
-                execution_mode=mode,
-                fallback_used=True,
-                fallback_reason=reason,
+                    {**words.metadata, **base_md},
+                    execution_mode=mode,
+                    fallback_used=fallback_used,
+                    fallback_reason=reason if fallback_used else None,
                 backend=aligner_backend,
             ),
             asr_model_name=asr_model_name,
@@ -337,7 +343,7 @@ def whisperx_align(
         qc = alignment_qc(
             words,
             mode=mode_name,
-            fallback_used=True,
+            fallback_used=fallback_used,
             extra={
                 "reason": reason,
                 "execution_mode": mode,
@@ -360,10 +366,20 @@ def whisperx_align(
         return {"words": passthrough_words, "qc": qc}
 
     if selected not in {"whisperx", "mfa"}:
-        if strict_dependency:
+        explicit_passthrough = selected == "passthrough" and not resolution.fallback_used
+        if strict_dependency and not explicit_passthrough:
             raise RuntimeError(resolution.reason or "No alignment backend is available in strict mode.")
-        reason = resolution.reason or "no alignment backend available"
-        return _passthrough(reason, aligner_backend=selected)
+        reason = resolution.reason or (
+            "explicit passthrough requested"
+            if explicit_passthrough
+            else f"backend '{selected}' has no runtime adapter"
+        )
+        return _passthrough(
+            reason,
+            aligner_backend=selected,
+            fallback_used=not explicit_passthrough,
+            mode_name="passthrough_explicit" if explicit_passthrough else "passthrough",
+        )
 
     refine_details: dict[str, Any] = {}
     if selected == "whisperx":

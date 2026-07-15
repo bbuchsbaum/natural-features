@@ -52,7 +52,7 @@ table.table {
 }
 table.table th,
 table.table td {
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 @media (max-width: 600px) {
   table.table {
@@ -60,6 +60,39 @@ table.table td {
     overflow-x: auto;
     width: 100%;
   }
+}
+
+/* Feature inventory tables carry six information-dense columns. Keep short
+ * contract fields intact and let the table scroll instead of breaking words
+ * into vertical fragments when the sidebar and TOC are both visible. */
+.feature-catalog-table {
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-gutter: stable;
+}
+.feature-catalog-table table.table {
+  min-width: 72rem;
+  width: 100%;
+}
+.feature-catalog-table table.table th:nth-child(1),
+.feature-catalog-table table.table td:nth-child(1),
+.feature-catalog-table table.table th:nth-child(3),
+.feature-catalog-table table.table td:nth-child(3),
+.feature-catalog-table table.table th:nth-child(4),
+.feature-catalog-table table.table td:nth-child(4),
+.feature-catalog-table table.table th:nth-child(5),
+.feature-catalog-table table.table td:nth-child(5) {
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+.feature-catalog-table table.table th:nth-child(2),
+.feature-catalog-table table.table td:nth-child(2) {
+  min-width: 23rem;
+}
+.feature-catalog-table table.table th:nth-child(6),
+.feature-catalog-table table.table td:nth-child(6) {
+  min-width: 13rem;
+  overflow-wrap: normal;
 }
 
 .card {

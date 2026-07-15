@@ -1,0 +1,1 @@
+{"actor":"bbuchsbaum","entity":"bd-01KXK9EMP0NV248NJB1C97C0X8","kind":"reserve_open","mode":"exclusive","op":"20260715T163946.422217Z-p63018-c0000-rbc43-h5989ae","paths":["tests/unit/test_alignment_benchmark_manifests.py"],"reservation_id":"rv-01KXKAC3FPGDZ7XFKEVMYHTA2B","ts":"2026-07-15T16:39:46.422217Z","ttl_s":3600,"v":1}

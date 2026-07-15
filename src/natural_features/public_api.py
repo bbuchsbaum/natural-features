@@ -32,7 +32,7 @@ from .workflows.multiscale_language import extract_multiscale_language
 from .workflows.video_text import VideoTextResult, extract_video_text
 
 # Increment only when stable public API contracts change in a breaking way.
-API_COMPAT_VERSION = 1
+API_COMPAT_VERSION = 2
 
 STABLE_EXPORTS = [
     "FeatureSeries",

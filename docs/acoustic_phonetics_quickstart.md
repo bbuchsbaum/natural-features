@@ -16,7 +16,6 @@ res = extract_acoustic_phonetics(
     posterior_backend="ctc",   # preferred strict backend
     ctc_model="bobboyms/wav2vec2-base-en-phoneme-ctc-41h",
     ctc_local_files_only=True, # reproducible/offline
-    execution_mode="fallback", # default; use "strict" to fail loudly
     hop_s=0.02,        # used by acoustic fallback backend
     resolution_s=1.0,  # optional: aggregate to 1s bins
 )
@@ -34,7 +33,8 @@ Common encodings:
 Current broad posterior classes are coarse by design and optimized for robust,
 lightweight extraction when no strict phone recognizer is present.
 
-If you want hard failure when strict CTC extraction is unavailable, set:
+Strict CTC extraction fails by default when the model is unavailable. To make
+that policy explicit in a saved configuration, set:
 
 ```python
 extract_acoustic_phonetics(

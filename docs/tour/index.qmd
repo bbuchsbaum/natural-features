@@ -15,8 +15,8 @@ matching explanation.
 
 References point to the paper that introduced a method or model where one is
 applicable. The **Meaning** column describes this package's implementation,
-including its fallback behavior; it should take precedence over assumptions
-based on a paper title or model name.
+including any explicitly requested approximation mode; it should take
+precedence over assumptions based on a paper title or model name.
 
 ```{python}
 #| echo: false
@@ -152,9 +152,10 @@ result = nf.extract_features(
 
 ### Optional model-backed features
 
-Opt-in routes require `budget="allow_python"`. Use strict execution when the
-scientific interpretation depends on the named backend; otherwise fallback mode
-may return a deterministic proxy with a different meaning and dimensionality.
+Opt-in routes require `budget="allow_python"` because their packages, model
+weights, API credentials, or system programs are not part of the small base
+installation. Requesting a named feature uses that method and fails clearly if
+its backend is unavailable. It never silently changes the scientific meaning.
 
 ```python
 result = nf.extract_features(
@@ -163,17 +164,17 @@ result = nf.extract_features(
     budget="allow_python",
     feature_params={
         "vision.clip": {
-            "execution_mode": "strict",
             "local_files_only": False,
         }
     },
 )
 ```
 
-Always inspect `output.metadata["backend"]` and
-`output.metadata["fallback_used"]` before treating a fallback-capable output as
-the named model or algorithm. See [Execution modes](../concepts/execution-modes.qmd)
-for the full contract.
+The default `execution_mode="strict"` is implicit above. A deterministic proxy
+can still be useful for tests or pipeline development, but it must be requested
+with `execution_mode="fallback"`; its metadata identifies the substituted
+backend. See [Execution modes](../concepts/execution-modes.qmd) for the full
+contract.
 
 ## Public feature inventory
 
@@ -196,6 +197,7 @@ for family in sorted(groups):
     print()
     print(FAMILY_NOTES[family])
     print()
+    print("::: {.feature-catalog-table}")
     print("| Feature ID | Meaning | Input | Returns | Access | Reference |")
     print("|---|---|---|---|---|---|")
     for entry in sorted(groups[family], key=lambda item: item.feature_id):
@@ -208,6 +210,7 @@ for family in sorted(groups):
             f"| `{entry.feature_id}` | {meaning} | {modalities} | "
             f"{returns} | {access} | {refs} |"
         )
+    print(":::")
     print()
 ```
 

@@ -54,6 +54,7 @@ def test_multiscale_language_audio_asr_fallback() -> None:
         scales_s=[2.0, 4.0],
         provider_config={"provider": "local_hash", "dim": 32},
         feature_families=["sentence_embeddings", "surprisal", "lexical_controls"],
+        execution_mode="fallback",
         as_dataframe=False,
     )
     assert sorted(res.by_scale.keys()) == [2.0, 4.0]

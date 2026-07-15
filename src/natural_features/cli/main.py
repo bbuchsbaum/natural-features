@@ -99,7 +99,7 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Alignment backend: auto|whisperx|mfa|none",
     )
     vt.add_argument(
-        "--execution-mode", default="fallback", choices=["fallback", "strict"]
+        "--execution-mode", default="strict", choices=["fallback", "strict"]
     )
     vt.add_argument(
         "--strict-dependency",
@@ -187,7 +187,7 @@ def _build_parser() -> argparse.ArgumentParser:
     sa.add_argument("--audio-wav", required=True, help="Input mono/stereo WAV file")
     sa.add_argument("--model", default="small", help="ASR model id")
     sa.add_argument("--language", default="auto", help="ASR language code or auto")
-    sa.add_argument("--execution-mode", default="fallback", choices=["fallback", "strict"])
+    sa.add_argument("--execution-mode", default="strict", choices=["fallback", "strict"])
     sa.add_argument("--strict-dependency", action="store_true", help="Treat missing deps as hard failures")
     sa.add_argument("--chunked", action="store_true", help="Use chunked ASR path for long audio")
     sa.add_argument("--chunk-window-s", type=float, default=30.0, help="Chunk window (s)")
@@ -234,7 +234,7 @@ def _build_parser() -> argparse.ArgumentParser:
     sb.add_argument("--backend", default="auto", help="Alignment backend: auto|whisperx|mfa|gentle|none")
     sb.add_argument("--asr-model", default="small", help="ASR model id")
     sb.add_argument("--language", default="en", help="Language code")
-    sb.add_argument("--execution-mode", default="fallback", choices=["fallback", "strict"])
+    sb.add_argument("--execution-mode", default="strict", choices=["fallback", "strict"])
     sb.add_argument("--strict-dependency", action="store_true", help="Fail on missing runtime deps")
     sb.add_argument("--fail-fast", action="store_true", help="Stop on first benchmark failure")
     sb.add_argument("--out-json", default=None, help="Optional benchmark JSON output path")
@@ -738,7 +738,7 @@ def _cmd_speech_benchmark(args: argparse.Namespace) -> int:
         asr_model=args.asr_model,
         language=args.language,
         execution_mode=args.execution_mode,
-        strict_dependency=bool(args.strict_dependency),
+        strict_dependency=True if args.strict_dependency else None,
         continue_on_error=not bool(args.fail_fast),
     )
     payload = run_alignment_benchmark(

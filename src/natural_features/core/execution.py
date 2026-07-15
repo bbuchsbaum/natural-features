@@ -1,4 +1,4 @@
-"""Execution-mode helpers for strict vs fallback runtime behavior."""
+"""Execution-mode helpers for fail-fast vs explicit fallback behavior."""
 
 from __future__ import annotations
 
@@ -11,9 +11,14 @@ def resolve_execution_mode(
     *,
     execution_mode: str | None = None,
     strict_dependency: bool | None = None,
-    default_mode: str = "fallback",
+    default_mode: str = "strict",
 ) -> tuple[str, bool]:
-    """Resolve execution mode with backwards compatibility for strict_dependency."""
+    """Resolve execution mode, defaulting named methods to fail-fast execution.
+
+    ``strict_dependency`` remains a compatibility alias. Passing ``False`` is
+    therefore an explicit request for fallback behavior; omitting both controls
+    selects strict execution.
+    """
 
     mode = str(execution_mode).strip().lower() if execution_mode is not None else str(default_mode).strip().lower()
     if mode not in _VALID_MODES:

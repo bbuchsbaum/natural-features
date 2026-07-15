@@ -17,7 +17,16 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Multiscale provider fallback now prefers `local_bow` over random local hash fallback.
+- API compatibility contract advanced to version 2: named feature methods and
+  stable workflows now fail fast when an optional backend is unavailable.
+- Deterministic proxies require an explicit `execution_mode="fallback"` (or
+  legacy `strict_dependency=False`) request.
+- Explicit alignment passthrough via `backend="none"` is a method choice and is
+  no longer reported as fallback execution.
 
 ### Migration Notes
-- If you depend on missing OpenAI credentials causing hard errors, set `execution_mode="strict"`.
+- Code that deliberately uses deterministic proxies must now pass
+  `execution_mode="fallback"`. Omit the setting to require the named method.
+- Legacy `strict_dependency=False` remains supported as an explicit fallback
+  request; migrate saved recipes to `execution_mode="fallback"` when practical.
 - If you consume exported manifests, prefer `manifest_version=2` fields (`payload_sha256`, `payload_bytes`).

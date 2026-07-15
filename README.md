@@ -79,16 +79,19 @@ nf describe vision.lowlevel.visual_energy
 
 See the [feature catalog](https://bbuchsbaum.github.io/natural-features/tour/)
 for all public feature IDs, brief interpretations, extraction patterns, output
-types, dependency and cost classes, fallback semantics, and method references.
+types, dependency and cost classes, explicit approximation semantics, and
+method references.
 
 ## Execution modes
 
-Fallback-capable extractors and workflows support two execution modes:
+Named methods fail fast by default when their optional package, model, API
+credential, or system tool is unavailable. They never silently substitute a
+different computation.
 
-- `execution_mode="fallback"` uses deterministic fallbacks when an optional
-  backend is unavailable and records that choice in provenance.
-- `execution_mode="strict"` raises an error when the requested backend or model
-  is unavailable.
+- `execution_mode="strict"` is the default and raises when the requested
+  backend or model is unavailable.
+- `execution_mode="fallback"` explicitly requests a deterministic proxy, when
+  one exists, and records the substitution in provenance.
 
 Legacy `strict_dependency=True|False` arguments remain supported for backward
 compatibility.

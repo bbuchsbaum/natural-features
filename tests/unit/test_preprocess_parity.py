@@ -94,7 +94,16 @@ def test_ocr_missing_dependency_returns_empty_fallback() -> None:
     reg = Registry.with_builtin_specs()
     image = ImageStimulus.from_array(np.ones((3, 3), dtype=np.float32))
     out = execute_recipe(
-        {"features": [{"id": "ocr", "use": "image.ocr", "inputs": {"image": "input:image"}}]},
+        {
+            "features": [
+                {
+                    "id": "ocr",
+                    "use": "image.ocr",
+                    "inputs": {"image": "input:image"},
+                    "params": {"execution_mode": "fallback"},
+                }
+            ]
+        },
         registry=reg,
         inputs={"image": image},
     )

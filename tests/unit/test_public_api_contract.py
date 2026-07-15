@@ -52,4 +52,4 @@ def test_experimental_namespaces_are_declared() -> None:
 
 def test_api_compat_version_is_int_and_positive() -> None:
     assert isinstance(nf.API_COMPAT_VERSION, int)
-    assert nf.API_COMPAT_VERSION >= 1
+    assert nf.API_COMPAT_VERSION == 2

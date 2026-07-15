@@ -1,7 +1,7 @@
 api_version: 1
 preset:
   name: fmri_speech_language
-  description: "Speech + language baseline with transcript fallback and articulatory outputs."
+  description: "Speech + language baseline with explicit backends and articulatory outputs."
 features:
   - id: asr
     use: speech.asr.whisper_chunked
@@ -11,7 +11,6 @@ features:
       word_timestamps: true
       chunk_window_s: 30.0
       chunk_overlap_s: 1.0
-      strict_dependency: false
 
   - id: align
     use: speech.align.whisperx
@@ -20,7 +19,6 @@ features:
       words: "ref: asr.words"
     params:
       backend: auto
-      strict_dependency: false
 
   - id: ssl
     use: speech.ssl.wavlm
@@ -28,14 +26,12 @@ features:
       layers: [2, 6, 12]
       stride_s: 0.02
       pooling: none
-      strict_dependency: false
 
   - id: post
     use: speech.phonology.ctc_posteriors
     params:
       model: bobboyms/wav2vec2-base-en-phoneme-ctc-41h
       local_files_only: true
-      strict_dependency: false
       drop_special_tokens: true
 
   - id: art_post
@@ -57,7 +53,6 @@ features:
       words: "ref: asr.words"
     params:
       layers: [12]
-      strict_dependency: false
 
   - id: surprisal
     use: language.predict.surprisal

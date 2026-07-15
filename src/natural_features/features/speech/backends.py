@@ -106,13 +106,13 @@ def probe_alignment_backends() -> dict[str, BackendProbe]:
 def resolve_aligner_backend(
     *,
     requested: str = "auto",
-    preferred_order: tuple[str, ...] = ("whisperx", "mfa", "gentle"),
+    preferred_order: tuple[str, ...] = ("whisperx", "mfa"),
 ) -> AlignerResolution:
     probes = probe_alignment_backends()
     req = str(requested).strip().lower()
 
     if req in {"none", "passthrough"}:
-        return AlignerResolution("passthrough", True, "explicit passthrough requested", probes)
+        return AlignerResolution("passthrough", False, "explicit passthrough requested", probes)
 
     if req != "auto":
         if req not in probes:

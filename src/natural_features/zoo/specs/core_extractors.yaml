@@ -35,8 +35,8 @@ extractors:
       start_s: { type: float, default: 0.0 }
       duration_s: { type: float, default: null, nullable: true }
       ffmpeg_path: { type: str, default: ffmpeg }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default: { schema: AudioStimulus/v1, kind: audio }
 
@@ -83,8 +83,8 @@ extractors:
     params:
       min_confidence: { type: float, default: 0.0 }
       duration_s: { type: float, default: null, nullable: true }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default: { schema: EventSeries/v1, kind: words }
 
@@ -97,8 +97,8 @@ extractors:
     params:
       stride_frames: { type: int, default: 1 }
       min_confidence: { type: float, default: 0.0 }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default: { schema: EventSeries/v1, kind: words }
 
@@ -188,8 +188,8 @@ extractors:
     tags: [vision, face, fallback]
     params:
       min_detection_confidence: { type: float, default: 0.5 }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default:
         schema: FeatureSeries/v1
@@ -208,8 +208,8 @@ extractors:
       dim: { type: int, default: 64 }
       batch_size: { type: int, default: 32 }
       local_files_only: { type: bool, default: true }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default:
         schema: FeatureSeries/v1
@@ -230,8 +230,8 @@ extractors:
       dim: { type: int, default: 64 }
       batch_size: { type: int, default: 32 }
       local_files_only: { type: bool, default: true }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default:
         schema: FeatureSeries/v1
@@ -304,8 +304,8 @@ extractors:
     tags: [baseline, vision, motion, canonical]
     params:
       fps_downsample: { type: float, default: 0.0 }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default:
         schema: FeatureSeries/v1
@@ -323,8 +323,8 @@ extractors:
     tags: [baseline, vision, motion, fallback, alias]
     params:
       fps_downsample: { type: float, default: 0.0 }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default:
         schema: FeatureSeries/v1
@@ -340,8 +340,8 @@ extractors:
     cost_class: moderate
     tags: [vision, motion, fallback]
     params:
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default:
         schema: FeatureSeries/v1
@@ -384,8 +384,8 @@ extractors:
       stride_frames: { type: int, default: 1 }
       batch_size: { type: int, default: 32 }
       local_files_only: { type: bool, default: true }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default:
         schema: EventSeries/v1
@@ -590,8 +590,8 @@ extractors:
       model: { type: str, default: small }
       language: { type: str, default: auto }
       word_timestamps: { type: bool, default: true }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       segments: { schema: EventSeries/v1, kind: events }
       words: { schema: EventSeries/v1, kind: events }
@@ -611,8 +611,8 @@ extractors:
       model: { type: str, default: small }
       language: { type: str, default: auto }
       word_timestamps: { type: bool, default: true }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       segments: { schema: EventSeries/v1, kind: events }
       words: { schema: EventSeries/v1, kind: words }
@@ -640,8 +640,8 @@ extractors:
       duration_s: { type: float, default: null, nullable: true }
       video_fps: { type: float, default: null, nullable: true }
       frame_policy: { type: str, default: overlap }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       words: { schema: EventSeries/v1, kind: words }
       segments: { schema: EventSeries/v1, kind: events }
@@ -657,8 +657,8 @@ extractors:
       model: { type: str, default: small }
       language: { type: str, default: auto }
       word_timestamps: { type: bool, default: true }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
       chunk_window_s: { type: float, default: 30.0 }
       chunk_overlap_s: { type: float, default: 1.0 }
       dedupe_tolerance_s: { type: float, default: 0.03 }
@@ -680,8 +680,8 @@ extractors:
       mfa_acoustic_model_path: { type: str, default: null, nullable: true }
       mfa_timeout_s: { type: float, default: 300.0 }
       mfa_tmp_dir: { type: str, default: null, nullable: true }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       words: { schema: EventSeries/v1, kind: events }
 
@@ -696,8 +696,8 @@ extractors:
       layers: { type: "list[int]", default: [2, 6, 12] }
       stride_s: { type: float, default: 0.02 }
       pooling: { type: str, default: none }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
 
@@ -716,8 +716,8 @@ extractors:
       layers: { type: "list[int]", default: [2, 6, 12] }
       stride_s: { type: float, default: 0.02 }
       pooling: { type: str, default: none }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
 
@@ -737,8 +737,8 @@ extractors:
       stride_s: { type: float, default: 0.02 }
       pooling: { type: str, default: none }
       local_files_only: { type: bool, default: true }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
 
@@ -757,8 +757,8 @@ extractors:
       hop_s: { type: float, default: 0.02 }
       win_s: { type: float, default: 0.03 }
       local_files_only: { type: bool, default: true }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
 
@@ -777,8 +777,8 @@ extractors:
       hop_s: { type: float, default: 0.02 }
       local_files_only: { type: bool, default: true }
       device: { type: str, default: cpu }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default: { schema: TrackSeries/v1, kind: tracks }
 
@@ -796,8 +796,8 @@ extractors:
       model: { type: str, default: superb/wav2vec2-base-superb-er }
       hop_s: { type: float, default: 0.02 }
       local_files_only: { type: bool, default: true }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
 
@@ -835,8 +835,8 @@ extractors:
       model: { type: str, default: bobboyms/wav2vec2-base-en-phoneme-ctc-41h }
       stride_s: { type: float, default: 0.02 }
       local_files_only: { type: bool, default: true }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
       drop_special_tokens: { type: bool, default: true }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
@@ -855,8 +855,8 @@ extractors:
       model: { type: str, default: bobboyms/wav2vec2-base-en-phoneme-ctc-41h }
       stride_s: { type: float, default: 0.02 }
       local_files_only: { type: bool, default: true }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
       drop_special_tokens: { type: bool, default: true }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
@@ -934,8 +934,8 @@ extractors:
       model: { type: str, default: bert-base-uncased }
       layers: { type: "list[int]", default: [12] }
       pooling: { type: str, default: mean_subwords }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
 
@@ -954,8 +954,8 @@ extractors:
       layers: { type: "list[int]", default: [6, 12] }
       pooling: { type: str, default: mean_subwords }
       local_files_only: { type: bool, default: true }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
 
@@ -967,8 +967,8 @@ extractors:
     tags: [language, predictability]
     params:
       model: { type: str, default: gpt2 }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
 
@@ -1014,8 +1014,8 @@ extractors:
     tags: [language, syntax, fallback]
     params:
       model: { type: str, default: en_core_web_sm }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
 
@@ -1031,8 +1031,8 @@ extractors:
     tags: [language, predictability, fallback, alias]
     params:
       model: { type: str, default: gpt2 }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
 
@@ -1050,8 +1050,8 @@ extractors:
       model: { type: str, default: bert-base-uncased }
       layers: { type: "list[int]", default: [12] }
       pooling: { type: str, default: mean_subwords }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
 
@@ -1063,8 +1063,8 @@ extractors:
     tags: [baseline, audio, opensmile]
     params:
       frame_s: { type: float, default: 0.01 }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default:
         schema: FeatureSeries/v1
@@ -1082,8 +1082,8 @@ extractors:
     tags: [baseline, audio, opensmile, fallback, alias]
     params:
       frame_s: { type: float, default: 0.01 }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default:
         schema: FeatureSeries/v1
@@ -1125,8 +1125,8 @@ extractors:
       fmin: { type: float, default: 50.0 }
       fmax: { type: float, default: 500.0 }
       voicing_threshold: { type: float, default: 0.2 }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default:
         schema: FeatureSeries/v1
@@ -1164,8 +1164,8 @@ extractors:
       stride_s: { type: float, default: 1.0 }
       dim: { type: int, default: 64 }
       local_files_only: { type: bool, default: true }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default:
         schema: FeatureSeries/v1
@@ -1185,8 +1185,8 @@ extractors:
       stride_s: { type: float, default: 1.0 }
       dim: { type: int, default: 64 }
       local_files_only: { type: bool, default: true }
-      execution_mode: { type: str, default: fallback }
-      strict_dependency: { type: bool, default: false }
+      execution_mode: { type: str, default: strict }
+      strict_dependency: { type: bool }
     outputs:
       default:
         schema: FeatureSeries/v1

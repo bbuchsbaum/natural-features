@@ -20,6 +20,12 @@ A breaking change to these stable symbols requires incrementing:
 - `FeatureSeries`
 - `EventSeries`
 - `TrackSeries`
+- `FrameTimeline`
+- `Timeline`
+- `FeatureAlignment`
+- `ExtractFeaturesResult`
+- `AlignedFeatureSet`
+- `VideoTextResult`
 - `RunGrid`
 - `ExperimentGrid`
 - `build_experiment_grid`
@@ -27,9 +33,14 @@ A breaking change to these stable symbols requires incrementing:
 - `query_feature_window_tr`
 - `query_feature_zoo_window_tr`
 - `extract_acoustic_phonetics`
+- `available_features`
+- `feature_catalog`
+- `plan_features`
+- `extract_features`
 - `extract_audio_files`
 - `extract_audio_dir`
 - `extract_multiscale_language`
+- `extract_video_text`
 
 ## Experimental / Internal API
 

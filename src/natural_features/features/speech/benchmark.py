@@ -75,8 +75,8 @@ def benchmark_alignment_case(
     backend: str = "auto",
     asr_model: str = "small",
     language: str = "en",
-    execution_mode: str = "fallback",
-    strict_dependency: bool = False,
+    execution_mode: str = "strict",
+    strict_dependency: bool | None = None,
 ) -> dict[str, Any]:
     """Run ASR+alignment on one clip and compute quality metrics versus reference."""
 
@@ -166,8 +166,8 @@ class BenchmarkConfig:
     backend: str = "auto"
     asr_model: str = "small"
     language: str = "en"
-    execution_mode: str = "fallback"
-    strict_dependency: bool = False
+    execution_mode: str = "strict"
+    strict_dependency: bool | None = None
     continue_on_error: bool = True
 
 
@@ -243,6 +243,10 @@ def run_alignment_benchmark(
             audio = AudioStimulus.from_wav(audio_path)
             ref_words = _load_reference_words(item, base)
             transcript = _load_transcript(item, base)
+            raw_strict_dependency = item.get("strict_dependency", cfg.strict_dependency)
+            strict_dependency = (
+                None if raw_strict_dependency is None else bool(raw_strict_dependency)
+            )
             case = benchmark_alignment_case(
                 clip_id=clip_id,
                 audio=audio,
@@ -252,7 +256,7 @@ def run_alignment_benchmark(
                 asr_model=str(item.get("asr_model", cfg.asr_model)),
                 language=str(item.get("language", cfg.language)),
                 execution_mode=str(item.get("execution_mode", cfg.execution_mode)),
-                strict_dependency=bool(item.get("strict_dependency", cfg.strict_dependency)),
+                strict_dependency=strict_dependency,
             )
         except Exception as exc:
             case = {

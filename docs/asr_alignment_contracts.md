@@ -55,9 +55,17 @@ Optional extended fields supported now:
 
 Alignment backend selection is explicit:
 
-- `backend=auto`: prefer `whisperx`, then `mfa`, then `gentle`, else passthrough
-- `backend=whisperx|mfa|gentle`: use requested backend or passthrough with reason
-- `backend=none`: force passthrough
+- `backend=auto`: prefer `whisperx`, then `mfa`; strict mode raises if neither
+  implemented adapter is available
+- `backend=whisperx|mfa`: use the requested backend; strict mode raises if it
+  is unavailable
+- `backend=gentle`: probe the legacy dependency, but raise in strict mode
+  because this release has no Gentle runtime adapter
+- `backend=none`: explicitly select passthrough, reported as
+  `fallback_used=false`
+
+Passthrough caused by an unavailable requested backend is a fallback and only
+runs under explicit `execution_mode="fallback"`.
 
 Use `probe_alignment_backends()` and `resolve_aligner_backend(...)` for diagnostics and
 explicit backend provenance.

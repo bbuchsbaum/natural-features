@@ -280,8 +280,14 @@ def test_extract_features_can_execute_new_public_gap_ids() -> None:
         "one two two",
         features=["text.tokenize", "language.discourse", "language.syntax"],
         budget="allow_python",
+        feature_params={"language.syntax": {"execution_mode": "fallback"}},
     )
-    video_result = extract_features(_video(), features=["vision.dct", "vision.semantic_views"], budget="all")
+    video_result = extract_features(
+        _video(),
+        features=["vision.dct", "vision.semantic_views"],
+        budget="all",
+        feature_params={"vision.semantic_views": {"execution_mode": "fallback"}},
+    )
 
     assert audio_result.features["audio.gammatone"].values.shape[1] == 4
     assert text_result.features["language.discourse"].values.shape[0] == 3
@@ -299,8 +305,12 @@ def test_extract_features_can_execute_r_public_alias_ids() -> None:
         features=["audio.egemaps", "speech.vad", "speech.wavlm", "speech.ctc"],
         budget="allow_python",
         feature_params={
-            "speech.wavlm": {"layers": [1]},
-            "speech.ctc": {"model": "natural-features-test/missing-ctc"},
+            "audio.egemaps": {"execution_mode": "fallback"},
+            "speech.wavlm": {"layers": [1], "execution_mode": "fallback"},
+            "speech.ctc": {
+                "model": "natural-features-test/missing-ctc",
+                "execution_mode": "fallback",
+            },
         },
     )
     text_result = extract_features(
@@ -311,6 +321,7 @@ def test_extract_features_can_execute_r_public_alias_ids() -> None:
             "language.hidden_states": {
                 "model": "natural-features-test/missing-causal-lm",
                 "layers": [1],
+                "execution_mode": "fallback",
             }
         },
     )
@@ -318,6 +329,7 @@ def test_extract_features_can_execute_r_public_alias_ids() -> None:
         video,
         features=["vision.motion_energy", "vision.social_proxies"],
         budget="allow_python",
+        feature_params={"vision.motion_energy": {"execution_mode": "fallback"}},
     )
 
     assert audio_result.features["audio.egemaps"].values.ndim == 2

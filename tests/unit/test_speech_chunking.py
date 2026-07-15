@@ -27,7 +27,12 @@ def test_plan_audio_chunks_deterministic_and_covering() -> None:
 
 def test_stitch_word_events_dedupes_overlap_tokens() -> None:
     stim = _audio(duration_s=2.0, sr=1000)
-    w1 = whisper_transcribe_chunked(stim, chunk_window_s=2.0, chunk_overlap_s=0.0)["words"]
+    w1 = whisper_transcribe_chunked(
+        stim,
+        chunk_window_s=2.0,
+        chunk_overlap_s=0.0,
+        execution_mode="fallback",
+    )["words"]
     # Force overlap-style duplicate by stitching same object twice.
     out, conflicts = stitch_word_events([w1, w1], dedupe_tolerance_s=0.2)
     assert len(out) <= len(w1)

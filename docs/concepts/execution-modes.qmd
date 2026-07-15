@@ -6,7 +6,11 @@ sidebar: concepts
 
 ## What it is
 
-Execution settings separate two decisions: whether a feature is allowed into the plan, and what happens if a backend is missing at runtime.
+Execution settings separate two decisions: whether a feature is allowed into
+the plan, and what happens if its named backend is missing at runtime. Optional
+backends are excluded from the base installation when they require large model
+weights, API credentials, extra Python packages, or system programs such as
+ffmpeg and Tesseract.
 
 ## Planning budgets
 
@@ -20,15 +24,19 @@ Execution settings separate two decisions: whether a feature is allowed into the
 
 | Setting | Runtime effect |
 |---|---|
-| `execution_mode="fallback"` | return deterministic fallback/proxy output with provenance when a supported fallback exists |
-| `execution_mode="strict"` | raise if the requested backend is unavailable |
+| omitted (default) | use the named method; raise if its backend is unavailable |
+| `execution_mode="strict"` | explicitly select the default fail-fast behavior |
+| `execution_mode="fallback"` | explicitly request a deterministic proxy with different semantics and provenance, where one exists |
 | `strict_dependency=True` | compatibility flag for strict dependency behavior |
+| `strict_dependency=False` | compatibility alias for explicitly requested fallback behavior |
 
 ## Invariants
 
 - Budget checks happen during planning.
+- Named methods fail rather than silently returning a different computation.
 - Runtime fallback/strict behavior is represented in extractor parameters.
-- Fallback outputs annotate provenance through metadata where implemented.
+- Explicit fallback outputs annotate the substituted backend and reason in
+  provenance metadata where implemented.
 
 ## What it refuses
 
@@ -37,7 +45,10 @@ Execution settings separate two decisions: whether a feature is allowed into the
 
 ## What it doesn't do
 
-These settings do not download models automatically. For model-backed extractors, local cache policy is controlled by extractor parameters such as `local_files_only`.
+These settings do not download models automatically. For model-backed
+extractors, local cache policy is controlled by extractor parameters such as
+`local_files_only`. Fallback mode is a development convenience, not evidence
+that the named scientific method ran.
 
 ## See also
 

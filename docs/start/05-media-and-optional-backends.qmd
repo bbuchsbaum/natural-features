@@ -21,33 +21,36 @@ plan.to_recipe()
 
 ## Common optional routes
 
-| Feature ID | Input | Dependency | Default behavior |
+| Feature ID | Input | Dependency | Named result |
 |---|---|---|---|
 | `video.audio.extract` | video path | `ffmpeg` | extract mono WAV-like audio at `sr_hz` |
-| `image.ocr` | image | OCR backend | return word events or fallback metadata |
+| `image.ocr` | image | OCR backend | Tesseract word events |
 | `video.ocr` | video | OCR backend | OCR sampled frames into word events |
-| `audio.egemaps` | audio | openSMILE | eGeMAPS descriptors or acoustic proxy |
+| `audio.egemaps` | audio | openSMILE | eGeMAPS descriptors |
 | `vision.face` | image or video | MediaPipe | face count and geometry summaries |
 | `vision.clip` | image or video | transformers + torch | frame/image embeddings |
 | `vision.dino` | image or video | transformers + torch | frame/image embeddings |
-| `vision.motion_energy` | video | moten / pymoten | motion-energy pyramid or optical-flow proxy |
-| `vision.semantic_views` | video | CLIP via transformers + torch | semantic frame labels or scene-proxy fallback |
-| `speech.neural_vad` | audio | silero-vad + torch | speech probability track or energy fallback |
-| `speech.diarization` | audio | pyannote.audio | speaker activity tracks or single-speaker fallback |
+| `vision.motion_energy` | video | moten / pymoten | motion-energy pyramid |
+| `vision.semantic_views` | video | CLIP via transformers + torch | semantic frame labels |
+| `speech.neural_vad` | audio | silero-vad + torch | speech probability track |
+| `speech.diarization` | audio | pyannote.audio | speaker activity tracks |
 
-## Strict execution
+## Fail-fast execution
 
-Fallback mode is the default for optional extractors. Use strict mode when missing dependencies should fail the run:
+Strict execution is the default: a named feature raises if its dependency or
+model is unavailable. No mode flag is required:
 
 ```python
 feature_params = {
     "vision.clip": {
-        "execution_mode": "strict",
-        "strict_dependency": True,
         "local_files_only": True,
     }
 }
 ```
+
+For a test double or pipeline rehearsal, explicitly set
+`execution_mode="fallback"`. The result is a proxy with different semantics,
+not CLIP output.
 
 ## Read next
 

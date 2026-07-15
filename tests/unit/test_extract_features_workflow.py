@@ -58,6 +58,7 @@ def test_plan_features_routes_image_features_to_image_input() -> None:
     recipe = plan.to_recipe()
     assert recipe["features"][0]["inputs"] == {"image": "input:image"}
     assert recipe["features"][0]["params"]["dim"] == 8
+    assert recipe["features"][0]["params"]["execution_mode"] == "strict"
 
 
 def test_plan_features_bundle_prefers_public_aliases() -> None:
@@ -84,7 +85,10 @@ def test_extract_features_executes_image_fallbacks_from_path(tmp_path) -> None:
         path,
         features=["vision.clip", "vision.face"],
         budget="allow_python",
-        feature_params={"vision.clip": {"dim": 8}},
+        feature_params={
+            "vision.clip": {"dim": 8, "execution_mode": "fallback"},
+            "vision.face": {"execution_mode": "fallback"},
+        },
     )
 
     assert isinstance(result, ExtractFeaturesResult)

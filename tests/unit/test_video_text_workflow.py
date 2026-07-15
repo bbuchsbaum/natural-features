@@ -186,6 +186,7 @@ def test_video_text_cli_writes_summary_and_word_table(monkeypatch, tmp_path) -> 
     assert rc == 0
     assert captured["video"] == "movie.mp4"
     assert captured["kwargs"]["video_fps"] == 10.0
+    assert captured["kwargs"]["execution_mode"] == "strict"
     assert json.loads(json_out.read_text(encoding="utf-8"))["n_words"] == 2
     with table_out.open(newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f))

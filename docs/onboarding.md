@@ -44,7 +44,6 @@ from natural_features.workflows import extract_acoustic_phonetics
 ap = extract_acoustic_phonetics(
     "tests/stimuli/tier_a/audio_speechlike.wav",
     posterior_backend="ctc",
-    execution_mode="fallback",  # use "strict" to fail loudly
     resolution_s=0.5,
 )
 ```

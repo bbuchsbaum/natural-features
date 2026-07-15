@@ -643,8 +643,13 @@ def plan_features(
             )
         input_key, input_token = source
         params = dict(entry.default_params)
-        params.update(feature_params.get(feature_id, {}))
-        params.update(feature_params.get(spec.name, {}))
+        overrides = dict(feature_params.get(feature_id, {}))
+        overrides.update(feature_params.get(spec.name, {}))
+        if "strict_dependency" in overrides and "execution_mode" not in overrides:
+            # Preserve the legacy flag as an explicit mode request instead of
+            # combining it with the registry's modern strict default.
+            params.pop("execution_mode", None)
+        params.update(overrides)
         step_id = _unique_step_id(feature_id, used_ids)
         rows.append(
             FeaturePlanRow(

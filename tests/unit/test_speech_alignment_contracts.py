@@ -49,10 +49,10 @@ def test_backend_probe_and_resolution_contract() -> None:
 
     forced = resolve_aligner_backend(requested="none")
     assert forced.selected_backend == "passthrough"
-    assert forced.fallback_used is True
+    assert forced.fallback_used is False
 
     auto = resolve_aligner_backend(requested="auto")
-    assert auto.selected_backend in {"whisperx", "mfa", "gentle", "passthrough"}
+    assert auto.selected_backend in {"whisperx", "mfa", "passthrough"}
 
 
 def test_asr_contract_includes_metadata_and_qc_fields() -> None:
@@ -67,14 +67,14 @@ def test_asr_contract_includes_metadata_and_qc_fields() -> None:
         assert k in qc
 
 
-def test_whisperx_align_contract_passthrough_mode_is_truthful() -> None:
+def test_whisperx_align_explicit_passthrough_is_not_reported_as_fallback() -> None:
     a = _audio()
     out = whisper_transcribe(a, transcript_text="hh ah l ow", strict_dependency=False)
-    aligned = whisperx_align(a, out["words"], backend="none", strict_dependency=False)
+    aligned = whisperx_align(a, out["words"], backend="none")
     qc = aligned["qc"]
     words = aligned["words"]
-    assert qc["fallback_used"] is True
-    assert qc["mode"] == "passthrough"
+    assert qc["fallback_used"] is False
+    assert qc["mode"] == "passthrough_explicit"
     assert "backend_resolution" in qc
     assert words.metadata["aligner_backend"] == "passthrough"
 
@@ -201,6 +201,32 @@ def test_mfa_align_requires_config_in_strict_mode() -> None:
             )
 
 
+def test_selected_backend_without_runtime_adapter_fails_in_strict_mode(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    a = _audio()
+    words = whisper_transcribe(a, transcript_text="hello world")["words"]
+    from natural_features.features.speech.backends import AlignerResolution, BackendProbe
+
+    probes = {
+        "whisperx": BackendProbe(name="whisperx", available=False),
+        "mfa": BackendProbe(name="mfa", available=False),
+        "gentle": BackendProbe(name="gentle", available=True, version="legacy"),
+    }
+    monkeypatch.setattr(
+        "natural_features.features.speech.align.resolve_aligner_backend",
+        lambda requested: AlignerResolution(
+            selected_backend="gentle",
+            fallback_used=False,
+            reason=None,
+            probes=probes,
+        ),
+    )
+
+    with pytest.raises(RuntimeError, match="No alignment backend"):
+        whisperx_align(a, words, backend="gentle")
+
+
 def test_phoneme_event_series_contract_metadata() -> None:
     ev = phoneme_event_series(
         onset_s=np.array([0.0, 0.1], dtype=np.float64),
@@ -271,4 +297,4 @@ def test_non_english_transcript_passthrough_contract() -> None:
     assert labels == transcript.split()
     assert out.metadata["asr_model_name"] == "small"
     assert out.metadata["aligner_backend"] == "passthrough"
-    assert aligned["qc"]["mode"] == "passthrough"
+    assert aligned["qc"]["mode"] == "passthrough_explicit"

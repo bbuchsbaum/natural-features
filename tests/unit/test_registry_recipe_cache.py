@@ -91,8 +91,18 @@ def test_builtin_registry_executes_image_vision_aliases() -> None:
     recipe = {
         "features": [
             {"id": "energy", "use": "vision.energy", "inputs": {"image": "input:image"}},
-            {"id": "face", "use": "vision.face", "inputs": {"image": "input:image"}},
-            {"id": "clip", "use": "vision.clip", "inputs": {"image": "input:image"}, "params": {"dim": 8}},
+            {
+                "id": "face",
+                "use": "vision.face",
+                "inputs": {"image": "input:image"},
+                "params": {"execution_mode": "fallback"},
+            },
+            {
+                "id": "clip",
+                "use": "vision.clip",
+                "inputs": {"image": "input:image"},
+                "params": {"dim": 8, "execution_mode": "fallback"},
+            },
         ]
     }
     out = execute_recipe(recipe, registry=reg, inputs={"image": img})
@@ -445,6 +455,8 @@ def test_cli_speech_align_exports_ctm_textgrid_and_json(tmp_path, capsys) -> Non
                 str(wav_path),
                 "--align-backend",
                 "none",
+                "--execution-mode",
+                "fallback",
                 "--ctm-out",
                 str(ctm_out),
                 "--textgrid-out",
@@ -566,6 +578,8 @@ def test_cli_speech_align_forwards_mfa_args(monkeypatch, tmp_path, capsys) -> No
                 str(wav_path),
                 "--align-backend",
                 "mfa",
+                "--execution-mode",
+                "fallback",
                 "--mfa-dictionary",
                 "/tmp/dict.dict",
                 "--mfa-acoustic-model",
