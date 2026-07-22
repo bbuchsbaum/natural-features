@@ -8,6 +8,10 @@ sidebar: cookbook
 
 You want one docs page that covers every public feature family and shows what the main output schemas look like. Model-backed and API-backed feature IDs are listed from the live catalogue; the plotted examples use local synthetic inputs or deterministic fallback routes so the page can render without external datasets.
 
+Where an executable example includes an optional backend, it explicitly sets
+`execution_mode="fallback"`. The `allow_python` budget makes those routes
+eligible; it does not silently change their default fail-fast behavior.
+
 ```{python}
 #| echo: false
 from collections import defaultdict
@@ -128,8 +132,15 @@ audio_result = extract_features(
     budget="allow_python",
     feature_params={
         "audio.mel": {"n_mels": 24},
-        "audio.clap": {"dim": 12, "stride_s": 0.25},
-        "speech.ctc": {"stride_s": 0.05},
+        "audio.clap": {
+            "dim": 12,
+            "stride_s": 0.25,
+            "execution_mode": "fallback",
+        },
+        "speech.ctc": {
+            "stride_s": 0.05,
+            "execution_mode": "fallback",
+        },
     },
 )
 ```
@@ -166,7 +177,9 @@ axes[2].set_ylabel("mel bin")
 plt.show()
 ```
 
-The same source also has fallback-friendly embedding and posterior routes in the catalogue. The build runs compact examples for `audio.clap` and `speech.ctc`, but keeps the plot focused on low-dimensional diagnostics.
+The same source also has embedding and posterior routes in the catalogue. This
+build explicitly selects their deterministic fallback policy, then keeps the
+plot focused on low-dimensional diagnostics.
 
 ## Text, events, and language
 
@@ -186,6 +199,10 @@ text_result = extract_features(
         "speech.articulatory",
     ],
     budget="allow_python",
+    feature_params={
+        "language.syntax": {"execution_mode": "fallback"},
+        "language.surprisal": {"execution_mode": "fallback"},
+    },
 )
 words = text_result.features["text.tokenize"]
 surface = text_result.features["language.surface"]
@@ -259,7 +276,10 @@ vision_result = extract_features(
         "vision.social_proxies",
     ],
     budget="allow_python",
-    feature_params={"vision.dct": {"k": 12, "size": 16}},
+    feature_params={
+        "vision.dct": {"k": 12, "size": 16},
+        "vision.face": {"execution_mode": "fallback"},
+    },
 )
 ```
 

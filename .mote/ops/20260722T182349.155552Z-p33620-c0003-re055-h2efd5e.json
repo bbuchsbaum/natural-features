@@ -1,0 +1,1 @@
+{"actor":"bbuchsbaum","entity":"bd-01KY5H3D28A6KZFWFDFC9225DP","kind":"note","note_kind":"progress","op":"20260722T182349.155552Z-p33620-c0003-re055-h2efd5e","text":"Fix executable gallery by explicitly selecting fallback mode for optional backends in the docs environment.","ts":"2026-07-22T18:23:49.155552Z","v":1}
