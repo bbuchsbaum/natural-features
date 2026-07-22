@@ -57,6 +57,8 @@ def _prefix_feature_names(fs: FeatureSeries, prefix: str) -> FeatureSeries:
         coords={"feature": prefixed},
         metadata=fs.metadata,
         timebase=fs.timebase,
+        time_bounds_s=fs.time_bounds_s,
+        temporal_context=fs.temporal_context,
     )
 
 

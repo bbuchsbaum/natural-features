@@ -8,10 +8,12 @@ import shutil
 import subprocess
 import tempfile
 from typing import Any
+import warnings
 
 import numpy as np
 
 from natural_features.core.execution import add_execution_provenance, resolve_execution_mode
+from natural_features.core.feature_bundle import inherit_temporal_contract
 from natural_features.core.feature_types import EventSeries, FeatureSeries
 from natural_features.core.stimulus import AudioStimulus, ImageStimulus, TextStimulus, VideoStimulus
 from natural_features.features.common import extractor_metadata
@@ -42,6 +44,8 @@ def video_sample_frames(
         fps=stimulus.fps / stride,
         start_offset_s=stimulus.start_offset_s,
         source=stimulus.source,
+        clock=stimulus.clock,
+        temporal_context=stimulus.temporal_context,
     )
 
 
@@ -67,6 +71,8 @@ def video_trim(stimulus: VisualStimulus, *, start_s: float = 0.0, end_s: float |
         fps=stimulus.fps,
         start_offset_s=float(times[keep[0]]),
         source=stimulus.source,
+        clock=stimulus.clock,
+        temporal_context=stimulus.temporal_context,
     )
 
 
@@ -120,7 +126,20 @@ def video_audio_extract(
             diagnostics = proc.stderr.strip() or proc.stdout.strip() or "no ffmpeg diagnostics"
             raise RuntimeError(f"ffmpeg audio extraction failed: {diagnostics}")
         audio = AudioStimulus.from_wav(wav_path, start_offset_s=float(start_s))
-    return AudioStimulus(samples=audio.samples, sr_hz=audio.sr_hz, start_offset_s=audio.start_offset_s, source=str(source))
+    clock = stimulus.clock if isinstance(stimulus, VideoStimulus) else "stimulus"
+    context = (
+        stimulus.temporal_context
+        if isinstance(stimulus, VideoStimulus)
+        else audio.temporal_context
+    )
+    return AudioStimulus(
+        samples=audio.samples,
+        sr_hz=audio.sr_hz,
+        start_offset_s=audio.start_offset_s,
+        source=str(source),
+        clock=clock,
+        temporal_context=context,
+    )
 
 
 def audio_trim(stimulus: AudioStimulus, *, start_s: float = 0.0, end_s: float | None = None) -> AudioStimulus:
@@ -141,6 +160,8 @@ def audio_trim(stimulus: AudioStimulus, *, start_s: float = 0.0, end_s: float | 
         sr_hz=stimulus.sr_hz,
         start_offset_s=source_start + first / float(stimulus.sr_hz),
         source=stimulus.source,
+        clock=stimulus.clock,
+        temporal_context=stimulus.temporal_context,
     )
 
 
@@ -163,7 +184,14 @@ def audio_resample(stimulus: AudioStimulus, *, target_sr_hz: int = 16000) -> Aud
     else:
         cols = [np.interp(new_t, old_t, samples[:, j]) for j in range(samples.shape[1])]
         out = np.column_stack(cols).astype(np.float32)
-    return AudioStimulus(samples=out, sr_hz=target, start_offset_s=stimulus.start_offset_s, source=stimulus.source)
+    return AudioStimulus(
+        samples=out,
+        sr_hz=target,
+        start_offset_s=stimulus.start_offset_s,
+        source=stimulus.source,
+        clock=stimulus.clock,
+        temporal_context=stimulus.temporal_context,
+    )
 
 
 def _tokens(text: str) -> list[str]:
@@ -185,7 +213,7 @@ def text_tokenize(stimulus: TextStimulus | str, *, duration_s: float | None = No
         onset, offset = edges[:-1], edges[1:]
     else:
         onset = offset = np.array([], dtype=np.float64)
-    return EventSeries(
+    result = EventSeries(
         onset_s=onset,
         offset_s=offset,
         label=np.asarray(words, dtype=object),
@@ -193,6 +221,8 @@ def text_tokenize(stimulus: TextStimulus | str, *, duration_s: float | None = No
         extra={"object_type": np.asarray(["word"] * n, dtype=object)},
         metadata=extractor_metadata("text.tokenize", params={"duration_s": duration_s}),
     )
+    sources = [stimulus] if isinstance(stimulus, TextStimulus) else []
+    return inherit_temporal_contract(result, sources)
 
 
 def _empty_ocr_events(extractor_name: str, *, execution_mode: str, reason: str) -> EventSeries:
@@ -314,7 +344,7 @@ def image_ocr(
     if not isinstance(stimulus, ImageStimulus):
         raise TypeError("image_ocr requires an ImageStimulus")
     try:
-        return _image_ocr_backend(
+        result = _image_ocr_backend(
             stimulus,
             min_confidence=float(min_confidence),
             duration_s=duration_s,
@@ -324,7 +354,8 @@ def image_ocr(
     except Exception as exc:
         if strict:
             raise RuntimeError("image.ocr failed in strict mode") from exc
-        return _empty_ocr_events("image.ocr", execution_mode=mode, reason=str(exc))
+        result = _empty_ocr_events("image.ocr", execution_mode=mode, reason=str(exc))
+    return inherit_temporal_contract(result, [stimulus])
 
 
 def _concat_event_series(events: list[EventSeries], *, extractor_name: str, execution_mode: str) -> EventSeries:
@@ -374,6 +405,8 @@ def video_ocr(
             stimulus.frames[frame_index],
             onset_s=float(stimulus.frame_times_s[frame_index]),
             duration_s=frame_duration,
+            clock=stimulus.clock,
+            temporal_context=stimulus.temporal_context,
         )
         ev = image_ocr(
             image,
@@ -394,11 +427,22 @@ def video_ocr(
                 metadata=ev.metadata,
                 schema=ev.schema,
                 timebase=ev.timebase,
+                temporal_context=ev.temporal_context,
             )
             events.append(ev)
     if strict and not events:
-        return _empty_ocr_events("video.ocr", execution_mode=mode, reason="no OCR text detected")
-    return _concat_event_series(events, extractor_name="video.ocr", execution_mode=mode)
+        result = _empty_ocr_events(
+            "video.ocr",
+            execution_mode=mode,
+            reason="no OCR text detected",
+        )
+        return inherit_temporal_contract(result, [stimulus])
+    result = _concat_event_series(
+        events,
+        extractor_name="video.ocr",
+        execution_mode=mode,
+    )
+    return inherit_temporal_contract(result, [stimulus])
 
 
 def events_align(events: EventSeries, *, mode: str = "passthrough", **_: object) -> EventSeries:
@@ -415,6 +459,7 @@ def events_align(events: EventSeries, *, mode: str = "passthrough", **_: object)
         metadata=metadata,
         schema=events.schema,
         timebase=events.timebase,
+        temporal_context=events.temporal_context,
     )
 
 
@@ -430,6 +475,12 @@ def features_resample(
 
 
 def features_hrf(feature: FeatureSeries, *, tr_s: float | None = None, kind: str = "glover") -> FeatureSeries:
+    warnings.warn(
+        "features.hrf is deprecated; keep native feature time in natural_features "
+        "and perform HRF/TR/design operations in a downstream modeling library",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     if tr_s is None:
         diffs = np.diff(feature.times_s)
         diffs = diffs[np.isfinite(diffs) & (diffs > 0)]

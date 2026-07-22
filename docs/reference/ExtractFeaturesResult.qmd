@@ -9,5 +9,6 @@ ExtractFeaturesResult(
     table=None,
     inputs=dict(),
     timelines=dict(),
+    temporal_context=TemporalContext(),
 )
 ```

@@ -1,5 +1,11 @@
 # AlignedFeatureSet { #natural_features.AlignedFeatureSet }
 
 ```python
-AlignedFeatureSet(features, target, alignments, policy='overlap')
+AlignedFeatureSet(
+    features,
+    target,
+    alignments,
+    policy='overlap',
+    temporal_context=TemporalContext(),
+)
 ```

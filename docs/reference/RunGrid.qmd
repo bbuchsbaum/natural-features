@@ -1,5 +1,14 @@
 # RunGrid { #natural_features.RunGrid }
 
 ```python
-RunGrid(run_index, tr_s, n_trs, start_s, feature_t0_s=0.0)
+RunGrid(
+    run_index,
+    tr_s,
+    n_trs,
+    start_s,
+    feature_t0_s=0.0,
+    feature_clock=STIMULUS_CLOCK,
+    experiment_clock='experiment',
+    feature_to_experiment=None,
+)
 ```

@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 
 from natural_features.core.feature_types import EventSeries, FeatureSeries
-from natural_features.core.timebase import TimebaseSpec
+from natural_features.core.timebase import SupportSpec, TimebaseSpec
 from natural_features.features.common import extractor_metadata
 
 
@@ -49,6 +49,7 @@ def render_events(
     if value == "confidence" and events.confidence is None:
         raise ValueError("value='confidence' requires EventSeries.confidence")
     left_edges, right_edges = _grid_edges(grid)
+    bounds = np.column_stack([left_edges, right_edges])
     out = np.zeros((len(grid), 1), dtype=np.float32)
     if len(events) == 0:
         metadata = extractor_metadata("fmri.render_events", params={"mode": mode, "value": value})
@@ -58,7 +59,13 @@ def render_events(
             dims=("time", "feature"),
             coords={"feature": [f"events_{mode}_{value}"]},
             metadata=metadata,
-            timebase=TimebaseSpec(kind="windows"),
+            timebase=TimebaseSpec(
+                kind="windows",
+                reference=events.clock,
+                support=SupportSpec(kind="interval", anchor="center"),
+            ),
+            time_bounds_s=bounds,
+            temporal_context=events.temporal_context,
         )
 
     for i in range(len(grid)):
@@ -88,5 +95,11 @@ def render_events(
         dims=("time", "feature"),
         coords={"feature": [f"events_{mode}_{value}"]},
         metadata=metadata,
-        timebase=TimebaseSpec(kind="windows"),
+        timebase=TimebaseSpec(
+            kind="windows",
+            reference=events.clock,
+            support=SupportSpec(kind="interval", anchor="center"),
+        ),
+        time_bounds_s=bounds,
+        temporal_context=events.temporal_context,
     )

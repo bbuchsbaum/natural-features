@@ -83,5 +83,12 @@ def resample_feature_series(
         dims=feature.dims,
         coords=feature.coords,
         metadata=metadata,
-        timebase=TimebaseSpec(kind="windows", stride_s=tr_s, window_s=tr_s, alignment="center"),
+        timebase=TimebaseSpec(
+            kind="windows",
+            reference=feature.clock,
+            stride_s=tr_s,
+            window_s=tr_s,
+            alignment="center",
+        ),
+        temporal_context=feature.temporal_context,
     )

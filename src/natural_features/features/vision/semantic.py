@@ -9,7 +9,7 @@ import numpy as np
 from natural_features.core.execution import add_execution_provenance, resolve_execution_mode
 from natural_features.core.feature_types import EventSeries
 from natural_features.core.stimulus import VideoStimulus
-from natural_features.core.timebase import TimebaseSpec
+from natural_features.core.timebase import SupportSpec, TimebaseSpec
 from natural_features.features.common import extractor_metadata
 from natural_features.features.vision.common import ensure_frames, frame_duration_s, frame_times_s
 from natural_features.features.vision.lowlevel import _edge_energy, _saturation, _to_gray
@@ -136,7 +136,13 @@ def _clip_semantic_views(
             "label_index": label_idx,
         },
         metadata=md,
-        timebase=TimebaseSpec(kind="frames", sampling_rate_hz=stimulus.fps / stride),
+        timebase=TimebaseSpec(
+            kind="frame_events",
+            reference=stimulus.clock,
+            sampling_rate_hz=stimulus.fps / stride,
+            support=SupportSpec(kind="interval", anchor="onset"),
+        ),
+        temporal_context=stimulus.temporal_context,
     )
 
 
@@ -166,7 +172,13 @@ def _fallback_semantic_views(
         confidence=confidence,
         extra={"view_type": labels.copy()},
         metadata=md,
-        timebase=TimebaseSpec(kind="frames", sampling_rate_hz=stimulus.fps / stride),
+        timebase=TimebaseSpec(
+            kind="frame_events",
+            reference=stimulus.clock,
+            sampling_rate_hz=stimulus.fps / stride,
+            support=SupportSpec(kind="interval", anchor="onset"),
+        ),
+        temporal_context=stimulus.temporal_context,
     )
 
 

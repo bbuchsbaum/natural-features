@@ -1,0 +1,14 @@
+# TimebaseSpec { #natural_features.TimebaseSpec }
+
+```python
+TimebaseSpec(
+    kind,
+    reference=STIMULUS_CLOCK,
+    sampling_rate_hz=None,
+    hop_s=None,
+    window_s=None,
+    stride_s=None,
+    alignment=None,
+    support=None,
+)
+```

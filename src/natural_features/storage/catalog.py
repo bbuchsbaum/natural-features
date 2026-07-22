@@ -87,18 +87,47 @@ class Catalog:
         return stable_hash(payload, length=20)
 
     @staticmethod
+    def _temporal_contract(obj: FeatureSeries | EventSeries | TrackSeries) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "timebase": obj.timebase.to_dict(),
+            "temporal_context_digest": obj.temporal_context.digest,
+        }
+        if isinstance(obj, EventSeries):
+            payload.update({"onset_s": obj.onset_s, "offset_s": obj.offset_s})
+        else:
+            payload["times_s"] = obj.times_s
+            payload["time_bounds_s"] = obj.time_bounds_s
+        return payload
+
+    @staticmethod
     def _utc_now_iso() -> str:
         return datetime.now(timezone.utc).isoformat()
 
     @staticmethod
-    def _file_sha256(path: Path) -> str:
+    def _path_sha256(path: Path) -> str:
         h = hashlib.sha256()
-        with path.open("rb") as f:
-            for chunk in iter(lambda: f.read(1024 * 1024), b""):
-                if not chunk:
-                    break
-                h.update(chunk)
+        files = [path] if path.is_file() else sorted(
+            (item for item in path.rglob("*") if item.is_file()),
+            key=lambda item: item.relative_to(path).as_posix(),
+        )
+        for item in files:
+            if path.is_dir():
+                h.update(item.relative_to(path).as_posix().encode("utf-8"))
+                h.update(b"\0")
+            with item.open("rb") as stream:
+                for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                    h.update(chunk)
         return h.hexdigest()
+
+    @staticmethod
+    def _path_bytes(path: Path) -> int:
+        if path.is_file():
+            return int(path.stat().st_size)
+        return sum(
+            int(item.stat().st_size)
+            for item in path.rglob("*")
+            if item.is_file()
+        )
 
     def _read_metadata_payload(self, artifact_id: str) -> dict[str, Any]:
         meta_path = self.artifacts_dir / artifact_id / "metadata.json"
@@ -143,6 +172,8 @@ class Catalog:
             shape_hint = list(obj.values.shape)
         else:
             shape_hint = []
+        temporal_contract = self._temporal_contract(obj)
+        temporal_digest = stable_hash(temporal_contract, length=20)
         base_payload = {
             "run_id": run_id,
             "stage_id": stage_id,
@@ -154,6 +185,7 @@ class Catalog:
             "model_revision": model_revision,
             "upstream_ids": upstream_ids,
             "shape": shape_hint,
+            "temporal_digest": temporal_digest,
         }
         artifact_id = self.make_artifact_id(base_payload)
         artifact_dir = self.artifacts_dir / artifact_id
@@ -175,8 +207,8 @@ class Catalog:
             dtype = str(obj.values.dtype)
             shape = list(obj.values.shape)
         payload_abs = payload_path
-        payload_sha256 = self._file_sha256(payload_abs)
-        payload_bytes = int(payload_abs.stat().st_size)
+        payload_sha256 = self._path_sha256(payload_abs)
+        payload_bytes = self._path_bytes(payload_abs)
 
         record = ArtifactMetadata(
             artifact_id=artifact_id,
@@ -185,7 +217,11 @@ class Catalog:
             schema=obj.schema,
             dtype=dtype,
             shape=shape,
-            timebase=asdict(obj.timebase),
+            timebase={
+                **obj.timebase.to_dict(),
+                "temporal_context": obj.temporal_context.to_dict(),
+                "temporal_digest": temporal_digest,
+            },
             params_hash=str(obj.metadata["params_hash"]),
             extractor_id=str(obj.metadata["extractor_id"]),
             code_version=code_version,
@@ -367,8 +403,8 @@ class Catalog:
             payload_bytes = payload_info.get("bytes")
             artifact_path = self.root / artifact.path
             if (not payload_sha256 or payload_bytes is None) and artifact_path.exists():
-                payload_sha256 = self._file_sha256(artifact_path)
-                payload_bytes = int(artifact_path.stat().st_size)
+                payload_sha256 = self._path_sha256(artifact_path)
+                payload_bytes = self._path_bytes(artifact_path)
             entries.append(
                 {
                     "artifact": asdict(artifact),
@@ -437,13 +473,16 @@ class Catalog:
                     raise FileNotFoundError(f"Manifest references missing artifact payload: {src}")
                 if not dst.exists():
                     dst.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copy2(src, dst)
+                    if src.is_dir():
+                        shutil.copytree(src, dst)
+                    else:
+                        shutil.copy2(src, dst)
             if expected_sha256 and dst.exists():
-                observed = self._file_sha256(dst)
+                observed = self._path_sha256(dst)
                 if observed != expected_sha256:
                     raise ValueError(f"Payload hash mismatch for artifact {meta.artifact_id}")
             if expected_bytes is None and dst.exists():
-                expected_bytes = int(dst.stat().st_size)
+                expected_bytes = self._path_bytes(dst)
             self._write_metadata_json(
                 meta,
                 object_metadata,

@@ -1,0 +1,7 @@
+# FeatureBundle { #natural_features.FeatureBundle }
+
+```python
+FeatureBundle(features, temporal_context=TemporalContext(), metadata=dict())
+```
+
+A collection of native-grid features sharing temporal mappings.

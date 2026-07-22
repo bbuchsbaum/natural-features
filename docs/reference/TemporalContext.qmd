@@ -1,0 +1,7 @@
+# TemporalContext { #natural_features.TemporalContext }
+
+```python
+TemporalContext(mappings=())
+```
+
+A validated, serializable graph of mappings between named clocks.

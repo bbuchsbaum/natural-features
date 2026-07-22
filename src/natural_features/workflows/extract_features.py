@@ -8,6 +8,7 @@ import re
 from typing import Any, Iterable
 
 from natural_features.core.feature_types import EventSeries, FeatureSeries, TrackSeries
+from natural_features.core.feature_bundle import FeatureBundle
 from natural_features.core.interchange import merge_feature_tables
 from natural_features.core.recipe import execute_recipe
 from natural_features.core.registry import ExtractorSpec, Registry
@@ -19,6 +20,7 @@ from natural_features.core.stimulus import (
     VideoStimulus,
 )
 from natural_features.core.timeline import FeatureAlignment, Timeline, align_feature_to_timeline
+from natural_features.core.timebase import TemporalContext
 from natural_features.workflows._public_contract import public_feature_ids
 
 _IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".webp"}
@@ -130,6 +132,7 @@ class AlignedFeatureSet:
     target: Timeline
     alignments: dict[str, FeatureAlignment]
     policy: str = "overlap"
+    temporal_context: TemporalContext = field(default_factory=TemporalContext)
 
     def to_rows(self) -> list[dict[str, Any]]:
         rows: list[dict[str, Any]] = []
@@ -158,6 +161,7 @@ class ExtractFeaturesResult:
     table: Any | None = None
     inputs: dict[str, Any] = field(default_factory=dict)
     timelines: dict[str, Timeline] = field(default_factory=dict)
+    temporal_context: TemporalContext = field(default_factory=TemporalContext)
 
     def to_table(
         self,
@@ -165,16 +169,29 @@ class ExtractFeaturesResult:
         format: str = "long",
         include_objects: bool = True,
         include_metadata: bool = True,
+        target_clock: str | None = None,
+        join_policy: str | None = None,
     ) -> Any:
         return merge_feature_tables(
             self.features,
             format=format,
             include_objects=include_objects,
             include_metadata=include_metadata,
+            temporal_context=self.temporal_context,
+            target_clock=target_clock,
+            join_policy=join_policy,
         )
 
     def timeline(self, target: str | Timeline) -> Timeline:
         return _resolve_timeline(self, target)
+
+    def to_bundle(self) -> FeatureBundle:
+        temporal = {
+            name: obj
+            for name, obj in self.features.items()
+            if isinstance(obj, (FeatureSeries, EventSeries, TrackSeries))
+        }
+        return FeatureBundle(temporal, temporal_context=self.temporal_context)
 
     def align_to(
         self,
@@ -192,12 +209,19 @@ class ExtractFeaturesResult:
             obj = self.features[name]
             if not _is_temporal_output(obj):
                 raise TypeError(f"Feature output '{name}' is not a temporal feature object")
-            alignments[name] = align_feature_to_timeline(name, obj, target_timeline, policy=policy)
+            alignments[name] = align_feature_to_timeline(
+                name,
+                obj,
+                target_timeline,
+                policy=policy,
+                context=self.temporal_context,
+            )
         return AlignedFeatureSet(
             features=self.features,
             target=target_timeline,
             alignments=alignments,
             policy=policy,
+            temporal_context=self.temporal_context,
         )
 
 
@@ -481,6 +505,20 @@ def _default_timelines_from_inputs(inputs: dict[str, Any]) -> dict[str, Timeline
     return timelines
 
 
+def _temporal_context_from_inputs(
+    inputs: dict[str, Any],
+    outputs: dict[str, Any] | None = None,
+) -> TemporalContext:
+    contexts: list[TemporalContext] = []
+    for value in [*inputs.values(), *(outputs or {}).values()]:
+        context = getattr(value, "temporal_context", None)
+        if isinstance(context, TemporalContext):
+            contexts.append(context)
+    if not contexts:
+        return TemporalContext()
+    return contexts[0].merged(*contexts[1:])
+
+
 def _resolve_timeline(result: ExtractFeaturesResult, target: str | Timeline) -> Timeline:
     if isinstance(target, Timeline):
         return target
@@ -733,4 +771,5 @@ def extract_features(
         steps=result.steps,
         inputs=inputs,
         timelines=_default_timelines_from_inputs(inputs),
+        temporal_context=_temporal_context_from_inputs(inputs, features_out),
     )

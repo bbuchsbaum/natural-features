@@ -9,6 +9,8 @@ Timeline(
     kind='intervals',
     source=None,
     metadata=dict(),
+    reference=STIMULUS_CLOCK,
+    temporal_context=TemporalContext(),
 )
 ```
 

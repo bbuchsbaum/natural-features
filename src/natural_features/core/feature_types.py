@@ -7,7 +7,13 @@ from typing import Any
 
 import numpy as np
 
-from .timebase import TimebaseSpec, is_monotonic_non_decreasing
+from .timebase import (
+    ClockRef,
+    TemporalContext,
+    TimebaseSpec,
+    is_monotonic_non_decreasing,
+    validate_time_bounds,
+)
 
 REQUIRED_METADATA_FIELDS = {
     "extractor_id",
@@ -19,6 +25,8 @@ def _ensure_1d_float_array(values: np.ndarray, name: str) -> np.ndarray:
     arr = np.asarray(values, dtype=np.float64)
     if arr.ndim != 1:
         raise ValueError(f"{name} must be 1-D")
+    if not np.all(np.isfinite(arr)):
+        raise ValueError(f"{name} must contain only finite values")
     return arr
 
 
@@ -31,8 +39,12 @@ class FeatureSeries:
     metadata: dict[str, Any] = field(default_factory=dict)
     schema: str = "FeatureSeries/v1"
     timebase: TimebaseSpec = field(default_factory=lambda: TimebaseSpec(kind="frames"))
+    time_bounds_s: np.ndarray | None = None
+    temporal_context: TemporalContext = field(default_factory=TemporalContext)
 
     def __post_init__(self) -> None:
+        if not isinstance(self.timebase, TimebaseSpec):
+            raise TypeError("timebase must be a TimebaseSpec")
         values = np.asarray(self.values)
         times_s = _ensure_1d_float_array(self.times_s, "times_s")
         if values.ndim < 2:
@@ -50,10 +62,35 @@ class FeatureSeries:
             raise ValueError(f"metadata missing required fields: {missing}")
         object.__setattr__(self, "values", values)
         object.__setattr__(self, "times_s", times_s)
+        if self.time_bounds_s is not None:
+            object.__setattr__(
+                self,
+                "time_bounds_s",
+                validate_time_bounds(self.time_bounds_s, len(times_s)),
+            )
+        elif self.timebase.support.kind == "interval":
+            raise ValueError("interval support requires time_bounds_s")
+        if not isinstance(self.temporal_context, TemporalContext):
+            object.__setattr__(
+                self,
+                "temporal_context",
+                TemporalContext.from_dict(self.temporal_context),
+            )
 
     @property
     def shape(self) -> tuple[int, ...]:
         return tuple(self.values.shape)
+
+    @property
+    def clock(self) -> ClockRef:
+        return self.timebase.clock
+
+    @property
+    def temporal_bounds_s(self) -> np.ndarray:
+        return self.timebase.support.bounds(
+            self.times_s,
+            explicit_bounds_s=self.time_bounds_s,
+        )
 
 
 @dataclass(frozen=True)
@@ -66,8 +103,13 @@ class EventSeries:
     metadata: dict[str, Any] = field(default_factory=dict)
     schema: str = "EventSeries/v1"
     timebase: TimebaseSpec = field(default_factory=lambda: TimebaseSpec(kind="events"))
+    temporal_context: TemporalContext = field(default_factory=TemporalContext)
 
     def __post_init__(self) -> None:
+        if not isinstance(self.timebase, TimebaseSpec):
+            raise TypeError("timebase must be a TimebaseSpec")
+        if self.timebase.support.kind != "interval":
+            raise ValueError("EventSeries timebase must declare interval support")
         onset_s = _ensure_1d_float_array(self.onset_s, "onset_s")
         offset_s = _ensure_1d_float_array(self.offset_s, "offset_s")
         if onset_s.shape != offset_s.shape:
@@ -85,9 +127,23 @@ class EventSeries:
             raise ValueError(f"metadata missing required fields: {missing}")
         object.__setattr__(self, "onset_s", onset_s)
         object.__setattr__(self, "offset_s", offset_s)
+        if not isinstance(self.temporal_context, TemporalContext):
+            object.__setattr__(
+                self,
+                "temporal_context",
+                TemporalContext.from_dict(self.temporal_context),
+            )
 
     def __len__(self) -> int:
         return int(self.onset_s.shape[0])
+
+    @property
+    def clock(self) -> ClockRef:
+        return self.timebase.clock
+
+    @property
+    def temporal_bounds_s(self) -> np.ndarray:
+        return np.column_stack([self.onset_s, self.offset_s])
 
 
 @dataclass(frozen=True)
@@ -100,8 +156,12 @@ class TrackSeries:
     metadata: dict[str, Any] = field(default_factory=dict)
     schema: str = "TrackSeries/v1"
     timebase: TimebaseSpec = field(default_factory=lambda: TimebaseSpec(kind="frames"))
+    time_bounds_s: np.ndarray | None = None
+    temporal_context: TemporalContext = field(default_factory=TemporalContext)
 
     def __post_init__(self) -> None:
+        if not isinstance(self.timebase, TimebaseSpec):
+            raise TypeError("timebase must be a TimebaseSpec")
         times_s = _ensure_1d_float_array(self.times_s, "times_s")
         values = np.asarray(self.values)
         track_id = np.asarray(self.track_id)
@@ -119,4 +179,28 @@ class TrackSeries:
         object.__setattr__(self, "times_s", times_s)
         object.__setattr__(self, "values", values)
         object.__setattr__(self, "track_id", track_id)
+        if self.time_bounds_s is not None:
+            object.__setattr__(
+                self,
+                "time_bounds_s",
+                validate_time_bounds(self.time_bounds_s, len(times_s)),
+            )
+        elif self.timebase.support.kind == "interval":
+            raise ValueError("interval support requires time_bounds_s")
+        if not isinstance(self.temporal_context, TemporalContext):
+            object.__setattr__(
+                self,
+                "temporal_context",
+                TemporalContext.from_dict(self.temporal_context),
+            )
 
+    @property
+    def clock(self) -> ClockRef:
+        return self.timebase.clock
+
+    @property
+    def temporal_bounds_s(self) -> np.ndarray:
+        return self.timebase.support.bounds(
+            self.times_s,
+            explicit_bounds_s=self.time_bounds_s,
+        )

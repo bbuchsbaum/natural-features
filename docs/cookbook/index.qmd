@@ -15,6 +15,7 @@ Current recipes:
 - [Preview a recipe DAG](recipe-dag-preview.qmd)
 - [Export events to a table](event-table-export.qmd)
 - [Merge feature tables](feature-table-merge.qmd)
+- [Keep heterogeneous features on native grids](native-grid-handoff.qmd)
 - [Query a run-aware fMRI window](fmri-window-query.qmd)
 
 Recipes use synthetic or in-memory inputs where possible so the site can execute without external datasets.

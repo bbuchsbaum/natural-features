@@ -9,6 +9,7 @@ import numpy as np
 
 from .feature_types import EventSeries
 from .stimulus import VideoStimulus
+from .timebase import ClockRef, STIMULUS_CLOCK, TemporalContext
 
 FramePolicy = str
 
@@ -31,6 +32,8 @@ class FrameTimeline:
     offset_s: np.ndarray
     source: str | None = None
     fps: float | None = None
+    reference: ClockRef | str = STIMULUS_CLOCK
+    temporal_context: TemporalContext = TemporalContext()
 
     def __post_init__(self) -> None:
         frame_index = np.asarray(self.frame_index, dtype=np.int64)
@@ -53,6 +56,9 @@ class FrameTimeline:
         object.__setattr__(self, "frame_index", frame_index)
         object.__setattr__(self, "onset_s", onset_s)
         object.__setattr__(self, "offset_s", offset_s)
+        object.__setattr__(self, "reference", ClockRef(self.reference))
+        if not isinstance(self.temporal_context, TemporalContext):
+            object.__setattr__(self, "temporal_context", TemporalContext.from_dict(self.temporal_context))
         if self.fps is not None:
             object.__setattr__(self, "fps", float(self.fps))
 
@@ -65,6 +71,8 @@ class FrameTimeline:
         start_s: float = 0.0,
         first_frame_index: int = 0,
         source: str | None = None,
+        reference: ClockRef | str = STIMULUS_CLOCK,
+        temporal_context: TemporalContext = TemporalContext(),
     ) -> "FrameTimeline":
         """Build a regular timeline covering a clip duration at a known FPS."""
 
@@ -90,6 +98,8 @@ class FrameTimeline:
             offset_s=offset_s,
             source=source,
             fps=rate,
+            reference=reference,
+            temporal_context=temporal_context,
         )
 
     @classmethod
@@ -109,6 +119,8 @@ class FrameTimeline:
             offset_s=offset_s,
             source=source if source is not None else video.source,
             fps=float(video.fps),
+            reference=video.clock,
+            temporal_context=video.temporal_context,
         )
 
     @property
@@ -142,6 +154,13 @@ class FrameTimeline:
             raise ValueError(
                 f"policy must be one of {sorted(_VALID_POLICIES)}, got {policy!r}"
             )
+        context = events.temporal_context.merged(self.temporal_context)
+        event_onset = events.onset_s
+        event_offset = events.offset_s
+        if events.clock != self.reference:
+            mapping = context.resolve(events.clock, self.reference)
+            event_onset = np.asarray(mapping.apply(event_onset), dtype=np.float64)
+            event_offset = np.asarray(mapping.apply(event_offset), dtype=np.float64)
         n = len(events)
         if len(self.frame_index) == 0:
             empty_int = np.full(n, -1, dtype=np.int64)
@@ -154,18 +173,18 @@ class FrameTimeline:
             }
 
         if policy == "start":
-            start_idx = self._frame_containing_time(events.onset_s)
+            start_idx = self._frame_containing_time(event_onset)
             end_idx = start_idx.copy()
         elif policy in {"center", "nearest"}:
-            event_center = events.onset_s + (events.offset_s - events.onset_s) / 2.0
+            event_center = event_onset + (event_offset - event_onset) / 2.0
             start_idx = self._nearest_frame(event_center)
             end_idx = start_idx.copy()
         else:
-            start_idx = self._frame_containing_time(events.onset_s)
+            start_idx = self._frame_containing_time(event_onset)
             # End is inclusive. Events ending exactly at a frame boundary belong
             # to the preceding frame for overlap accounting.
-            end_idx = np.searchsorted(self.onset_s, events.offset_s, side="left") - 1
-            zero_duration = events.offset_s <= events.onset_s
+            end_idx = np.searchsorted(self.onset_s, event_offset, side="left") - 1
+            zero_duration = event_offset <= event_onset
             end_idx = np.where(zero_duration, start_idx, end_idx)
             end_idx = np.maximum(end_idx, start_idx)
             end_idx = self._clip_index(end_idx)
@@ -193,6 +212,7 @@ class FrameTimeline:
             metadata=dict(events.metadata),
             schema=events.schema,
             timebase=events.timebase,
+            temporal_context=events.temporal_context.merged(self.temporal_context),
         )
 
     def to_rows(self) -> list[dict[str, float | int | str | None]]:
@@ -210,6 +230,7 @@ class FrameTimeline:
                     "duration_s": float(offset - onset),
                     "source": self.source,
                     "fps": None if self.fps is None else float(self.fps),
+                    "time_reference": str(self.reference),
                 }
             )
         return rows

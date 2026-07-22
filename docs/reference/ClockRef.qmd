@@ -1,0 +1,10 @@
+# ClockRef { #natural_features.ClockRef }
+
+```python
+ClockRef()
+```
+
+Stable identifier for the clock used by temporal coordinates.
+
+``ClockRef`` is a ``str`` subclass so legacy callers and JSON encoders keep
+working while APIs can require an explicit temporal-reference type.

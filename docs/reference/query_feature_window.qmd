@@ -16,5 +16,6 @@ query_feature_window(
 Slice a raw feature window for one run.
 
 `output_time`:
-- `"absolute"`: keep stimulus/global time.
+- `"absolute"`: express output on the experiment clock.
 - `"run_relative"`: subtract run start from output times.
+- `"feature"`: preserve the feature object's native clock.

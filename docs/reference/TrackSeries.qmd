@@ -10,5 +10,7 @@ TrackSeries(
     metadata=dict(),
     schema='TrackSeries/v1',
     timebase=(lambda: TimebaseSpec(kind='frames'))(),
+    time_bounds_s=None,
+    temporal_context=TemporalContext(),
 )
 ```

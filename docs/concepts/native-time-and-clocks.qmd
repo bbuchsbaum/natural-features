@@ -1,0 +1,40 @@
+---
+title: "Native Time and Clocks"
+subtitle: "Keep feature timing lossless until a downstream model chooses a grid."
+sidebar: concepts
+---
+
+## What it is
+
+A temporal coordinate is meaningful only together with its clock and support.
+`ClockRef` names the clock, `ClockMap` relates two clocks, `SupportSpec` says
+whether a row is a point or interval, and `TemporalContext` holds a consistent
+graph of clock mappings.
+
+`FeatureBundle` groups different native grids without forcing them into one
+table. Its `temporal_payload()` method is the handoff boundary for downstream
+modeling.
+
+## Invariants
+
+- Every temporal object declares a clock through `timebase.reference`.
+- A clock map means `target = scale * source + offset_s`.
+- Contradictory paths through a temporal context are rejected.
+- Clock conversion preserves values and row count.
+- Window and interval support survives conversion and storage.
+
+## What it refuses
+
+- Implicit cross-clock alignment.
+- Silent resampling to the fastest feature grid.
+- Wide joins across clocks without an explicit target and policy.
+- Treating TR or HRF settings as properties of a native feature.
+
+## What it doesn't do
+
+The clock layer does not convolve an HRF, interpolate onto TRs, or build a
+design matrix. Those choices belong to downstream analysis libraries.
+
+## See also
+
+[Native temporal contract](../spec/native-temporal-contract.qmd) · [Keep heterogeneous features on native grids](../cookbook/native-grid-handoff.qmd) · [Feature objects](feature-objects.qmd)

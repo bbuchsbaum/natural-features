@@ -14,6 +14,14 @@ quartodoc:
         - FeatureSeries
         - EventSeries
         - TrackSeries
+        - ClockRef
+        - ClockMap
+        - SupportSpec
+        - TemporalContext
+        - TimebaseSpec
+        - FeatureBundle
+        - TemporalPayload
+        - temporal_object_in_clock
         - Timeline
         - FeatureAlignment
     - title: "Unified extraction workflow"

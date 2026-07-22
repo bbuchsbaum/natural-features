@@ -3,6 +3,7 @@ from __future__ import annotations
 import numpy as np
 
 from natural_features.core.feature_types import FeatureSeries
+from natural_features.core.timebase import ClockMap, TimebaseSpec
 from natural_features.features.common import extractor_metadata
 from natural_features.fmri.query import (
     build_experiment_grid,
@@ -136,3 +137,47 @@ def test_query_feature_zoo_window_tr_multiple_spaces() -> None:
     assert set(out.keys()) == {"f1", "f2"}
     assert out["f1"].values.shape[0] == out["f2"].values.shape[0]
     assert np.allclose(out["f1"].times_s, out["f2"].times_s)
+
+
+def test_query_helpers_scale_support_and_tr_across_affine_clocks() -> None:
+    fs = FeatureSeries(
+        values=np.arange(4, dtype=np.float32)[:, None],
+        times_s=np.arange(4, dtype=np.float64),
+        metadata=extractor_metadata("test.scaled_clock"),
+        timebase=TimebaseSpec(
+            kind="windows",
+            reference="feature-clock",
+            window_s=0.5,
+        ),
+    )
+    grid = build_experiment_grid(
+        tr_s=2.0,
+        n_trs_by_run=[4],
+        feature_clock="feature-clock",
+        feature_to_experiment_by_run=[
+            ClockMap("feature-clock", "experiment", scale=2.0)
+        ],
+    )
+
+    raw = query_feature_window(
+        fs,
+        grid,
+        run_index=1,
+        t_start_s=0.0,
+        t_end_s=6.0,
+        output_time="absolute",
+    )
+    sampled = query_feature_window_tr(
+        fs,
+        grid,
+        run_index=1,
+        t_start_s=0.0,
+        t_end_s=6.0,
+        method="nearest",
+        output_time="feature",
+    )
+
+    np.testing.assert_allclose(raw.times_s, [0.0, 2.0, 4.0])
+    assert raw.timebase.support.width_s == 1.0
+    np.testing.assert_allclose(sampled.times_s, [0.0, 1.0, 2.0])
+    assert sampled.timebase.support.width_s == 1.0

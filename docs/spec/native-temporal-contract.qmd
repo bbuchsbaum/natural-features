@@ -1,0 +1,131 @@
+---
+title: "Native Temporal Contract"
+subtitle: "Lossless clocks, temporal support, heterogeneous grids, and downstream handoff."
+sidebar: spec
+---
+
+## Status and scope
+
+This page is the normative temporal-bookkeeping contract for `natural_features`.
+The package records when a feature was measured, which clock its coordinates use,
+what temporal interval each row represents, and how clocks are related. It does
+not require unrelated feature families to share a sampling grid.
+
+The modeling boundary is deliberate: HRF convolution, interpolation onto scan
+TRs, lag construction, and design-matrix policy belong in downstream modeling
+libraries such as `fmrimod`, `fmrireg`, or `fmridesign`. A TR may be useful
+downstream, but it is not part of a native feature's identity here.
+
+## Required temporal fields
+
+Every `FeatureSeries`, `EventSeries`, and `TrackSeries` has:
+
+| Field | Meaning |
+|---|---|
+| `timebase.reference` | The `ClockRef` on which its numeric coordinates are expressed. |
+| `timebase.support` | A `SupportSpec` declaring point, fixed-window, or per-row interval support. |
+| `temporal_context` | A validated `TemporalContext` containing known mappings among clocks. |
+| `times_s` or `onset_s`/`offset_s` | Native coordinates in seconds on the declared clock. |
+| `time_bounds_s` | Optional per-row bounds for dense and track data; required by interval support. |
+
+`EventSeries` always carries explicit onset and offset bounds. Dense and track
+objects expose `temporal_bounds_s`, which resolves point or fixed-window support
+and uses `time_bounds_s` for irregular intervals.
+
+## Clock mappings
+
+`ClockMap(source, target, scale, offset_s)` always means:
+
+$$
+t_{target} = scale \times t_{source} + offset_s
+$$
+
+The scale must be positive and finite. `TemporalContext` treats mappings as a
+graph, resolves inverse and composed paths, and rejects contradictory paths.
+
+For example, if stimulus time 30 s is scan time 7 s:
+
+```{python}
+from natural_features import ClockMap
+
+stimulus_to_scan = ClockMap(
+    "stimulus",
+    "scan:run-01",
+    offset_s=-23.0,
+)
+stimulus_to_scan.apply(30.0)
+```
+
+Clock conversion changes coordinates and support widths only. It never changes
+row count, interpolates values, or creates a common grid.
+
+## Clock naming conventions
+
+Clock names are identifiers, not an enum, so projects may define the clocks
+they actually possess. Recommended names are:
+
+- `stimulus`: coordinates relative to the authored stimulus.
+- `media:<id>`: coordinates relative to a particular decoded media stream.
+- `experiment`: a continuous experiment-level clock across runs.
+- `scan:run-01`: seconds relative to the first acquired volume of one run.
+- `run:<id>`: another run-local clock when it is not specifically a scan clock.
+
+The mapping equation determines offset sign. If stimulus 30 s is scan 7 s,
+stimulus-to-scan has `offset_s=-23`. The inverse scan-to-stimulus map has
+`offset_s=+23`. If stimulus time zero begins 5 s after experiment time zero,
+stimulus-to-experiment instead has `offset_s=+5`. Always name both endpoints
+and test a known correspondence rather than interpreting an unsigned “delay.”
+
+## Native grids and bundles
+
+`FeatureBundle` is the durable container for heterogeneous temporal outputs. A
+100 ms acoustic feature, a 500 ms semantic feature, and irregular word events
+remain three native arrays. The bundle owns their shared `TemporalContext` and
+can produce a coordinate-transformed view or a `TemporalPayload` for a modeling
+consumer.
+
+This is intentionally not represented as one wide table. A rectangular table
+would require an explicit target clock and join policy, and may require
+resampling. Those are analysis choices, not bookkeeping defaults.
+
+## Alignment and table rules
+
+- `Timeline` and `FeatureAlignment` retain source and target clock references.
+- Cross-clock alignment requires a resolvable `TemporalContext` path.
+- Alignment records correspondence; it does not interpolate feature values.
+- Cross-clock wide joins are rejected unless the caller supplies a temporal
+  context, a target clock, and an explicit join policy.
+- The only current cross-clock wide-join policy is exact outer matching after
+  coordinate conversion. No implicit nearest-neighbor or interpolation policy
+  exists.
+
+## Storage and identity
+
+NPZ, Zarr, and Parquet round trips preserve schema, `TimebaseSpec`, support,
+clock mappings, coordinates, and explicit temporal bounds. Catalog records and
+manifests include the full temporal contract and a `temporal_digest`.
+
+Two artifacts with equal values but different timestamps, support, clocks, or
+clock mappings are therefore different artifacts. Time is part of data
+identity, not incidental metadata.
+
+## Compatibility boundary
+
+The default clock remains `"stimulus"`, so existing constructors remain valid.
+The older `feature_t0_s` and `feature_t0_by_run` fMRI-query arguments remain as
+compatibility shorthands. New code should provide explicit `ClockMap` values
+through `feature_to_experiment_by_run` or hand native `TemporalPayload` objects
+to downstream modeling code.
+
+The registry route `features.hrf` is deprecated. Existing fMRI query and
+rendering helpers are compatibility utilities; new pipelines should keep native
+features intact here and perform HRF/TR/design operations downstream.
+
+No stable temporal API is removed in compatibility version 2. The stable fMRI
+query helpers remain available for that compatibility line; any future removal
+requires a compatibility-version increment and a separately documented
+deprecation window.
+
+## See also
+
+[Feature object schemas](feature-object-schemas.qmd) · [Keep heterogeneous features on native grids](../cookbook/native-grid-handoff.qmd) · [Feature objects](../concepts/feature-objects.qmd)

@@ -11,6 +11,10 @@ FeatureAlignment(
     target,
     mapping,
     policy='overlap',
+    source_reference=STIMULUS_CLOCK,
+    target_reference=STIMULUS_CLOCK,
+    mapped_onset_s=None,
+    mapped_offset_s=None,
 )
 ```
 

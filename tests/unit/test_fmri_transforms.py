@@ -37,7 +37,13 @@ def test_render_events_and_lags_concat() -> None:
         metadata={"extractor_id": "e", "params_hash": "p"},
     )
     e = render_events(events, grid, mode="boxcar", value="duration")
-    lagged = add_lags(f, [0, 1, 2])
+    windowed = resample_feature_series(
+        f,
+        tr_s=0.5,
+        method="nearest",
+        time_grid_s=grid,
+    )
+    lagged = add_lags(windowed, [0, 1, 2])
     dm = concat_feature_series([lagged, e], standardize=True, add_intercept=True)
     assert dm.values.shape[0] == len(grid)
     assert dm.values.shape[1] == lagged.values.shape[1] + 1 + 1

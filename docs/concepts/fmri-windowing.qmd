@@ -1,19 +1,28 @@
 ---
 title: "fMRI Windowing"
-subtitle: "`RunGrid`, `ExperimentGrid`, `query_feature_window_tr()` - stimulus features on run clocks."
+subtitle: "Compatibility queries for stimulus features on run clocks."
 sidebar: concepts
 ---
 
 ## What it is
 
-fMRI windowing helpers describe run timing separately from feature timing. A `RunGrid` stores the TR, run start, run length, and feature-time offset. Query helpers slice feature objects by run and optionally resample to the run TR grid.
+fMRI windowing helpers describe run timing separately from feature timing. A
+`RunGrid` stores the TR, run start, run length, named clocks, and an explicit
+feature-to-experiment `ClockMap`. Query helpers slice feature objects by run and
+optionally resample to the run TR grid.
+
+These are compatibility helpers. The primary `natural_features` contract ends
+at lossless native-time bookkeeping and `TemporalPayload`; new HRF/TR/design
+workflows should live in downstream modeling libraries.
 
 ## Invariants
 
 - `tr_s` must be positive.
 - `n_trs_by_run` must contain positive integers.
 - `run_starts_s`, when supplied, must match the number of runs.
-- `feature_t0_by_run`, when supplied, must match the number of runs.
+- `feature_to_experiment_by_run`, when supplied, must match the number of runs
+  and each map must use the declared feature and experiment clocks.
+- Legacy `feature_t0_by_run`, when supplied, must match the number of runs.
 - Query windows require `t_end_s > t_start_s`.
 - Output time can be `absolute`, `run_relative`, or `feature`.
 
@@ -26,8 +35,9 @@ fMRI windowing helpers describe run timing separately from feature timing. A `Ru
 
 ## What it doesn't do
 
-Windowing does not estimate an HRF model. It slices and samples feature objects so modeling code can consume run-aware feature matrices.
+Windowing does not estimate an HRF model. TR resampling here remains for
+compatibility; prefer handing native payloads to downstream modeling code.
 
 ## See also
 
-[Query a run-aware fMRI window](../cookbook/fmri-window-query.qmd) · [fMRI querying reference](../reference/query_feature_window_tr.qmd)
+[Native temporal contract](../spec/native-temporal-contract.qmd) · [Query a run-aware fMRI window](../cookbook/fmri-window-query.qmd) · [fMRI querying reference](../reference/query_feature_window_tr.qmd)

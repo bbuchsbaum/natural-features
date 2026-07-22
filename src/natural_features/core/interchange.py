@@ -8,7 +8,8 @@ from typing import Any
 import numpy as np
 
 from natural_features.core.feature_types import EventSeries, FeatureSeries, TrackSeries
-from natural_features.core.timebase import TimebaseSpec
+from natural_features.core.feature_bundle import temporal_object_in_clock
+from natural_features.core.timebase import ClockRef, TemporalContext, TimebaseSpec
 from natural_features.features.common import extractor_metadata
 
 OBJECT_CANONICAL_COLUMNS = [
@@ -28,6 +29,7 @@ OBJECT_CANONICAL_COLUMNS = [
     "height",
     "area",
     "coordinate_space",
+    "time_reference",
 ]
 
 
@@ -137,6 +139,7 @@ def ensure_object_ids(
         metadata=events.metadata,
         schema=events.schema,
         timebase=events.timebase,
+        temporal_context=events.temporal_context,
     )
 
 
@@ -161,6 +164,7 @@ def object_events(
     metadata: dict[str, Any] | None = None,
     schema: str = "EventSeries/v1",
     timebase: TimebaseSpec | None = None,
+    temporal_context: TemporalContext | None = None,
 ) -> EventSeries:
     onset = np.asarray(onset_s, dtype=np.float64)
     offset = np.asarray(offset_s if offset_s is not None else onset_s, dtype=np.float64)
@@ -197,6 +201,7 @@ def object_events(
         metadata=metadata,
         schema=schema,
         timebase=timebase or TimebaseSpec(kind="events"),
+        temporal_context=temporal_context or TemporalContext(),
     )
     return ensure_object_ids(events)
 
@@ -209,6 +214,9 @@ def as_feature_table(feature: FeatureSeries, *, include_metadata: bool = True) -
         names = [f"f{i}" for i in range(values.shape[1])]
     rows = {
         "time_s": np.repeat(feature.times_s, values.shape[1]),
+        "onset_s": np.repeat(feature.temporal_bounds_s[:, 0], values.shape[1]),
+        "offset_s": np.repeat(feature.temporal_bounds_s[:, 1], values.shape[1]),
+        "time_reference": np.repeat(str(feature.clock), len(feature.times_s) * values.shape[1]),
         "feature": np.tile(np.asarray(names, dtype=object), len(feature.times_s)),
         "value": values.reshape(-1),
     }
@@ -227,6 +235,7 @@ def as_event_table(events: EventSeries, *, include_metadata: bool = True) -> Any
             "onset_s": events.onset_s,
             "offset_s": events.offset_s,
             "duration_s": events.offset_s - events.onset_s,
+            "time_reference": np.repeat(str(events.clock), n),
             "label": _row_column(events.label, n, "label", default=None, dtype=object),
             "confidence": _row_column(events.confidence, n, "confidence", default=np.nan, dtype=float),
         }
@@ -249,7 +258,17 @@ def as_track_table(tracks: TrackSeries, *, include_metadata: bool = True) -> Any
     for ti, time_s in enumerate(tracks.times_s):
         for ki, track_id in enumerate(tracks.track_id):
             for fi, feature_name in enumerate(feature_names):
-                rows.append({"time_s": time_s, "track_id": track_id, "feature": feature_name, "value": values[ti, ki, fi]})
+                rows.append(
+                    {
+                        "time_s": time_s,
+                        "onset_s": tracks.temporal_bounds_s[ti, 0],
+                        "offset_s": tracks.temporal_bounds_s[ti, 1],
+                        "time_reference": str(tracks.clock),
+                        "track_id": track_id,
+                        "feature": feature_name,
+                        "value": values[ti, ki, fi],
+                    }
+                )
     table = pd.DataFrame(rows)
     if include_metadata:
         for key, value in _provenance_columns({**tracks.metadata, "schema": tracks.schema}, len(table)).items():
@@ -281,6 +300,7 @@ def as_object_table(obj: EventSeries | TrackSeries, *, include_extra: bool = Tru
             "coordinate_space": _row_column(events.extra.get("coordinate_space"), n, "coordinate_space", default=None, dtype=object),
         }
         table = pd.DataFrame(data)
+        table["time_reference"] = str(events.clock)
         if include_extra:
             for key, value in events.extra.items():
                 if key in OBJECT_CANONICAL_COLUMNS:
@@ -295,15 +315,18 @@ def as_object_table(obj: EventSeries | TrackSeries, *, include_extra: bool = Tru
     if isinstance(obj, TrackSeries):
         rows = []
         source = _metadata_source_id(obj.metadata)
-        for time_s in obj.times_s:
+        bounds = obj.temporal_bounds_s
+        for time_index, time_s in enumerate(obj.times_s):
             for track_id in obj.track_id:
                 rows.append(
                     {
                         "source_id": source,
                         "time_s": time_s,
-                        "onset_s": np.nan,
-                        "offset_s": np.nan,
-                        "duration_s": np.nan,
+                        "onset_s": bounds[time_index, 0],
+                        "offset_s": bounds[time_index, 1],
+                        "duration_s": (
+                            bounds[time_index, 1] - bounds[time_index, 0]
+                        ),
                         "object_id": track_id,
                         "track_id": track_id,
                         "object_type": "track",
@@ -318,6 +341,7 @@ def as_object_table(obj: EventSeries | TrackSeries, *, include_extra: bool = Tru
                     }
                 )
         table = pd.DataFrame(rows, columns=OBJECT_CANONICAL_COLUMNS)
+        table["time_reference"] = str(obj.clock)
         if include_metadata:
             for key, value in _provenance_columns({**obj.metadata, "schema": obj.schema}, len(table)).items():
                 table[key] = value
@@ -359,6 +383,9 @@ def merge_feature_tables(
     format: str = "long",
     include_metadata: bool = True,
     include_objects: bool = True,
+    temporal_context: TemporalContext | None = None,
+    target_clock: ClockRef | str | None = None,
+    join_policy: str | None = None,
 ) -> Any:
     pd = _require_pandas()
     items = _flatten_outputs(value)
@@ -393,13 +420,45 @@ def merge_feature_tables(
     bad = [name for name, obj in items if not isinstance(obj, FeatureSeries)]
     if bad:
         raise ValueError(f"Wide format only supports FeatureSeries outputs. Incompatible outputs: {', '.join(bad)}")
+    feature_items = [(name, obj) for name, obj in items if isinstance(obj, FeatureSeries)]
+    clocks = {obj.clock for _, obj in feature_items}
+    if len(clocks) > 1:
+        if temporal_context is None or target_clock is None or join_policy is None:
+            raise ValueError(
+                "Wide format cannot merge different clocks without temporal_context, "
+                "target_clock, and an explicit join_policy"
+            )
+        if join_policy != "outer_exact":
+            raise ValueError("the only non-resampling wide join policy is 'outer_exact'")
+        feature_items = [
+            (
+                name,
+                temporal_object_in_clock(obj, target_clock, context=temporal_context),
+            )
+            for name, obj in feature_items
+        ]
+    elif target_clock is not None:
+        if temporal_context is None and next(iter(clocks), ClockRef(target_clock)) != ClockRef(target_clock):
+            raise ValueError("target_clock conversion requires temporal_context")
+        if temporal_context is not None:
+            feature_items = [
+                (
+                    name,
+                    temporal_object_in_clock(obj, target_clock, context=temporal_context),
+                )
+                for name, obj in feature_items
+            ]
     wide = None
-    for name, obj in items:
-        assert isinstance(obj, FeatureSeries)
+    for name, obj in feature_items:
         vals = obj.values.reshape(obj.values.shape[0], -1)
         feature_names = obj.coords.get("feature", [f"f{i}" for i in range(vals.shape[1])])
         columns = [f"{name}__{feature}" for feature in feature_names]
         table = pd.DataFrame(vals, columns=columns)
+        bounds = obj.temporal_bounds_s
+        table.insert(0, "offset_s", bounds[:, 1])
+        table.insert(0, "onset_s", bounds[:, 0])
+        table.insert(0, "time_reference", str(obj.clock))
         table.insert(0, "time_s", obj.times_s)
-        wide = table if wide is None else pd.merge(wide, table, on="time_s", how="outer")
+        keys = ["time_s", "time_reference", "onset_s", "offset_s"]
+        wide = table if wide is None else pd.merge(wide, table, on=keys, how="outer")
     return wide if wide is not None else pd.DataFrame()

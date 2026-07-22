@@ -3,7 +3,10 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from natural_features.core.feature_types import EventSeries
 from natural_features.core.stimulus import AudioStimulus
+from natural_features.core.timebase import ClockMap, TemporalContext, TimebaseSpec
+from natural_features.features.common import extractor_metadata
 from natural_features.workflows.multiscale_language import _embed_with_cache, extract_multiscale_language
 
 
@@ -104,3 +107,28 @@ def test_embed_with_cache_deduplicates_missing_texts(tmp_path) -> None:
     assert stats2["hits"] == 3
     assert stats2["unique_misses"] == 0
     assert len(p.calls) == 1
+
+
+def test_multiscale_language_preserves_explicit_word_clock() -> None:
+    context = TemporalContext((ClockMap("stimulus", "scan:run-01", offset_s=-23.0),))
+    words = EventSeries(
+        onset_s=np.array([7.0, 7.5, 8.0]),
+        offset_s=np.array([7.4, 7.9, 8.4]),
+        label=np.array(["one", "two", "three"], dtype=object),
+        metadata=extractor_metadata("test.words"),
+        timebase=TimebaseSpec(kind="events", reference="scan:run-01"),
+        temporal_context=context,
+    )
+
+    result = extract_multiscale_language(
+        words,
+        scales_s=[0.5],
+        feature_families=["lexical_controls"],
+        standardize=False,
+    )
+
+    assert result.words is words
+    assert result.sentences is not None
+    assert result.sentences.clock == "scan:run-01"
+    assert result.by_scale[0.5].clock == "scan:run-01"
+    assert result.by_scale[0.5].temporal_context == context

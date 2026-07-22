@@ -7,8 +7,15 @@ from typing import Iterable
 
 import numpy as np
 
+from natural_features.core.feature_bundle import temporal_object_in_clock
 from natural_features.core.feature_types import FeatureSeries
-from natural_features.core.timebase import TimebaseSpec
+from natural_features.core.timebase import (
+    ClockMap,
+    ClockRef,
+    STIMULUS_CLOCK,
+    TemporalContext,
+    TimebaseSpec,
+)
 from natural_features.features.common import extractor_metadata
 
 from .resample import resample_feature_series
@@ -21,6 +28,47 @@ class RunGrid:
     n_trs: int
     start_s: float
     feature_t0_s: float = 0.0
+    feature_clock: ClockRef | str = STIMULUS_CLOCK
+    experiment_clock: ClockRef | str = "experiment"
+    feature_to_experiment: ClockMap | None = None
+
+    def __post_init__(self) -> None:
+        tr_s = float(self.tr_s)
+        n_trs = int(self.n_trs)
+        start_s = float(self.start_s)
+        feature_t0_s = float(self.feature_t0_s)
+        if not np.isfinite(tr_s) or tr_s <= 0:
+            raise ValueError("tr_s must be a positive finite value")
+        if n_trs <= 0 or n_trs != self.n_trs:
+            raise ValueError("n_trs must be a positive integer")
+        if not np.isfinite(start_s):
+            raise ValueError("start_s must be finite")
+        if not np.isfinite(feature_t0_s):
+            raise ValueError("feature_t0_s must be finite")
+        feature_clock = ClockRef(self.feature_clock)
+        experiment_clock = ClockRef(self.experiment_clock)
+        mapping = self.feature_to_experiment
+        if mapping is None:
+            mapping = ClockMap(
+                feature_clock,
+                experiment_clock,
+                offset_s=feature_t0_s,
+            )
+        else:
+            if mapping.source != feature_clock or mapping.target != experiment_clock:
+                raise ValueError("feature_to_experiment endpoints must match the declared clocks")
+            if feature_t0_s != 0.0 and (
+                not np.isclose(mapping.scale, 1.0)
+                or not np.isclose(mapping.offset_s, feature_t0_s)
+            ):
+                raise ValueError("feature_t0_s conflicts with feature_to_experiment")
+            object.__setattr__(self, "feature_t0_s", float(mapping.offset_s))
+        object.__setattr__(self, "tr_s", tr_s)
+        object.__setattr__(self, "n_trs", n_trs)
+        object.__setattr__(self, "start_s", start_s)
+        object.__setattr__(self, "feature_clock", feature_clock)
+        object.__setattr__(self, "experiment_clock", experiment_clock)
+        object.__setattr__(self, "feature_to_experiment", mapping)
 
     @property
     def end_s(self) -> float:
@@ -29,6 +77,20 @@ class RunGrid:
     @property
     def times_s(self) -> np.ndarray:
         return self.start_s + (np.arange(self.n_trs, dtype=np.float64) * self.tr_s)
+
+    @property
+    def run_clock(self) -> ClockRef:
+        return ClockRef(f"scan:run-{self.run_index:02d}")
+
+    @property
+    def temporal_context(self) -> TemporalContext:
+        assert self.feature_to_experiment is not None
+        return TemporalContext(
+            (
+                self.feature_to_experiment,
+                ClockMap(self.experiment_clock, self.run_clock, offset_s=-float(self.start_s)),
+            )
+        )
 
 
 @dataclass(frozen=True)
@@ -49,6 +111,9 @@ def build_experiment_grid(
     run_starts_s: Iterable[float] | None = None,
     feature_t0_s: float = 0.0,
     feature_t0_by_run: Iterable[float] | None = None,
+    feature_clock: ClockRef | str = STIMULUS_CLOCK,
+    experiment_clock: ClockRef | str = "experiment",
+    feature_to_experiment_by_run: Iterable[ClockMap] | None = None,
     start_s: float = 0.0,
     run_gap_s: float = 0.0,
 ) -> ExperimentGrid:
@@ -78,6 +143,13 @@ def build_experiment_grid(
     else:
         t0s = [float(feature_t0_s)] * len(n_trs)
 
+    if feature_to_experiment_by_run is not None:
+        clock_maps = list(feature_to_experiment_by_run)
+        if len(clock_maps) != len(n_trs):
+            raise ValueError("feature_to_experiment_by_run length must match n_trs_by_run length")
+    else:
+        clock_maps = [None] * len(n_trs)
+
     runs = tuple(
         RunGrid(
             run_index=i + 1,
@@ -85,6 +157,9 @@ def build_experiment_grid(
             n_trs=n_trs[i],
             start_s=starts[i],
             feature_t0_s=t0s[i],
+            feature_clock=feature_clock,
+            experiment_clock=experiment_clock,
+            feature_to_experiment=clock_maps[i],
         )
         for i in range(len(n_trs))
     )
@@ -109,6 +184,21 @@ def _resolve_abs_window(
     return abs_start, abs_end
 
 
+def _feature_to_experiment_map(feature: FeatureSeries, run: RunGrid) -> tuple[ClockMap, TemporalContext]:
+    context = feature.temporal_context.merged(run.temporal_context)
+    return context.resolve(feature.clock, run.experiment_clock), context
+
+
+def _output_reference(run: RunGrid, feature: FeatureSeries, output_time: str) -> ClockRef:
+    if output_time == "feature":
+        return feature.clock
+    if output_time == "absolute":
+        return ClockRef(run.experiment_clock)
+    if output_time == "run_relative":
+        return run.run_clock
+    raise ValueError("output_time must be one of {'absolute','run_relative','feature'}")
+
+
 def query_feature_window(
     feature: FeatureSeries,
     grid: ExperimentGrid,
@@ -122,8 +212,9 @@ def query_feature_window(
     """Slice a raw feature window for one run.
 
     `output_time`:
-    - `"absolute"`: keep stimulus/global time.
+    - `"absolute"`: express output on the experiment clock.
     - `"run_relative"`: subtract run start from output times.
+    - `"feature"`: preserve the feature object's native clock.
     """
 
     run = grid.get_run(run_index)
@@ -133,19 +224,14 @@ def query_feature_window(
         t_end_s=t_end_s,
         relative_to_run=relative_to_run,
     )
-    feature_start = abs_start - run.feature_t0_s
-    feature_end = abs_end - run.feature_t0_s
+    feature_to_experiment, context = _feature_to_experiment_map(feature, run)
+    experiment_to_feature = feature_to_experiment.inverse()
+    feature_start = float(experiment_to_feature.apply(abs_start))
+    feature_end = float(experiment_to_feature.apply(abs_end))
     m = (feature.times_s >= feature_start) & (feature.times_s < feature_end)
     feature_times = feature.times_s[m]
-    query_abs_times = feature_times + run.feature_t0_s
-    if output_time == "feature":
-        out_times = feature_times
-    elif output_time == "absolute":
-        out_times = query_abs_times
-    elif output_time == "run_relative":
-        out_times = query_abs_times - run.start_s
-    else:
-        raise ValueError("output_time must be one of {'absolute','run_relative','feature'}")
+    native_bounds = feature.time_bounds_s[m] if feature.time_bounds_s is not None else None
+    output_reference = _output_reference(run, feature, output_time)
     vals = feature.values[m]
     md = dict(feature.metadata)
     md.update(
@@ -161,14 +247,23 @@ def query_feature_window(
             },
         )
     )
-    return FeatureSeries(
+    native = FeatureSeries(
         values=vals,
-        times_s=out_times,
+        times_s=feature_times,
         dims=feature.dims,
         coords=feature.coords,
         metadata=md,
         timebase=feature.timebase,
+        time_bounds_s=native_bounds,
+        temporal_context=context,
     )
+    transformed = temporal_object_in_clock(
+        native,
+        output_reference,
+        context=context,
+    )
+    assert isinstance(transformed, FeatureSeries)
+    return transformed
 
 
 def query_feature_window_tr(
@@ -193,8 +288,15 @@ def query_feature_window_tr(
     )
     query_grid = run.times_s
     query_grid = query_grid[(query_grid >= abs_start) & (query_grid < abs_end)]
-    feature_grid = query_grid - run.feature_t0_s
-    sampled = resample_feature_series(feature, tr_s=run.tr_s, method=method, time_grid_s=feature_grid)
+    feature_to_experiment, context = _feature_to_experiment_map(feature, run)
+    feature_grid = np.asarray(feature_to_experiment.inverse().apply(query_grid), dtype=np.float64)
+    feature_tr_s = run.tr_s / feature_to_experiment.scale
+    sampled = resample_feature_series(
+        feature,
+        tr_s=feature_tr_s,
+        method=method,
+        time_grid_s=feature_grid,
+    )
     if output_time == "feature":
         out_times = feature_grid
     elif output_time == "run_relative":
@@ -202,7 +304,8 @@ def query_feature_window_tr(
     elif output_time == "absolute":
         out_times = query_grid
     else:
-        raise ValueError("output_time must be one of {'absolute','run_relative','feature'}")
+        _output_reference(run, feature, output_time)
+        raise AssertionError("unreachable")
     md = dict(sampled.metadata)
     md.update(
         extractor_metadata(
@@ -218,13 +321,21 @@ def query_feature_window_tr(
             },
         )
     )
+    output_stride = run.tr_s if output_time != "feature" else feature_tr_s
     return FeatureSeries(
         values=sampled.values,
         times_s=out_times,
         dims=sampled.dims,
         coords=sampled.coords,
         metadata=md,
-        timebase=TimebaseSpec(kind="windows", stride_s=run.tr_s, window_s=run.tr_s, alignment="center"),
+        timebase=TimebaseSpec(
+            kind="windows",
+            reference=_output_reference(run, feature, output_time),
+            stride_s=output_stride,
+            window_s=output_stride,
+            alignment="center",
+        ),
+        temporal_context=context,
     )
 
 

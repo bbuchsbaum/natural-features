@@ -6,6 +6,14 @@ website:
       - reference/FeatureSeries.qmd
       - reference/EventSeries.qmd
       - reference/TrackSeries.qmd
+      - reference/ClockRef.qmd
+      - reference/ClockMap.qmd
+      - reference/SupportSpec.qmd
+      - reference/TemporalContext.qmd
+      - reference/TimebaseSpec.qmd
+      - reference/FeatureBundle.qmd
+      - reference/TemporalPayload.qmd
+      - reference/temporal_object_in_clock.qmd
       - reference/Timeline.qmd
       - reference/FeatureAlignment.qmd
       section: Feature objects

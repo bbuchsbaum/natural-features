@@ -7,6 +7,9 @@ build_experiment_grid(
     run_starts_s=None,
     feature_t0_s=0.0,
     feature_t0_by_run=None,
+    feature_clock=STIMULUS_CLOCK,
+    experiment_clock='experiment',
+    feature_to_experiment_by_run=None,
     start_s=0.0,
     run_gap_s=0.0,
 )

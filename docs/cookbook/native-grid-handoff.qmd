@@ -1,0 +1,124 @@
+---
+title: "Keep heterogeneous features on native grids"
+subtitle: "Record stimulus and scan clocks without upsampling before modeling."
+sidebar: cookbook
+---
+
+## Use when
+
+You have feature families sampled at different rates and need lossless timing
+bookkeeping before an fMRI model is built.
+
+This example describes a 0–200 s scan with TR 1.77 s. Stimulus time 30 s maps to
+scan time 7 s. The TR is intentionally not passed to any feature constructor:
+it belongs to the downstream model.
+
+```{python}
+import numpy as np
+
+from natural_features import (
+    ClockMap,
+    EventSeries,
+    FeatureBundle,
+    FeatureSeries,
+    SupportSpec,
+    TemporalContext,
+    TimebaseSpec,
+)
+
+metadata = lambda name: {"extractor_id": name, "params_hash": "demo"}
+context = TemporalContext(
+    (ClockMap("stimulus", "scan:run-01", offset_s=-23.0),)
+)
+
+fast_times = 30.0 + np.arange(6) * 0.1
+fast = FeatureSeries(
+    values=np.arange(6, dtype=np.float32)[:, None],
+    times_s=fast_times,
+    metadata=metadata("demo.fast"),
+    timebase=TimebaseSpec(
+        kind="audio_hop",
+        reference="stimulus",
+        hop_s=0.1,
+        support=SupportSpec(kind="window", width_s=0.1),
+    ),
+)
+
+slow_times = 30.0 + np.arange(4) * 0.5
+slow = FeatureSeries(
+    values=np.arange(4, dtype=np.float32)[:, None],
+    times_s=slow_times,
+    metadata=metadata("demo.slow"),
+    timebase=TimebaseSpec(
+        kind="windows",
+        reference="stimulus",
+        stride_s=0.5,
+        support=SupportSpec(kind="window", width_s=0.5),
+    ),
+)
+
+words = EventSeries(
+    onset_s=np.array([30.05, 30.62, 31.41]),
+    offset_s=np.array([30.31, 30.94, 31.78]),
+    label=np.array(["the", "room", "opens"], dtype=object),
+    metadata=metadata("demo.words"),
+    timebase=TimebaseSpec(kind="events", reference="stimulus"),
+)
+
+bundle = FeatureBundle(
+    {"fast": fast, "slow": slow, "words": words},
+    temporal_context=context,
+    metadata={"scan_duration_s": 200.0},
+)
+```
+
+## Convert coordinates, not sampling density
+
+```{python}
+fast_scan = bundle.in_clock("fast", "scan:run-01")
+slow_scan = bundle.in_clock("slow", "scan:run-01")
+
+{
+    "fast_rows": len(fast_scan.times_s),
+    "slow_rows": len(slow_scan.times_s),
+    "stimulus_30_is_scan": context.convert(
+        30.0,
+        source="stimulus",
+        target="scan:run-01",
+    ),
+    "fast_values_reused": fast_scan.values is fast.values,
+}
+```
+
+The 100 ms and 500 ms features retain six and four rows. There is no finest-grid
+upsampling step and no silent interpolation.
+
+## Hand one native feature downstream
+
+```{python}
+payload = bundle.temporal_payload("words", target_clock="scan:run-01")
+
+{
+    "object_type": payload.object_type,
+    "clock": str(payload.clock),
+    "onset_s": payload.onset_s.tolist(),
+    "offset_s": payload.offset_s.tolist(),
+    "has_tr": "tr_s" in payload.timebase,
+}
+```
+
+The payload contains native values or event bounds, its clock, support, schema,
+metadata, and all known clock mappings. A downstream library can then choose a
+TR, interpolation rule, HRF, lags, and design-matrix policy explicitly.
+
+## Refuses to
+
+- Treat feature row number as time.
+- Upsample all features to the finest observed grid.
+- Merge different clocks into a wide table without a target clock and join
+  policy.
+- Store TR or HRF choices as if they were native feature metadata.
+
+## See also
+
+[Native temporal contract](../spec/native-temporal-contract.qmd) · [Table interchange](../concepts/table-interchange.qmd)

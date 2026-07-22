@@ -6,4 +6,5 @@ sidebar: spec
 
 Specs in this site are rendered pages, not raw Markdown downloads.
 
+- [Native temporal contract](native-temporal-contract.qmd)
 - [Feature object schemas](feature-object-schemas.qmd)

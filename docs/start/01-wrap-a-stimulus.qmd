@@ -31,6 +31,30 @@ text = TextStimulus("The scene opens on a quiet room.")
 }
 ```
 
+## Name the clock when it is known
+
+`start_offset_s` and event times are coordinates, not implicit scan offsets.
+Attach a clock and an explicit mapping when the stimulus and scan origins differ:
+
+```{python}
+from natural_features import ClockMap, TemporalContext
+
+scan_context = TemporalContext(
+    (ClockMap("stimulus", "scan:run-01", offset_s=-23.0),)
+)
+audio_on_stimulus_clock = AudioStimulus.from_array(
+    np.zeros(1600),
+    sr_hz=16000,
+    clock="stimulus",
+    temporal_context=scan_context,
+)
+scan_context.convert(
+    30.0,
+    source=audio_on_stimulus_clock.clock,
+    target="scan:run-01",
+)
+```
+
 ## Refuses to
 
 - `ImageStimulus` rejects non-numeric arrays, empty dimensions, and arrays outside `(H, W)` or `(H, W, C)`.

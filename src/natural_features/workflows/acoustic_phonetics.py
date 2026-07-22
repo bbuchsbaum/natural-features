@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from natural_features.core.execution import resolve_execution_mode
+from natural_features.core.feature_bundle import inherit_temporal_contract
 from natural_features.core.feature_types import FeatureSeries
 from natural_features.core.stimulus import AudioStimulus
 from natural_features.features.speech.phonology import (
@@ -90,4 +91,6 @@ def extract_acoustic_phonetics(
             raise ValueError("resolution_s must be > 0 when provided")
         post = resample_feature_series(post, tr_s=resolution_s, method=resample_method)
         art = resample_feature_series(art, tr_s=resolution_s, method=resample_method)
+    post = inherit_temporal_contract(post, [stim])
+    art = inherit_temporal_contract(art, [stim])
     return AcousticPhoneticsResult(posteriorgrams=post, articulatory=art)

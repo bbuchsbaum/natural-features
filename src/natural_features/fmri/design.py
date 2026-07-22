@@ -45,6 +45,8 @@ def add_lags(feature: FeatureSeries, lags: list[int]) -> FeatureSeries:
         coords={"feature": out_names},
         metadata=metadata,
         timebase=feature.timebase,
+        time_bounds_s=feature.time_bounds_s,
+        temporal_context=feature.temporal_context,
     )
 
 
@@ -57,9 +59,15 @@ def concat_feature_series(
     if not features:
         raise ValueError("features cannot be empty")
     base_times = features[0].times_s
+    base_clock = features[0].clock
+    base_bounds = features[0].temporal_bounds_s
     for f in features[1:]:
         if len(f.times_s) != len(base_times) or not np.allclose(f.times_s, base_times):
             raise ValueError("All feature spaces must share the same time grid")
+        if f.clock != base_clock:
+            raise ValueError("All feature spaces must share the same clock")
+        if not np.allclose(f.temporal_bounds_s, base_bounds):
+            raise ValueError("All feature spaces must share the same temporal support")
     mats = [f.values if f.values.ndim == 2 else f.values.reshape(f.values.shape[0], -1) for f in features]
     names: list[str] = []
     for i, f in enumerate(features):
@@ -78,11 +86,20 @@ def concat_feature_series(
         "fmri.design.concat",
         params={"standardize": standardize, "add_intercept": add_intercept},
     )
+    context = features[0].temporal_context
+    for feature in features[1:]:
+        context = context.merged(feature.temporal_context)
     return FeatureSeries(
         values=x,
         times_s=base_times,
         dims=("time", "feature"),
         coords={"feature": names},
         metadata=metadata,
-        timebase=TimebaseSpec(kind="windows"),
+        timebase=TimebaseSpec(
+            kind="windows",
+            reference=base_clock,
+            support=features[0].timebase.support,
+        ),
+        time_bounds_s=features[0].time_bounds_s,
+        temporal_context=context,
     )

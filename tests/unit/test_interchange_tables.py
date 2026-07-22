@@ -14,6 +14,7 @@ from natural_features.core.interchange import (
     object_events,
 )
 from natural_features.features.common import extractor_metadata
+from natural_features.core.timebase import ClockMap, TemporalContext, TimebaseSpec
 
 
 def test_object_events_create_canonical_geometry_table() -> None:
@@ -128,4 +129,53 @@ def test_as_event_table_keeps_plain_events_plain() -> None:
         metadata=extractor_metadata("events.test"),
     )
     table = as_event_table(events, include_metadata=False)
-    assert list(table.columns) == ["onset_s", "offset_s", "duration_s", "label", "confidence"]
+    assert list(table.columns) == [
+        "onset_s",
+        "offset_s",
+        "duration_s",
+        "time_reference",
+        "label",
+        "confidence",
+    ]
+
+
+def test_tables_expose_temporal_reference_and_cross_clock_wide_merge_is_explicit() -> None:
+    left = FeatureSeries(
+        values=np.array([[1.0], [2.0]], dtype=np.float32),
+        times_s=np.array([30.0, 31.0]),
+        coords={"feature": ["left"]},
+        metadata=extractor_metadata("left"),
+        timebase=TimebaseSpec(kind="samples", reference="stimulus"),
+    )
+    right = FeatureSeries(
+        values=np.array([[3.0], [4.0]], dtype=np.float32),
+        times_s=np.array([7.0, 8.0]),
+        coords={"feature": ["right"]},
+        metadata=extractor_metadata("right"),
+        timebase=TimebaseSpec(kind="samples", reference="scan:run-01"),
+    )
+    context = TemporalContext((ClockMap("stimulus", "scan:run-01", offset_s=-23.0),))
+
+    long = merge_feature_tables({"left": left, "right": right}, format="long")
+    assert set(long["time_reference"]) == {"stimulus", "scan:run-01"}
+    with pytest.raises(ValueError, match="different clocks"):
+        merge_feature_tables({"left": left, "right": right}, format="wide")
+    with pytest.raises(ValueError, match="outer_exact"):
+        merge_feature_tables(
+            {"left": left, "right": right},
+            format="wide",
+            temporal_context=context,
+            target_clock="scan:run-01",
+            join_policy="linear",
+        )
+    wide = merge_feature_tables(
+        {"left": left, "right": right},
+        format="wide",
+        temporal_context=context,
+        target_clock="scan:run-01",
+        join_policy="outer_exact",
+    )
+    assert list(wide["time_s"]) == [7.0, 8.0]
+    assert set(wide["time_reference"]) == {"scan:run-01"}
+    np.testing.assert_array_equal(wide["left__left"], [1.0, 2.0])
+    np.testing.assert_array_equal(wide["right__right"], [3.0, 4.0])

@@ -9,6 +9,7 @@ from typing import Any
 import numpy as np
 import yaml
 
+from natural_features.core.feature_bundle import inherit_temporal_contract
 from natural_features.core.feature_types import EventSeries, FeatureSeries, TrackSeries
 from natural_features.core.registry import Registry
 
@@ -162,6 +163,8 @@ def _postprocess(obj: Any, post: dict[str, Any]) -> Any:
             coords={"feature": names},
             metadata=cur.metadata,
             timebase=cur.timebase,
+            time_bounds_s=cur.time_bounds_s,
+            temporal_context=cur.temporal_context,
         )
     standardize = post.get("standardize")
     if standardize:
@@ -176,6 +179,8 @@ def _postprocess(obj: Any, post: dict[str, Any]) -> Any:
             coords=cur.coords,
             metadata=cur.metadata,
             timebase=cur.timebase,
+            time_bounds_s=cur.time_bounds_s,
+            temporal_context=cur.temporal_context,
         )
     reduce = post.get("reduce")
     if reduce and isinstance(reduce, dict) and reduce.get("method") == "pca":
@@ -192,6 +197,8 @@ def _postprocess(obj: Any, post: dict[str, Any]) -> Any:
             coords={"feature": [f"pc{i}" for i in range(vals.shape[1])]},
             metadata=cur.metadata,
             timebase=cur.timebase,
+            time_bounds_s=cur.time_bounds_s,
+            temporal_context=cur.temporal_context,
         )
     return cur
 
@@ -323,6 +330,11 @@ def execute_recipe(
             outputs = result
         else:
             outputs = {"default": result}
+        temporal_inputs = resolved.values() if input_map else [inputs[modality]]
+        outputs = {
+            key: inherit_temporal_contract(value, temporal_inputs)
+            for key, value in outputs.items()
+        }
         _validate_output_contracts(step_id=step_id, outputs=outputs, expected_outputs=_step_output_spec(spec, ex_spec))
         post = spec.get("postprocess", {})
         if post:

@@ -20,6 +20,14 @@ A breaking change to these stable symbols requires incrementing:
 - `FeatureSeries`
 - `EventSeries`
 - `TrackSeries`
+- `ClockRef`
+- `ClockMap`
+- `SupportSpec`
+- `TemporalContext`
+- `TimebaseSpec`
+- `FeatureBundle`
+- `TemporalPayload`
+- `temporal_object_in_clock`
 - `FrameTimeline`
 - `Timeline`
 - `FeatureAlignment`

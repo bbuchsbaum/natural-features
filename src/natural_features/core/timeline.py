@@ -11,6 +11,7 @@ import numpy as np
 from .feature_types import EventSeries, FeatureSeries, TrackSeries
 from .frame_timeline import FrameTimeline
 from .stimulus import VideoStimulus
+from .timebase import ClockRef, STIMULUS_CLOCK, TemporalContext
 
 AlignmentPolicy = str
 
@@ -52,12 +53,18 @@ def _temporal_intervals(obj: Any, *, point_samples: bool = True) -> tuple[np.nda
     if isinstance(obj, EventSeries):
         return obj.onset_s, obj.offset_s
     if isinstance(obj, FeatureSeries):
+        if not point_samples:
+            bounds = obj.temporal_bounds_s
+            return bounds[:, 0], bounds[:, 1]
         onset = obj.times_s
-        offset = onset if point_samples else _infer_offsets_from_times(onset)
+        offset = onset
         return onset, offset
     if isinstance(obj, TrackSeries):
+        if not point_samples:
+            bounds = obj.temporal_bounds_s
+            return bounds[:, 0], bounds[:, 1]
         onset = obj.times_s
-        offset = onset if point_samples else _infer_offsets_from_times(onset)
+        offset = onset
         return onset, offset
     raise TypeError("Expected FeatureSeries, EventSeries, or TrackSeries")
 
@@ -92,6 +99,8 @@ class Timeline:
     kind: str = "intervals"
     source: str | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
+    reference: ClockRef | str = STIMULUS_CLOCK
+    temporal_context: TemporalContext = field(default_factory=TemporalContext)
 
     def __post_init__(self) -> None:
         onset_s = _as_1d_float(self.onset_s, "onset_s")
@@ -111,6 +120,9 @@ class Timeline:
         object.__setattr__(self, "offset_s", offset_s)
         object.__setattr__(self, "index", index)
         object.__setattr__(self, "metadata", dict(self.metadata))
+        object.__setattr__(self, "reference", ClockRef(self.reference))
+        if not isinstance(self.temporal_context, TemporalContext):
+            object.__setattr__(self, "temporal_context", TemporalContext.from_dict(self.temporal_context))
 
     @classmethod
     def from_points(
@@ -123,6 +135,8 @@ class Timeline:
         kind: str = "samples",
         source: str | None = None,
         metadata: dict[str, Any] | None = None,
+        reference: ClockRef | str = STIMULUS_CLOCK,
+        temporal_context: TemporalContext | None = None,
     ) -> "Timeline":
         times = _as_1d_float(times_s, "times_s")
         return cls(
@@ -133,6 +147,8 @@ class Timeline:
             kind=kind,
             source=source,
             metadata=metadata or {},
+            reference=reference,
+            temporal_context=temporal_context or TemporalContext(),
         )
 
     @classmethod
@@ -150,6 +166,8 @@ class Timeline:
                 index=index,
                 kind=obj.timebase.kind,
                 metadata={"schema": obj.schema, **obj.metadata},
+                reference=obj.clock,
+                temporal_context=obj.temporal_context,
             )
         onset, offset = _temporal_intervals(obj, point_samples=False)
         return cls(
@@ -159,6 +177,8 @@ class Timeline:
             index=_default_index(len(onset)),
             kind=obj.timebase.kind,
             metadata={"schema": obj.schema, **obj.metadata},
+            reference=obj.clock,
+            temporal_context=obj.temporal_context,
         )
 
     @classmethod
@@ -171,6 +191,8 @@ class Timeline:
             kind="frames",
             source=frame_timeline.source,
             metadata={"fps": frame_timeline.fps},
+            reference=frame_timeline.reference,
+            temporal_context=frame_timeline.temporal_context,
         )
 
     @classmethod
@@ -271,6 +293,7 @@ class Timeline:
                     "duration_s": float(offset - onset),
                     "kind": self.kind,
                     "source": self.source,
+                    "time_reference": str(self.reference),
                 }
             )
         return rows
@@ -289,6 +312,10 @@ class FeatureAlignment:
     target: Timeline
     mapping: dict[str, np.ndarray]
     policy: AlignmentPolicy = "overlap"
+    source_reference: ClockRef | str = STIMULUS_CLOCK
+    target_reference: ClockRef | str = STIMULUS_CLOCK
+    mapped_onset_s: np.ndarray | None = None
+    mapped_offset_s: np.ndarray | None = None
 
     def __post_init__(self) -> None:
         onset = _as_1d_float(self.source_onset_s, "source_onset_s")
@@ -301,6 +328,14 @@ class FeatureAlignment:
                 raise ValueError(f"mapping column {key!r} must have length {len(onset)}")
         object.__setattr__(self, "source_onset_s", onset)
         object.__setattr__(self, "source_offset_s", offset)
+        object.__setattr__(self, "source_reference", ClockRef(self.source_reference))
+        object.__setattr__(self, "target_reference", ClockRef(self.target_reference))
+        mapped_onset = onset if self.mapped_onset_s is None else _as_1d_float(self.mapped_onset_s, "mapped_onset_s")
+        mapped_offset = offset if self.mapped_offset_s is None else _as_1d_float(self.mapped_offset_s, "mapped_offset_s")
+        if mapped_onset.shape != onset.shape or mapped_offset.shape != offset.shape:
+            raise ValueError("mapped temporal coordinates must match source coordinate shape")
+        object.__setattr__(self, "mapped_onset_s", mapped_onset)
+        object.__setattr__(self, "mapped_offset_s", mapped_offset)
 
     def to_rows(self) -> list[dict[str, Any]]:
         rows: list[dict[str, Any]] = []
@@ -313,8 +348,12 @@ class FeatureAlignment:
                 "source_onset_s": float(onset),
                 "source_offset_s": float(offset),
                 "source_duration_s": float(offset - onset),
+                "source_reference": str(self.source_reference),
+                "mapped_onset_s": float(self.mapped_onset_s[row_i]),
+                "mapped_offset_s": float(self.mapped_offset_s[row_i]),
                 "target_name": self.target.name,
                 "target_kind": self.target.kind,
+                "target_reference": str(self.target_reference),
                 "policy": self.policy,
             }
             for key, values in self.mapping.items():
@@ -354,6 +393,7 @@ class FeatureAlignment:
             metadata=dict(self.source.metadata),
             schema=self.source.schema,
             timebase=self.source.timebase,
+            temporal_context=self.source.temporal_context,
         )
 
 
@@ -363,11 +403,22 @@ def align_feature_to_timeline(
     target: Timeline,
     *,
     policy: AlignmentPolicy = "overlap",
+    context: TemporalContext | None = None,
 ) -> FeatureAlignment:
     """Align a typed feature object to a target timeline."""
 
-    onset, offset = _temporal_intervals(source, point_samples=True)
-    mapping = target.map_intervals(onset, offset, policy=policy)
+    onset, offset = _temporal_intervals(source, point_samples=False)
+    combined = source.temporal_context.merged(target.temporal_context)
+    if context is not None:
+        combined = combined.merged(context)
+    if source.clock == target.reference:
+        mapped_onset = onset
+        mapped_offset = offset
+    else:
+        clock_map = combined.resolve(source.clock, target.reference)
+        mapped_onset = np.asarray(clock_map.apply(onset), dtype=np.float64)
+        mapped_offset = np.asarray(clock_map.apply(offset), dtype=np.float64)
+    mapping = target.map_intervals(mapped_onset, mapped_offset, policy=policy)
     return FeatureAlignment(
         source_name=source_name,
         source=source,
@@ -378,6 +429,10 @@ def align_feature_to_timeline(
         target=target,
         mapping=mapping,
         policy=policy,
+        source_reference=source.clock,
+        target_reference=target.reference,
+        mapped_onset_s=mapped_onset,
+        mapped_offset_s=mapped_offset,
     )
 
 

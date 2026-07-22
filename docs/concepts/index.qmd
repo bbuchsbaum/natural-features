@@ -14,5 +14,6 @@ Start with the object you hold, then move to the system that plans how to create
 - [Execution modes](execution-modes.qmd)
 - [Recipes and DAGs](recipes-and-dags.qmd)
 - [Table interchange](table-interchange.qmd)
+- [Native time and clocks](native-time-and-clocks.qmd)
 - [fMRI windowing](fmri-windowing.qmd)
 - [Audio batch workflows](audio-batch-workflows.qmd)

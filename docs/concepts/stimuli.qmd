@@ -6,7 +6,11 @@ sidebar: concepts
 
 ## What it is
 
-Stimulus wrappers are dataclasses that put media arrays or text behind a small validation contract. They carry timing fields such as frame rate, onset, duration, sample rate, or start offset before extraction begins.
+Stimulus wrappers are dataclasses that put media arrays or text behind a small
+validation contract. They carry timing fields such as frame rate, onset,
+duration, sample rate, or start offset before extraction begins. Every wrapper
+also declares a `clock` and carries a `TemporalContext` for mappings to media,
+experiment, run, or scan clocks.
 
 ## Invariants
 
@@ -15,6 +19,7 @@ Stimulus wrappers are dataclasses that put media arrays or text behind a small v
 - `AudioStimulus.samples` is one- or two-dimensional and has a positive sample rate.
 - `TextStimulus.text` is a Python string.
 - `MultiModalStimulus` contains at least one non-empty modality.
+- Clock identifiers are non-empty, and multimodal clock mappings must be mutually consistent.
 
 ## What it refuses
 
@@ -26,8 +31,11 @@ Stimulus wrappers are dataclasses that put media arrays or text behind a small v
 
 ## What it doesn't do
 
-The wrappers do not decode arbitrary video containers by themselves. Path coercion and media preparation live in workflow and preprocessing helpers.
+The wrappers do not decode arbitrary video containers by themselves. Path
+coercion and media preparation live in workflow and preprocessing helpers. A
+`start_offset_s` is a coordinate on the wrapper's declared clock; it is not an
+implicit stimulus-to-scan mapping.
 
 ## See also
 
-[Wrap a stimulus](../start/01-wrap-a-stimulus.qmd) · [Feature objects](feature-objects.qmd) · [Feature object schemas](../spec/feature-object-schemas.qmd)
+[Wrap a stimulus](../start/01-wrap-a-stimulus.qmd) · [Native time and clocks](native-time-and-clocks.qmd) · [Feature objects](feature-objects.qmd) · [Feature object schemas](../spec/feature-object-schemas.qmd)

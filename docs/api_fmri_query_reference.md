@@ -31,12 +31,13 @@ Key args:
 - `tr_s`: TR in seconds
 - `n_trs_by_run`: list of run lengths
 - `run_starts_s` or (`start_s` + `run_gap_s`)
-- `feature_t0_s` or `feature_t0_by_run` for stimulus/scan offset handling
+- `feature_to_experiment_by_run` for explicit affine clock mappings
+- compatibility `feature_t0_s` or `feature_t0_by_run` shorthands
 
 Returns:
 
 - `ExperimentGrid` containing `RunGrid` entries with:
-  - `run_index`, `tr_s`, `n_trs`, `start_s`, `feature_t0_s`
+  - `run_index`, `tr_s`, `n_trs`, `start_s`, named clocks, and `feature_to_experiment`
 
 ## `query_feature_window(...)`
 

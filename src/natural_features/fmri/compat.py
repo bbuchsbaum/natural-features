@@ -136,5 +136,11 @@ def render_events_with_fmrimod(
         dims=("time", "feature"),
         coords={"feature": [f"events_fmrimod_{value_mode}_{hrf}"]},
         metadata=metadata,
-        timebase=TimebaseSpec(kind="windows", stride_s=tr_s, window_s=tr_s, alignment="center"),
+        timebase=TimebaseSpec(
+            kind="windows",
+            reference="experiment",
+            stride_s=tr_s,
+            window_s=tr_s,
+            alignment="center",
+        ),
     )

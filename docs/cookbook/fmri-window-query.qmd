@@ -1,6 +1,6 @@
 ---
 title: "Query a run-aware fMRI window"
-subtitle: "Sample a `FeatureSeries` on a run TR grid."
+subtitle: "Use the compatibility layer to sample a `FeatureSeries` on a run TR grid."
 sidebar: cookbook
 ---
 
@@ -13,6 +13,7 @@ import numpy as np
 
 from natural_features.core.feature_types import FeatureSeries
 from natural_features.features.common import extractor_metadata
+from natural_features import ClockMap
 from natural_features.fmri import build_experiment_grid, query_feature_window_tr
 
 features = FeatureSeries(
@@ -26,6 +27,9 @@ grid = build_experiment_grid(
     tr_s=2.0,
     n_trs_by_run=[4],
     run_starts_s=[0.0],
+    feature_to_experiment_by_run=[
+        ClockMap("stimulus", "experiment", offset_s=0.0)
+    ],
 )
 
 sampled = query_feature_window_tr(
@@ -50,8 +54,14 @@ sampled = query_feature_window_tr(
 
 ## Boundary it closes
 
-The query uses the run clock for window selection while preserving the feature object contract in the returned `FeatureSeries`.
+The query uses explicit clock mappings for window selection while preserving
+the feature object contract in the returned `FeatureSeries`. It also resamples,
+so it is a compatibility operation rather than the preferred native handoff.
+
+For new modeling pipelines, keep the source feature unchanged, create a
+`FeatureBundle`, and pass `bundle.temporal_payload(...)` downstream. Let the
+modeling library own TR sampling and HRF policy.
 
 ## See also
 
-[fMRI windowing](../concepts/fmri-windowing.qmd)
+[Keep heterogeneous features on native grids](native-grid-handoff.qmd) · [fMRI windowing](../concepts/fmri-windowing.qmd)

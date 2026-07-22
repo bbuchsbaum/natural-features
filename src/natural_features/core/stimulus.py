@@ -9,7 +9,7 @@ import wave
 
 import numpy as np
 
-from .timebase import times_from_rate
+from .timebase import ClockRef, STIMULUS_CLOCK, TemporalContext, times_from_rate
 
 
 def _normalize_image_array(image: np.ndarray) -> np.ndarray:
@@ -32,6 +32,8 @@ class ImageStimulus:
     onset_s: float | None = 0.0
     duration_s: float | None = None
     source: str | None = None
+    clock: ClockRef | str = STIMULUS_CLOCK
+    temporal_context: TemporalContext = TemporalContext()
 
     def __post_init__(self) -> None:
         image = _normalize_image_array(self.image)
@@ -42,6 +44,9 @@ class ImageStimulus:
             if not np.isfinite(duration) or duration < 0:
                 raise ValueError("duration_s must be a finite non-negative value or None")
         object.__setattr__(self, "image", image)
+        object.__setattr__(self, "clock", ClockRef(self.clock))
+        if not isinstance(self.temporal_context, TemporalContext):
+            object.__setattr__(self, "temporal_context", TemporalContext.from_dict(self.temporal_context))
         if self.onset_s is not None:
             object.__setattr__(self, "onset_s", float(self.onset_s))
         if self.duration_s is not None:
@@ -54,8 +59,16 @@ class ImageStimulus:
         *,
         onset_s: float | None = 0.0,
         duration_s: float | None = None,
+        clock: ClockRef | str = STIMULUS_CLOCK,
+        temporal_context: TemporalContext = TemporalContext(),
     ) -> "ImageStimulus":
-        return cls(image=np.asarray(image), onset_s=onset_s, duration_s=duration_s)
+        return cls(
+            image=np.asarray(image),
+            onset_s=onset_s,
+            duration_s=duration_s,
+            clock=clock,
+            temporal_context=temporal_context,
+        )
 
     @classmethod
     def from_file(
@@ -64,6 +77,8 @@ class ImageStimulus:
         *,
         onset_s: float | None = 0.0,
         duration_s: float | None = None,
+        clock: ClockRef | str = STIMULUS_CLOCK,
+        temporal_context: TemporalContext = TemporalContext(),
     ) -> "ImageStimulus":
         try:
             from PIL import Image  # type: ignore
@@ -75,7 +90,14 @@ class ImageStimulus:
             if img.mode not in {"L", "RGB", "RGBA"}:
                 img = img.convert("RGB")
             data = np.asarray(img)
-        return cls(image=data, onset_s=onset_s, duration_s=duration_s, source=str(p.resolve()))
+        return cls(
+            image=data,
+            onset_s=onset_s,
+            duration_s=duration_s,
+            source=str(p.resolve()),
+            clock=clock,
+            temporal_context=temporal_context,
+        )
 
     @property
     def frame_times_s(self) -> np.ndarray:
@@ -92,8 +114,16 @@ def image_from_array(
     *,
     onset_s: float | None = 0.0,
     duration_s: float | None = None,
+    clock: ClockRef | str = STIMULUS_CLOCK,
+    temporal_context: TemporalContext = TemporalContext(),
 ) -> ImageStimulus:
-    return ImageStimulus.from_array(image, onset_s=onset_s, duration_s=duration_s)
+    return ImageStimulus.from_array(
+        image,
+        onset_s=onset_s,
+        duration_s=duration_s,
+        clock=clock,
+        temporal_context=temporal_context,
+    )
 
 
 def image_from_file(
@@ -101,8 +131,16 @@ def image_from_file(
     *,
     onset_s: float | None = 0.0,
     duration_s: float | None = None,
+    clock: ClockRef | str = STIMULUS_CLOCK,
+    temporal_context: TemporalContext = TemporalContext(),
 ) -> ImageStimulus:
-    return ImageStimulus.from_file(path, onset_s=onset_s, duration_s=duration_s)
+    return ImageStimulus.from_file(
+        path,
+        onset_s=onset_s,
+        duration_s=duration_s,
+        clock=clock,
+        temporal_context=temporal_context,
+    )
 
 
 @dataclass(frozen=True)
@@ -111,6 +149,8 @@ class VideoStimulus:
     fps: float
     start_offset_s: float = 0.0
     source: str | None = None
+    clock: ClockRef | str = STIMULUS_CLOCK
+    temporal_context: TemporalContext = TemporalContext()
 
     def __post_init__(self) -> None:
         frames = np.asarray(self.frames)
@@ -121,15 +161,47 @@ class VideoStimulus:
         if self.fps <= 0:
             raise ValueError("fps must be > 0")
         object.__setattr__(self, "frames", frames)
+        object.__setattr__(self, "clock", ClockRef(self.clock))
+        if not isinstance(self.temporal_context, TemporalContext):
+            object.__setattr__(self, "temporal_context", TemporalContext.from_dict(self.temporal_context))
 
     @classmethod
-    def from_array(cls, frames: np.ndarray, fps: float, *, start_offset_s: float = 0.0) -> "VideoStimulus":
-        return cls(frames=np.asarray(frames), fps=fps, start_offset_s=start_offset_s)
+    def from_array(
+        cls,
+        frames: np.ndarray,
+        fps: float,
+        *,
+        start_offset_s: float = 0.0,
+        clock: ClockRef | str = STIMULUS_CLOCK,
+        temporal_context: TemporalContext = TemporalContext(),
+    ) -> "VideoStimulus":
+        return cls(
+            frames=np.asarray(frames),
+            fps=fps,
+            start_offset_s=start_offset_s,
+            clock=clock,
+            temporal_context=temporal_context,
+        )
 
     @classmethod
-    def from_npy(cls, path: str | Path, fps: float, *, start_offset_s: float = 0.0) -> "VideoStimulus":
+    def from_npy(
+        cls,
+        path: str | Path,
+        fps: float,
+        *,
+        start_offset_s: float = 0.0,
+        clock: ClockRef | str = STIMULUS_CLOCK,
+        temporal_context: TemporalContext = TemporalContext(),
+    ) -> "VideoStimulus":
         data = np.load(path)
-        return cls(frames=data, fps=fps, start_offset_s=start_offset_s, source=str(path))
+        return cls(
+            frames=data,
+            fps=fps,
+            start_offset_s=start_offset_s,
+            source=str(path),
+            clock=clock,
+            temporal_context=temporal_context,
+        )
 
     @property
     def frame_times_s(self) -> np.ndarray:
@@ -150,6 +222,8 @@ class AudioStimulus:
     sr_hz: int
     start_offset_s: float = 0.0
     source: str | None = None
+    clock: ClockRef | str = STIMULUS_CLOCK
+    temporal_context: TemporalContext = TemporalContext()
 
     def __post_init__(self) -> None:
         samples = np.asarray(self.samples)
@@ -160,6 +234,9 @@ class AudioStimulus:
         if self.sr_hz <= 0:
             raise ValueError("sr_hz must be > 0")
         object.__setattr__(self, "samples", samples)
+        object.__setattr__(self, "clock", ClockRef(self.clock))
+        if not isinstance(self.temporal_context, TemporalContext):
+            object.__setattr__(self, "temporal_context", TemporalContext.from_dict(self.temporal_context))
 
     @classmethod
     def from_array(
@@ -168,11 +245,26 @@ class AudioStimulus:
         sr_hz: int,
         *,
         start_offset_s: float = 0.0,
+        clock: ClockRef | str = STIMULUS_CLOCK,
+        temporal_context: TemporalContext = TemporalContext(),
     ) -> "AudioStimulus":
-        return cls(samples=np.asarray(samples), sr_hz=sr_hz, start_offset_s=start_offset_s)
+        return cls(
+            samples=np.asarray(samples),
+            sr_hz=sr_hz,
+            start_offset_s=start_offset_s,
+            clock=clock,
+            temporal_context=temporal_context,
+        )
 
     @classmethod
-    def from_wav(cls, path: str | Path, *, start_offset_s: float = 0.0) -> "AudioStimulus":
+    def from_wav(
+        cls,
+        path: str | Path,
+        *,
+        start_offset_s: float = 0.0,
+        clock: ClockRef | str = STIMULUS_CLOCK,
+        temporal_context: TemporalContext = TemporalContext(),
+    ) -> "AudioStimulus":
         p = Path(path)
         with wave.open(str(p), "rb") as w:
             n_channels = w.getnchannels()
@@ -191,7 +283,14 @@ class AudioStimulus:
         else:
             max_val = float(np.iinfo(dtype).max)
             samples = data.astype(np.float32) / max_val
-        return cls(samples=samples, sr_hz=sr_hz, start_offset_s=start_offset_s, source=str(path))
+        return cls(
+            samples=samples,
+            sr_hz=sr_hz,
+            start_offset_s=start_offset_s,
+            source=str(path),
+            clock=clock,
+            temporal_context=temporal_context,
+        )
 
     @property
     def sample_times_s(self) -> np.ndarray:
@@ -226,10 +325,15 @@ class TextStimulus:
     onset_s: np.ndarray | None = None
     offset_s: np.ndarray | None = None
     source: str | None = None
+    clock: ClockRef | str = STIMULUS_CLOCK
+    temporal_context: TemporalContext = TemporalContext()
 
     def __post_init__(self) -> None:
         if not isinstance(self.text, str):
             raise ValueError("text must be a string")
+        object.__setattr__(self, "clock", ClockRef(self.clock))
+        if not isinstance(self.temporal_context, TemporalContext):
+            object.__setattr__(self, "temporal_context", TemporalContext.from_dict(self.temporal_context))
         if self.onset_s is not None:
             onset_s = np.asarray(self.onset_s, dtype=np.float64)
             object.__setattr__(self, "onset_s", onset_s)
@@ -244,10 +348,20 @@ class MultiModalStimulus:
     image: ImageStimulus | None = None
     audio: AudioStimulus | None = None
     text: TextStimulus | None = None
+    temporal_context: TemporalContext = TemporalContext()
 
     def __post_init__(self) -> None:
         if self.video is None and self.image is None and self.audio is None and self.text is None:
             raise ValueError("At least one modality must be provided")
+        context = self.temporal_context
+        if not isinstance(context, TemporalContext):
+            context = TemporalContext.from_dict(context)
+        contexts = [context]
+        for item in (self.video, self.image, self.audio, self.text):
+            if item is not None:
+                contexts.append(item.temporal_context)
+        combined = contexts[0].merged(*contexts[1:])
+        object.__setattr__(self, "temporal_context", combined)
 
     @property
     def start_offset_s(self) -> float:

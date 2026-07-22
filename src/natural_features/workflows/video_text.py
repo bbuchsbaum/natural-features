@@ -11,6 +11,7 @@ from typing import Any, Sequence
 import numpy as np
 
 from natural_features.core.execution import resolve_execution_mode
+from natural_features.core.feature_bundle import inherit_temporal_contract
 from natural_features.core.feature_types import EventSeries
 from natural_features.core.frame_timeline import FramePolicy, FrameTimeline
 from natural_features.core.interchange import as_event_table
@@ -129,6 +130,7 @@ def _add_word_extras(words: EventSeries, extras: dict[str, Any]) -> EventSeries:
         metadata=dict(words.metadata),
         schema=words.schema,
         timebase=words.timebase,
+        temporal_context=words.temporal_context,
     )
 
 
@@ -152,6 +154,7 @@ def _with_workflow_metadata(
         metadata=metadata,
         schema=words.schema,
         timebase=words.timebase,
+        temporal_context=words.temporal_context,
     )
 
 
@@ -204,6 +207,7 @@ class VideoTextResult:
                 "duration_s": float(self.words.offset_s[i] - self.words.onset_s[i]),
                 "label": _scalar(labels[i]),
                 "confidence": _scalar(conf[i]),
+                "time_reference": str(self.words.clock),
             }
             for key, values in self.words.extra.items():
                 arr = np.asarray(values)
@@ -268,6 +272,15 @@ def extract_video_text(
         execution_mode=mode,
         strict_dependency=strict,
     )
+    if isinstance(video, VideoStimulus):
+        audio = AudioStimulus(
+            samples=audio.samples,
+            sr_hz=audio.sr_hz,
+            start_offset_s=audio.start_offset_s,
+            source=audio.source,
+            clock=video.clock,
+            temporal_context=audio.temporal_context.merged(video.temporal_context),
+        )
     if chunked and transcript_text is None:
         asr = whisper_transcribe_chunked(
             audio,
@@ -289,8 +302,8 @@ def extract_video_text(
             strict_dependency=strict,
         )
 
-    words = asr["words"]
-    segments = asr["segments"]
+    words = inherit_temporal_contract(asr["words"], [audio])
+    segments = inherit_temporal_contract(asr["segments"], [audio])
     asr_qc = dict(asr.get("qc", {}))
 
     backend = align_backend if align_backend is not None else align
@@ -317,7 +330,7 @@ def extract_video_text(
             execution_mode=mode,
             strict_dependency=strict,
         )
-        words = aligned["words"]
+        words = inherit_temporal_contract(aligned["words"], [audio])
         align_qc = dict(aligned.get("qc", {}))
 
     words = _add_word_extras(
@@ -361,6 +374,8 @@ def extract_video_text(
                 start_s=float(audio.start_offset_s),
                 first_frame_index=first_frame_index,
                 source=source_video,
+                reference=audio.clock,
+                temporal_context=audio.temporal_context,
             )
         words = timeline.annotate_events(words, policy=frame_policy)
         frame_qc = {

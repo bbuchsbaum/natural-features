@@ -1,0 +1,24 @@
+# ClockMap { #natural_features.ClockMap }
+
+```python
+ClockMap(source, target, scale=1.0, offset_s=0.0)
+```
+
+Directed affine mapping between two clocks.
+
+The mapping is always interpreted as
+``target_time = scale * source_time + offset_s``.
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [then](#natural_features.ClockMap.then) | Compose this mapping with ``following`` in application order. |
+
+### then { #natural_features.ClockMap.then }
+
+```python
+ClockMap.then(following)
+```
+
+Compose this mapping with ``following`` in application order.

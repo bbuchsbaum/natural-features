@@ -15,13 +15,15 @@ and re-exported at package root.
 
 ## What it provides
 
-- Typed temporal objects: `FeatureSeries`, `EventSeries`, and `TrackSeries`
+- Typed temporal objects with explicit clocks and point/window/interval support
+- Lossless `FeatureBundle` containers for heterogeneous native sampling grids
 - Stimulus wrappers for text, image, audio, video, and multimodal inputs
 - A queryable feature catalogue with planning before execution
 - One-call extraction through `extract_features(...)`
 - Explicit alignment to event, frame, regular, or custom timelines
 - Audio-batch, acoustic-phonetics, multiscale-language, and video-text workflows
-- Run-aware fMRI window queries and optional `fmrimod` adapters
+- Dependency-light native-time payloads for downstream `fmrimod`/fMRI modeling
+- Compatibility-only run-aware fMRI query and rendering helpers
 - Storage and interchange through NPZ, Zarr, Parquet, and tabular exports
 - A CLI for catalogue inspection, recipes, media preparation, and speech alignment
 
@@ -69,6 +71,11 @@ aligned = result.align_to(
 rows = aligned.to_rows()
 ```
 
+Feature families do not need a shared sampling rate. Keep each output on its
+native grid, relate stimulus and scan clocks with `ClockMap`, and collect them
+in a `FeatureBundle`. HRF convolution, TR sampling, and design-matrix choices
+belong downstream; see the [native temporal contract](https://bbuchsbaum.github.io/natural-features/spec/native-temporal-contract.html).
+
 Inspect available features before running a workflow:
 
 ```bash
@@ -99,7 +106,7 @@ compatibility.
 ## Stable public API
 
 The compatibility policy covers the symbols in `nf.STABLE_EXPORTS`, including
-the core temporal types, timeline types, catalogue and extraction functions,
+the core temporal and bundle types, timeline types, catalogue and extraction functions,
 workflow entry points, and fMRI query helpers.
 
 ```python

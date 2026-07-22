@@ -8,8 +8,10 @@ Only symbols exported from this module are covered by the compatibility policy.
 from __future__ import annotations
 
 from .core.feature_types import EventSeries, FeatureSeries, TrackSeries
+from .core.feature_bundle import FeatureBundle, TemporalPayload, temporal_object_in_clock
 from .core.frame_timeline import FrameTimeline
 from .core.timeline import FeatureAlignment, Timeline
+from .core.timebase import ClockMap, ClockRef, SupportSpec, TemporalContext, TimebaseSpec
 from .fmri.query import (
     ExperimentGrid,
     RunGrid,
@@ -38,6 +40,14 @@ STABLE_EXPORTS = [
     "FeatureSeries",
     "EventSeries",
     "TrackSeries",
+    "ClockRef",
+    "ClockMap",
+    "SupportSpec",
+    "TemporalContext",
+    "TimebaseSpec",
+    "FeatureBundle",
+    "TemporalPayload",
+    "temporal_object_in_clock",
     "FrameTimeline",
     "Timeline",
     "FeatureAlignment",

@@ -23,10 +23,11 @@ table.loc[:, ["output_name", "output_type", "onset_s", "time_s", "label", "featu
 
 ## What gets added
 
-The table includes event timing, labels, feature names, values, object columns when present, and provenance columns copied from metadata.
+The table includes event timing, clock reference, labels, feature names, values,
+object columns when present, and provenance columns copied from metadata.
 
 ```{python}
-sorted(set(table.columns) & {"output_name", "output_type", "schema", "object_id", "feature", "value"})
+sorted(set(table.columns) & {"output_name", "output_type", "schema", "time_reference", "object_id", "feature", "value"})
 ```
 
 ## Export an alignment table
@@ -46,6 +47,7 @@ aligned.to_dataframe().loc[
 - Table helpers require pandas through the storage/docs dependency path.
 - Event-level arrays in `extra` must have compatible lengths.
 - Alignment table export requires a temporal source and a timeline target.
+- Wide cross-clock joins require an explicit target clock and exact join policy.
 
 ## Read next
 

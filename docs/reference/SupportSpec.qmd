@@ -1,0 +1,7 @@
+# SupportSpec { #natural_features.SupportSpec }
+
+```python
+SupportSpec(kind='point', anchor='center', width_s=None)
+```
+
+Meaning of a temporal row: point, fixed window, or row interval.

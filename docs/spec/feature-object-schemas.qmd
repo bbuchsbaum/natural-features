@@ -14,6 +14,9 @@ Required fields:
 - `coords`: dictionary of coordinate labels.
 - `metadata`: dictionary containing `extractor_id` and `params_hash`.
 - `schema`: string, currently `FeatureSeries/v1`.
+- `timebase`: `TimebaseSpec` containing the native clock reference and support.
+- `time_bounds_s`: optional `(time, 2)` row bounds; required for interval support.
+- `temporal_context`: serializable mappings among known clocks.
 
 ## `EventSeries/v1`
 
@@ -26,6 +29,8 @@ Required fields:
 - `extra`: dictionary of event-level arrays.
 - `metadata`: dictionary containing `extractor_id` and `params_hash`.
 - `schema`: string, currently `EventSeries/v1`.
+- `timebase`: `TimebaseSpec`; event support is an interval by default.
+- `temporal_context`: serializable mappings among known clocks.
 
 ## `TrackSeries/v1`
 
@@ -38,3 +43,18 @@ Required fields:
 - `coords`: dictionary of coordinate labels.
 - `metadata`: dictionary containing `extractor_id` and `params_hash`.
 - `schema`: string, currently `TrackSeries/v1`.
+- `timebase`: `TimebaseSpec` containing the native clock reference and support.
+- `time_bounds_s`: optional `(time, 2)` row bounds; required for interval support.
+- `temporal_context`: serializable mappings among known clocks.
+
+## Shared temporal types
+
+- `ClockRef`: non-empty stable clock identifier.
+- `ClockMap`: affine mapping using `target_time = scale * source_time + offset_s`.
+- `SupportSpec`: `point`, fixed `window`, or per-row `interval` support.
+- `TemporalContext`: validated graph of clock mappings.
+- `FeatureBundle`: named temporal objects on heterogeneous native grids plus a
+  shared context.
+
+See the [native temporal contract](native-temporal-contract.qmd) for invariants,
+serialization rules, and the downstream-modeling boundary.

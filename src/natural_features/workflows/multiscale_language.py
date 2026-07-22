@@ -10,6 +10,7 @@ from typing import Any
 import numpy as np
 
 from natural_features.core.execution import resolve_execution_mode
+from natural_features.core.feature_bundle import inherit_temporal_contract
 from natural_features.core.feature_types import EventSeries, FeatureSeries
 from natural_features.core.stimulus import AudioStimulus, TextStimulus
 from natural_features.features.audio.lowlevel import rms
@@ -87,6 +88,7 @@ def _resolve_words(
                 return words, float(words.offset_s[-1]) if len(words) else 0.0, {"source": "text_file", "n_words": len(words)}
         elif isinstance(input_data, TextStimulus):
             words = _words_from_text(input_data.text)
+            words = inherit_temporal_contract(words, [input_data])
             return words, float(words.offset_s[-1]) if len(words) else 0.0, {"source": "text_stimulus", "n_words": len(words)}
         else:
             words = _words_from_text(str(input_data))
@@ -98,7 +100,7 @@ def _resolve_words(
         execution_mode=execution_mode,
         strict_dependency=strict_dependency,
     )
-    words = asr["words"]
+    words = inherit_temporal_contract(asr["words"], [stim])
     duration_s = stim.start_offset_s + (stim.samples.shape[0] / stim.sr_hz)
     qc = dict(asr.get("qc", {}))
     qc["source"] = "audio_asr"
@@ -109,13 +111,14 @@ def _sentence_events(words: EventSeries, *, max_words_without_punct: int = 12) -
     labels = words.label if words.label is not None else np.array([], dtype=object)
     if len(labels) == 0:
         md = extractor_metadata("language.units.sentences", params={})
-        return EventSeries(
+        result = EventSeries(
             onset_s=np.array([], dtype=np.float64),
             offset_s=np.array([], dtype=np.float64),
             label=np.array([], dtype=object),
             confidence=np.array([], dtype=np.float32),
             metadata=md,
         )
+        return inherit_temporal_contract(result, [words])
     out_on, out_off, out_txt, out_conf = [], [], [], []
     cur_idx: list[int] = []
     conf = words.confidence if words.confidence is not None else np.ones(len(labels), dtype=np.float32)
@@ -137,13 +140,14 @@ def _sentence_events(words: EventSeries, *, max_words_without_punct: int = 12) -
         out_txt.append(" ".join(str(labels[j]) for j in cur_idx))
         out_conf.append(float(np.mean(conf[cur_idx])))
     md = extractor_metadata("language.units.sentences", params={"max_words_without_punct": max_words_without_punct})
-    return EventSeries(
+    result = EventSeries(
         onset_s=np.asarray(out_on, dtype=np.float64),
         offset_s=np.asarray(out_off, dtype=np.float64),
         label=np.asarray(out_txt, dtype=object),
         confidence=np.asarray(out_conf, dtype=np.float32),
         metadata=md,
     )
+    return inherit_temporal_contract(result, [words])
 
 
 def _paragraph_events(
@@ -155,13 +159,14 @@ def _paragraph_events(
     labels = sentences.label if sentences.label is not None else np.array([], dtype=object)
     if len(labels) == 0:
         md = extractor_metadata("language.units.paragraphs", params={})
-        return EventSeries(
+        result = EventSeries(
             onset_s=np.array([], dtype=np.float64),
             offset_s=np.array([], dtype=np.float64),
             label=np.array([], dtype=object),
             confidence=np.array([], dtype=np.float32),
             metadata=md,
         )
+        return inherit_temporal_contract(result, [sentences])
     conf = sentences.confidence if sentences.confidence is not None else np.ones(len(labels), dtype=np.float32)
     out_on, out_off, out_txt, out_conf = [], [], [], []
     block_idx: list[int] = []
@@ -183,13 +188,14 @@ def _paragraph_events(
         "language.units.paragraphs",
         params={"target_duration_s": target_duration_s, "max_sentences": max_sentences},
     )
-    return EventSeries(
+    result = EventSeries(
         onset_s=np.asarray(out_on, dtype=np.float64),
         offset_s=np.asarray(out_off, dtype=np.float64),
         label=np.asarray(out_txt, dtype=object),
         confidence=np.asarray(out_conf, dtype=np.float32),
         metadata=md,
     )
+    return inherit_temporal_contract(result, [sentences])
 
 
 def _event_to_feature_series(
@@ -214,6 +220,8 @@ def _event_to_feature_series(
         coords={"feature": names},
         metadata=md,
         timebase=events.timebase,
+        time_bounds_s=events.temporal_bounds_s,
+        temporal_context=events.temporal_context,
     )
 
 
@@ -280,6 +288,8 @@ def _lexical_controls(words: EventSeries) -> FeatureSeries:
         coords={"feature": ["lex.word_length", "lex.is_alpha"]},
         metadata=md,
         timebase=words.timebase,
+        time_bounds_s=words.temporal_bounds_s,
+        temporal_context=words.temporal_context,
     )
 
 
@@ -293,6 +303,8 @@ def _prefix_features(fs: FeatureSeries, *, prefix: str) -> FeatureSeries:
         coords={"feature": [f"{prefix}{n}" for n in names]},
         metadata=md,
         timebase=fs.timebase,
+        time_bounds_s=fs.time_bounds_s,
+        temporal_context=fs.temporal_context,
     )
 
 
@@ -320,6 +332,8 @@ def _resample_multiscale(
             coords=shifted_fs.coords,
             metadata=md,
             timebase=shifted_fs.timebase,
+            time_bounds_s=shifted_fs.temporal_bounds_s,
+            temporal_context=shifted_fs.temporal_context,
         )
     raise ValueError("window_policy must be one of {'centered','causal'}")
 
@@ -426,13 +440,15 @@ def extract_multiscale_language(
         family_features.append(fs)
 
     if "surprisal" in families:
-        family_features.append(_prefix_features(surprisal(words), prefix="lang."))
+        surprise = inherit_temporal_contract(surprisal(words), [words])
+        family_features.append(_prefix_features(surprise, prefix="lang."))
     if "lexical_controls" in families:
         family_features.append(_lexical_controls(words))
     if "speech_energy" in families:
         if isinstance(input_data, AudioStimulus) or (isinstance(input_data, (str, Path)) and Path(str(input_data)).exists()):
             stim = input_data if isinstance(input_data, AudioStimulus) else AudioStimulus.from_wav(Path(str(input_data)))
-            family_features.append(_prefix_features(rms(stim), prefix="audio."))
+            energy = inherit_temporal_contract(rms(stim), [stim])
+            family_features.append(_prefix_features(energy, prefix="audio."))
 
     if not family_features:
         raise ValueError("No feature families selected")

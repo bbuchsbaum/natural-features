@@ -16,6 +16,7 @@ Breaking stable API changes require:
 
 1. Run tests:
    - `uv run pytest -q`
+   - `uv run --extra storage pytest -q tests/unit/test_temporal_storage_roundtrip.py`
 2. Validate deterministic fixtures:
    - `make validate-tier-a`
    - `uv run pytest -q tests/unit/test_golden_regressions.py`
@@ -27,10 +28,16 @@ Breaking stable API changes require:
    - Optional hard benchmark gate:
      - `nf speech-benchmark --manifest tests/benchmarks/manifests/tier_a_alignment_manifest.json --json > /tmp/alignment_report.json`
      - `NF_ALIGNMENT_BENCHMARK_REPORT=/tmp/alignment_report.json make release-check`
+   - For temporal-contract changes, run the native-grid acceptance fixture:
+     - `uv run pytest -q tests/integration/test_native_temporal_handoff.py`
+   - When the sibling `fmrimod` checkout is available, run the cross-library
+     payload test in its dependency environment.
 4. Update docs/changelog:
    - `CHANGELOG.md`
    - `docs/public_api_policy.md` (if relevant)
    - migration notes for breaking changes
+5. Build executable documentation:
+   - `make -C docs quarto`
 
 ## Migration notes template
 

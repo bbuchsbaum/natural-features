@@ -1,0 +1,40 @@
+# TemporalPayload { #natural_features.TemporalPayload }
+
+```python
+TemporalPayload(
+    name,
+    object_type,
+    clock,
+    timebase,
+    temporal_context,
+    metadata,
+    schema,
+    values=None,
+    times_s=None,
+    time_bounds_s=None,
+    onset_s=None,
+    offset_s=None,
+    label=None,
+    confidence=None,
+    track_id=None,
+    dims=None,
+    coords=dict(),
+    extra=dict(),
+)
+```
+
+Dependency-free native temporal payload for a modeling consumer.
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [to_dict](#natural_features.TemporalPayload.to_dict) | Return a protocol payload made only of mappings, arrays, and scalars. |
+
+### to_dict { #natural_features.TemporalPayload.to_dict }
+
+```python
+TemporalPayload.to_dict()
+```
+
+Return a protocol payload made only of mappings, arrays, and scalars.

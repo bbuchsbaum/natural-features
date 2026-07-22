@@ -7,7 +7,8 @@ import numpy as np
 
 from natural_features.cli.main import main as cli_main
 from natural_features.core.feature_types import EventSeries
-from natural_features.core.stimulus import AudioStimulus
+from natural_features.core.stimulus import AudioStimulus, VideoStimulus
+from natural_features.core.timebase import ClockMap, TemporalContext
 from natural_features.features.common import extractor_metadata
 from natural_features.workflows.extract_features import plan_features
 from natural_features.workflows.video_text import VideoTextResult, extract_video_text
@@ -120,6 +121,54 @@ def test_extract_video_text_can_refine_word_alignment(monkeypatch) -> None:
     assert result.align_qc["mode"] == "whisperx"
     assert np.allclose(result.words.onset_s, [2.06, 2.56])
     assert result.words.extra["frame_start"].tolist() == [20, 25]
+
+
+def test_video_text_preserves_video_clock_through_fake_backends(monkeypatch) -> None:
+    context = TemporalContext((ClockMap("stimulus", "scan:run-01", offset_s=-23.0),))
+    video = VideoStimulus.from_array(
+        np.zeros((40, 2, 2), dtype=np.float32),
+        fps=10.0,
+        start_offset_s=2.0,
+        clock="scan:run-01",
+        temporal_context=context,
+    )
+
+    def fake_audio_extract(_video, **kwargs):
+        return AudioStimulus.from_array(
+            np.zeros(20, dtype=np.float32),
+            sr_hz=10,
+            start_offset_s=kwargs["start_s"],
+        )
+
+    def fake_transcribe(_audio, **_kwargs):
+        return {
+            "segments": _segment_events(),
+            "words": _word_events(),
+            "qc": {"mode": "fake_asr", "fallback_used": False},
+        }
+
+    monkeypatch.setattr(
+        "natural_features.workflows.video_text.video_audio_extract",
+        fake_audio_extract,
+    )
+    monkeypatch.setattr(
+        "natural_features.workflows.video_text.whisper_transcribe",
+        fake_transcribe,
+    )
+
+    result = extract_video_text(
+        video,
+        align="none",
+        start_s=2.0,
+        duration_s=2.0,
+    )
+
+    assert result.audio is not None
+    assert result.audio.clock == "scan:run-01"
+    assert result.words.clock == "scan:run-01"
+    assert result.segments.clock == "scan:run-01"
+    assert result.frame_timeline is not None
+    assert result.frame_timeline.reference == "scan:run-01"
 
 
 def test_video_speech_words_is_plan_visible() -> None:

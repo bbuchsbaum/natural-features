@@ -3,6 +3,7 @@ from __future__ import annotations
 import numpy as np
 
 from natural_features.core.stimulus import AudioStimulus
+from natural_features.core.timebase import ClockMap, TemporalContext
 from natural_features.workflows.acoustic_phonetics import extract_acoustic_phonetics
 
 
@@ -37,3 +38,24 @@ def test_extract_acoustic_phonetics_native_and_resampled() -> None:
     )
     assert res.posteriorgrams.values.shape[0] < native.posteriorgrams.values.shape[0]
     assert res.articulatory.values.shape[0] == res.posteriorgrams.values.shape[0]
+
+
+def test_acoustic_phonetics_preserves_input_clock_and_context() -> None:
+    base = _audio()
+    context = TemporalContext((ClockMap("stimulus", "scan:run-01", offset_s=-23.0),))
+    audio = AudioStimulus.from_array(
+        base.samples,
+        sr_hz=base.sr_hz,
+        clock="scan:run-01",
+        temporal_context=context,
+    )
+
+    result = extract_acoustic_phonetics(
+        audio,
+        posterior_backend="acoustic",
+        hop_s=0.1,
+    )
+
+    assert result.posteriorgrams.clock == "scan:run-01"
+    assert result.articulatory.clock == "scan:run-01"
+    assert result.posteriorgrams.temporal_context == context

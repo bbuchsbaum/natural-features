@@ -2,13 +2,16 @@
 
 For raw feature matrices, use extractors/workflows directly.
 
-For convenient run-aware querying on an fMRI grid (run index + TR + nTRs),
+For compatibility run-aware querying on an fMRI grid (run index + TR + nTRs),
 use the stable top-level API (`natural_features`) or `natural_features.fmri.query`.
+New pipelines should preserve native feature grids in `FeatureBundle` and let
+downstream modeling libraries own TR resampling, HRF convolution, and design.
 
 ## Example
 
 ```python
 from natural_features import (
+    ClockMap,
     build_experiment_grid,
     query_feature_window,
     query_feature_window_tr,
@@ -25,6 +28,10 @@ grid = build_experiment_grid(
     n_trs_by_run=[300, 280],
     start_s=0.0,
     run_gap_s=10.0,
+    feature_to_experiment_by_run=[
+        ClockMap("stimulus", "experiment"),
+        ClockMap("stimulus", "experiment"),
+    ],
 )
 
 # Raw window in run 1, relative to run start:
@@ -62,21 +69,26 @@ zoo_tr = query_feature_zoo_window_tr(
 )
 ```
 
-## Stimulus/Scan Time Offset
+## Stimulus/Scan Time Mapping
 
-If feature time `t=0` is not scan/run `t=0` (e.g. stimulus starts at scan
-time `22.3s`), set `feature_t0_s` (or per-run `feature_t0_by_run`) in the grid:
+If feature time `t=30` is scan time `7`, provide the affine mapping explicitly:
 
 ```python
 grid = build_experiment_grid(
     tr_s=1.5,
     n_trs_by_run=[300, 280],
     start_s=0.0,
-    feature_t0_s=22.3,  # feature t=0 corresponds to scan t=22.3
+    feature_to_experiment_by_run=[
+        ClockMap("stimulus", "experiment", offset_s=-23.0),
+        ClockMap("stimulus", "experiment", offset_s=-23.0),
+    ],
 )
 ```
 
 Then query in run/scan time as usual; mapping to feature time is handled internally.
+
+`feature_t0_s` and `feature_t0_by_run` remain supported as compatibility
+shorthands for unit-scale mappings.
 
 ## Notes
 

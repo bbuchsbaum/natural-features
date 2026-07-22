@@ -15,16 +15,21 @@ Table interchange turns typed feature objects into pandas tables for inspection,
 - `as_object_table()` normalizes event or track objects to object-centric columns such as `object_id`, `object_type`, `onset_s`, and geometry fields.
 - `as_temporal_table()` dispatches by object type.
 - `merge_feature_tables(format="wide")` accepts only `FeatureSeries` outputs.
+- Temporal tables include `time_reference`; bounded rows include onset and offset.
 
 ## What it refuses
 
 - Missing pandas when table output is requested.
 - Wide merges that include `EventSeries` or `TrackSeries` outputs.
 - Event or track extra columns whose lengths do not match the object row count.
+- Cross-clock wide merges without a temporal context, target clock, and join policy.
 
 ## What it doesn't do
 
-Table helpers do not resample features or invent timeline mappings. Use `ExtractFeaturesResult.align_to()` first when you need to record how source rows map to word, event, frame, or custom timelines.
+Table helpers do not resample features or invent timeline mappings. Use
+`ExtractFeaturesResult.align_to()` first when you need to record how source rows
+map to word, event, frame, or custom timelines. For heterogeneous native grids,
+keep a `FeatureBundle` and defer rectangularization to the downstream analysis.
 
 ## Canonical event columns
 

@@ -1,0 +1,7 @@
+# temporal_object_in_clock { #natural_features.temporal_object_in_clock }
+
+```python
+temporal_object_in_clock(obj, target, *, context=None)
+```
+
+Return a coordinate-transformed copy without resampling its values.

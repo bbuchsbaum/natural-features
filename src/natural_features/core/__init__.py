@@ -1,6 +1,7 @@
 """Core contracts and utilities."""
 
 from .feature_types import EventSeries, FeatureSeries, TrackSeries
+from .feature_bundle import FeatureBundle, TemporalPayload, temporal_object_in_clock
 from .frame_timeline import FramePolicy, FrameTimeline
 from .interchange import (
     as_event_table,
@@ -24,12 +25,16 @@ from .stimulus import (
     image_from_file,
 )
 from .timeline import AlignmentPolicy, FeatureAlignment, Timeline, align_feature_to_timeline
+from .timebase import ClockMap, ClockRef, SupportSpec, TemporalContext, TimebaseSpec
 
 __all__ = [
     "AudioStimulus",
     "AlignmentPolicy",
+    "ClockMap",
+    "ClockRef",
     "EventSeries",
     "FeatureAlignment",
+    "FeatureBundle",
     "as_mermaid",
     "as_event_table",
     "as_feature_table",
@@ -52,9 +57,14 @@ __all__ = [
     "RecipeDag",
     "Registry",
     "TextStimulus",
+    "SupportSpec",
+    "TemporalContext",
+    "TemporalPayload",
+    "TimebaseSpec",
     "TrackSeries",
     "Timeline",
     "align_feature_to_timeline",
+    "temporal_object_in_clock",
     "validate_recipe",
     "VideoStimulus",
 ]

@@ -31,6 +31,9 @@ alignment_table.loc[
         "source_row",
         "source_onset_s",
         "source_offset_s",
+        "source_reference",
+        "mapped_onset_s",
+        "target_reference",
         "target_index_start",
         "target_index_end",
         "target_time_s",
@@ -94,8 +97,12 @@ frame_aligned.to_dataframe().loc[
 
 ## Boundary it closes
 
-Alignment is not a table merge. It is a recorded mapping between a source feature object's time coordinates and a target timeline. Export to a table after the mapping exists.
+Alignment is not a table merge. It is a recorded mapping between a source
+feature object's time coordinates and a target timeline. Source and target
+clock references are retained; when they differ, alignment requires a
+resolvable `TemporalContext` and records the converted coordinates. It never
+interpolates feature values. Export to a table after the mapping exists.
 
 ## See also
 
-[Unified workflow](../concepts/unified-workflow.qmd) · [Five feature types, five concepts](five-feature-concepts.qmd) · [Feature table merge](feature-table-merge.qmd)
+[Unified workflow](../concepts/unified-workflow.qmd) · [Native-grid handoff](native-grid-handoff.qmd) · [Five feature types, five concepts](five-feature-concepts.qmd) · [Feature table merge](feature-table-merge.qmd)

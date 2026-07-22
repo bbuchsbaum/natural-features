@@ -1,7 +1,15 @@
 # FrameTimeline { #natural_features.FrameTimeline }
 
 ```python
-FrameTimeline(frame_index, onset_s, offset_s, source=None, fps=None)
+FrameTimeline(
+    frame_index,
+    onset_s,
+    offset_s,
+    source=None,
+    fps=None,
+    reference=STIMULUS_CLOCK,
+    temporal_context=TemporalContext(),
+)
 ```
 
 A non-lossy map between continuous seconds and discrete video frames.
@@ -33,6 +41,8 @@ FrameTimeline.from_fps(
     start_s=0.0,
     first_frame_index=0,
     source=None,
+    reference=STIMULUS_CLOCK,
+    temporal_context=TemporalContext(),
 )
 ```
 
