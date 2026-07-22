@@ -24,8 +24,9 @@ quarter second. The default resampling method is `mean`, so values inside each
 time bin are averaged.
 
 This resampling is deliberate and local to the batch workflow. It differs from
-the native-grid handoff described in [Native time and clocks](native-time-and-clocks.qmd),
-where no common grid is chosen.
+keeping every feature at its original times, as described in [Native time and
+clocks](native-time-and-clocks.qmd). In that workflow, no common grid is
+chosen.
 
 Columns are prefixed with their feature family. An RMS column might be named
 `rms.rms`; an MFCC column begins with `mfcc.`. The prefix prevents similarly
@@ -40,7 +41,7 @@ named measurements from different extractors from colliding.
 | `mfcc` | Mel-frequency cepstral coefficients and, by default, their deltas |
 | `spectral_stats` | Summary measurements of the spectrum |
 | `vad` | Energy-based voice activity values |
-| `opensmile_egemaps` | eGeMAPS low-level descriptors through the optional openSMILE backend |
+| `opensmile_egemaps` | eGeMAPS low-level descriptors computed with the optional openSMILE software |
 
 If `selected_features` is omitted, the workflow uses `rms`, `mfcc`,
 `spectral_stats`, and `vad`.
@@ -78,7 +79,7 @@ result = extract_audio_dir(
 The [audio batch cookbook](../cookbook/audio-batch-from-wav.qmd) contains a
 runnable example that creates a WAV file and inspects both output tables.
 
-## Errors and boundaries
+## Supported inputs and reported errors
 
 `resolution_s` must be positive. Unknown feature names and unsupported
 collapse statistics are rejected before a misleading output can be assembled.
@@ -87,9 +88,9 @@ batch workflow is not a general decoder for MP3, video containers, or remote
 media.
 
 Optional feature families still follow the requested [execution
-mode](execution-modes.qmd). The batch wrapper coordinates files and columns; it
-does not change the scientific meaning of a feature-computing method or install
-the package, model, or program that implements it.
+mode](execution-modes.qmd). These batch functions coordinate files and columns;
+they do not change the scientific meaning of a feature-computing method or
+install the package, model, or program that implements it.
 
 ## See also
 

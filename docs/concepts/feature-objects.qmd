@@ -67,9 +67,9 @@ instead of rewriting the original values in place.
 ## Errors are raised before the object can become ambiguous
 
 Times must be finite and sorted from earliest to latest. Array lengths and axes
-must agree. Interval ends must not precede their starts. Required provenance
-fields must be present. These checks prevent a malformed temporal object from
-silently entering table export or alignment.
+must agree. Interval ends must not precede their starts. The `extractor_id` and
+`params_hash` fields must be present. These checks prevent a malformed
+temporal object from silently entering table export or alignment.
 
 ## What these objects do not decide
 

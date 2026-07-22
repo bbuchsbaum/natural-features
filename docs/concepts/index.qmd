@@ -20,7 +20,7 @@ guess on your behalf.
 | How do I choose among the available feature IDs? | [Feature catalogue](feature-catalogue.qmd) |
 | What happens when an optional model or program is missing? | [Execution modes](execution-modes.qmd) |
 | What is a recipe, and why does it have a graph? | [Recipes and execution graphs](recipes-and-dags.qmd) |
-| When should I turn feature objects into pandas tables? | [Table interchange](table-interchange.qmd) |
+| When should I turn feature objects into pandas tables? | [Tables and DataFrames](table-interchange.qmd) |
 | How can features sampled at different rates keep their original timing? | [Native time and clocks](native-time-and-clocks.qmd) |
 | How do the older fMRI window helpers relate feature time to scan time? | [fMRI windowing](fmri-windowing.qmd) |
 | How do I process a directory of short WAV files as one batch? | [Audio batch workflows](audio-batch-workflows.qmd) |

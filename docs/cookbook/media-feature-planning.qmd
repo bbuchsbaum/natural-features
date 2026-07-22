@@ -1,6 +1,6 @@
 ---
 title: "Plan media features without running them"
-subtitle: "Inspect OCR, face, CLIP, DINO, and video-audio routes first."
+subtitle: "Inspect OCR, face, CLIP, DINO, and video-audio requests before execution."
 sidebar: cookbook
 ---
 
@@ -25,7 +25,7 @@ media = available_features(
 }]
 ```
 
-## Plan a route
+## Plan the requested features
 
 ```{python}
 plan = plan_features(
@@ -36,9 +36,13 @@ plan = plan_features(
 plan.to_recipe()
 ```
 
-## Boundary it closes
+## What the plan tells you
 
-Planning uses modality tokens and extractor specs. It lets you check feature IDs, input routing, and default parameters without decoding a movie or loading a neural model.
+The plan names the extractor for each feature, the kind of input it will
+receive, and the parameters it will use. Producing this plan does not decode a
+movie or load a neural model. A valid plan shows that the requested inputs and
+outputs fit together; it does not prove that every optional package or model is
+installed.
 
 ## Strict variant
 

@@ -64,7 +64,9 @@ word_aligned = result.align_to(
 word_aligned["text.tokenize"].extra["word_index_start"].tolist()
 ```
 
-Dense feature outputs are not rewritten into events. Use `FeatureAlignment.to_dataframe()` when you want a rectangular join surface.
+Dense feature outputs are not rewritten into events. Use
+`FeatureAlignment.to_dataframe()` when you want one table row per recorded
+source-to-target match.
 
 ## Video features aligned to frames
 
@@ -95,14 +97,16 @@ frame_aligned.to_dataframe().loc[
 ]
 ```
 
-## Boundary it closes
+## What alignment records—and what it leaves unchanged
 
-Alignment is not a table merge. It is a recorded mapping between a source
-feature object's time coordinates and a target timeline. Source and target
-clock references are retained; when they differ, alignment requires a
-resolvable `TemporalContext` and records the converted coordinates. It never
-interpolates feature values. Export to a table after the mapping exists.
+Alignment records which target rows correspond to each source row. It retains
+the source and target clock names. If those clocks differ, the
+`TemporalContext` must contain enough clock maps to convert between them.
+
+Alignment does not interpolate or replace the source feature values. It also
+does not merge the source and target into one data table. Export the alignment
+after the row-to-row relationship has been recorded.
 
 ## See also
 
-[Unified workflow](../concepts/unified-workflow.qmd) · [Native-grid handoff](native-grid-handoff.qmd) · [Five feature types, five concepts](five-feature-concepts.qmd) · [Feature table merge](feature-table-merge.qmd)
+[Unified workflow](../concepts/unified-workflow.qmd) · [Keep native feature timing](native-grid-handoff.qmd) · [Five feature types, five concepts](five-feature-concepts.qmd) · [Feature table merge](feature-table-merge.qmd)

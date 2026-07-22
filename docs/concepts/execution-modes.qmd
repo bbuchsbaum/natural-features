@@ -16,19 +16,19 @@ planning. Second, if its required backend is unavailable at runtime, should
 execution stop or use a clearly marked substitute? `execution_mode` answers
 that during execution.
 
-Allowing a route into a plan does not guarantee that its dependencies are
+Allowing a method into a plan does not guarantee that its dependencies are
 installed.
 
 ## Decision 1: planning budget
 
 | Budget | What the planner may select |
 |---|---|
-| `default` | Base routes that do not require explicit opt-in |
-| `allow_python` | Base routes plus optional Python-backed routes, excluding placeholders |
-| `all` | All cost classes, including costly routes; placeholders still require their own opt-in |
+| `default` | Methods that do not require explicit opt-in |
+| `allow_python` | Default methods plus optional Python-backed methods, excluding placeholders |
+| `all` | Every cost class, including costly methods; placeholders still require their own opt-in |
 
 For example, `vision.clip` is visible to a plan only after the Python-backed
-route is allowed:
+method is allowed:
 
 ```{python}
 from natural_features.workflows import plan_features
@@ -45,7 +45,7 @@ plan = plan_features(
 }
 ```
 
-The result records `strict`, the default runtime behavior. Planning this route
+The result records `strict`, the default runtime behavior. Planning this method
 does not import the model, download weights, or inspect the local cache.
 
 ## Decision 2: runtime behavior
@@ -53,8 +53,8 @@ does not import the model, download weights, or inspect the local cache.
 | Setting | What happens if the named backend is unavailable |
 |---|---|
 | Omitted | Stop with an error. This is the default. |
-| `execution_mode="strict"` | Explicitly request the same fail-fast behavior. |
-| `execution_mode="fallback"` | Use a deterministic substitute if that method provides one, and record the substitution in the output's origin metadata. |
+| `execution_mode="strict"` | Explicitly request the same stop-on-error behavior. |
+| `execution_mode="fallback"` | Use a repeatable substitute if that method provides one, and record the substitution in the output's origin metadata. |
 
 Why stop by default? A proxy computation is not the named scientific method.
 Silently returning it could make a successful run look like evidence that the
@@ -77,14 +77,14 @@ fallback_plan.rows[0].params["execution_mode"]
 ```
 
 When a fallback is used, methods that support it record the substitute backend
-and the reason in their provenance, meaning metadata about how the output was
-made. Fallback mode is useful
-for exercising a workflow or testing downstream plumbing. It is not evidence
-that CLIP, Whisper, or another named model produced the values.
+and the reason in the output's provenance—the metadata that describes how the
+output was made. Fallback mode is useful for exercising a workflow or testing
+the code that consumes its outputs. It is not evidence that CLIP, Whisper, or
+another named model produced the values.
 
 ## The older `strict_dependency` flag
 
-`strict_dependency=True` is the compatibility spelling for strict behavior.
+`strict_dependency=True` is the older spelling for strict behavior.
 `strict_dependency=False` is treated as an explicit request for fallback
 behavior. New code should use `execution_mode`, because the values `strict`
 and `fallback` state the choice directly. Conflicting old and new settings are

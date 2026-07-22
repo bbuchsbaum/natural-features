@@ -86,8 +86,8 @@ untyped array.
 A recipe records what should run; it does not install an optional package or
 program, download a model, or make missing credentials appear. Those runtime
 choices are covered by [Execution modes](execution-modes.qmd). A recipe also
-does not make a method scientifically appropriate merely because the route is
-valid.
+does not make a method scientifically appropriate merely because the recipe
+passes structural validation.
 
 ## See also
 

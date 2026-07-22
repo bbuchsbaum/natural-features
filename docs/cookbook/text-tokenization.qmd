@@ -20,9 +20,13 @@ words = result.features["text.tokenize"]
 list(zip(words.label.tolist(), words.onset_s.tolist(), words.offset_s.tolist()))
 ```
 
-## Boundary it closes
+## Why the result includes word intervals
 
-The returned object has explicit onset and offset arrays even when the input is untimed text. That keeps later event-processing code on the same `EventSeries` contract as ASR or OCR outputs.
+The result has one onset and one offset for every token, even when the source
+text did not include observed timings. It is therefore an `EventSeries`, the
+same object type used for words returned by speech recognition or OCR. Code
+that works with event labels and intervals can process all three sources in
+the same way.
 
 ## Related feature IDs
 

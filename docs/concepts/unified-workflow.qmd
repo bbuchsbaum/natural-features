@@ -13,7 +13,7 @@ then align selected objects to a named timeline or export them in a table.
 The stages are:
 
 ```text
-stimulus → plan → native feature objects → optional alignment → table or temporal payload
+stimulus → plan → native feature objects → optional alignment → table or native-timing package
 ```
 
 Here, “native” means that each object keeps the row times and spacing produced
@@ -44,10 +44,11 @@ not immediately flattened into one generic table.
 ## What the result keeps
 
 `ExtractFeaturesResult` is more than a dictionary of arrays. Its `features`
-field holds outputs by feature ID. Its `plan` records the routes selected
-before execution. Its `recipe` is the serializable step description, and its
-`steps` field keeps the outputs of each executed step. It also carries known
-input timelines and clock mappings.
+field holds outputs by feature ID. Its `plan` records the extractors, inputs,
+and parameters selected before execution. Its `recipe` stores those steps in a
+dictionary that can be inspected or saved, and its `steps` field keeps the
+output of each executed step. It also carries known input timelines and clock
+mappings.
 
 This extra information answers practical questions later: Which extractor ran?
 What parameters were used? Which intermediate step produced this object? Which
@@ -98,13 +99,15 @@ Cross-clock alignment also requires a known clock map. A matching policy says
 how rows relate; a clock map says how their time coordinates relate. Neither
 substitutes for the other.
 
-## Choosing the final handoff
+## Choose what to pass to the next tool
 
-Use a table when the next tool expects rectangular rows and columns. Use
-`result.to_bundle()` and `FeatureBundle.temporal_payload()` when the next tool
-can accept native feature timing and should make its own resampling or modeling
-choice. The [Table interchange](table-interchange.qmd) and [Native time and
-clocks](native-time-and-clocks.qmd) pages explain those two handoffs.
+Use a table when the next tool expects ordinary rows and columns. If the next
+tool can work with each feature's original timing, call `result.to_bundle()`
+and then `FeatureBundle.temporal_payload()`. The resulting `TemporalPayload`
+contains the feature values, times, clock, and interval information without
+choosing a new sampling rate. The [Tables and DataFrames](table-interchange.qmd)
+and [Native time and clocks](native-time-and-clocks.qmd) pages explain the two
+options in detail.
 
 ## When the workflow stops with an error
 
@@ -119,4 +122,4 @@ should aggregate several source rows. Those decisions remain explicit.
 
 ## See also
 
-[Extract features](../start/03-extract-features.qmd) · [Align features to a timeline](../cookbook/timeline-alignment.qmd) · [Table interchange](table-interchange.qmd)
+[Extract features](../start/03-extract-features.qmd) · [Align features to a timeline](../cookbook/timeline-alignment.qmd) · [Tables and DataFrames](table-interchange.qmd)

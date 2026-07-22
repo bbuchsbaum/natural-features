@@ -1,6 +1,6 @@
 ---
-title: "Table Interchange"
-subtitle: "Convert typed temporal objects to pandas tables without inventing missing timing decisions."
+title: "Tables and DataFrames"
+subtitle: "Convert temporal feature objects to pandas tables while preserving what each row means."
 sidebar: concepts
 ---
 
@@ -12,8 +12,9 @@ A dense matrix, a list of bounded events, and a set of tracked objects do not
 become the same kind of data merely because all three can be written as rows.
 
 `natural_features` therefore keeps typed feature objects in memory and creates
-tables when you ask for them. The table is a rectangular exchange format; the
-typed object remains the source of truth.
+tables when you ask for them. The table is a rows-and-columns copy for tools
+that need that shape. The original typed object retains the fullest
+description of the data.
 
 ## How each object becomes rows
 
@@ -22,7 +23,7 @@ typed object remains the source of truth.
 | `FeatureSeries` | `as_feature_table()` | One feature value at one time |
 | `EventSeries` | `as_event_table()` | One event with its onset, offset, label, and optional fields |
 | `TrackSeries` | `as_track_table()` | One tracked feature value for one track at one time |
-| Any of the three | `as_temporal_table()` | Dispatch to the matching conversion above |
+| Any of the three | `as_temporal_table()` | Call the matching conversion above for the supplied object type |
 
 Suppose a `FeatureSeries` has 100 times and 13 feature columns. Its long table
 has 1,300 rows: one row for each time-and-feature pair. This shape avoids
@@ -30,8 +31,8 @@ pretending that feature names are part of the time axis.
 
 Every temporal table includes `time_reference`, the name of the clock used by
 its time columns. Rows with temporal extent also include onset and offset
-columns. Origin-information columns can be included so the name of the
-feature-computing method and the fingerprint of its settings survive export.
+columns. The table can also include the name of the feature-computing method
+and the fingerprint of its settings, so that information survives export.
 
 ## Object tables use a common vocabulary
 
@@ -59,10 +60,16 @@ share columns.
 
 A wide merge places several feature columns beside one another on shared rows.
 That operation is defined only for `FeatureSeries` outputs because event and
-track rows do not have the same rectangular meaning. A wide merge across
-different clocks also requires a temporal context, a target clock, and a join
-policy. Without those choices, equal-looking timestamps may refer to different
-origins.
+track rows do not describe the same kind of observation. Events can span
+different intervals, and tracks add a tracked-identity axis. Placing either in
+a wide feature table would require an additional decision about matching,
+repetition, or aggregation. A wide merge across different clocks also requires
+a temporal context, a target clock, and a join policy. Without those choices,
+equal-looking timestamps may refer to different origins.
+
+The `TemporalContext` supplies the clock maps. The target clock says which
+time coordinates the output should use. The join policy says how to match rows
+whose times are not identical.
 
 ## Table conversion does not align or resample
 
@@ -71,14 +78,15 @@ feature to a new rate, infer a mapping between clocks, or guess how words map
 to frames. Use `ExtractFeaturesResult.align_to()` first when you need a recorded
 relationship to a word, event, frame, or custom timeline.
 
-When the next analysis can accept native grids, keep the objects in a
-`FeatureBundle` and hand over a temporal payload instead of forcing a wide
-table. This preserves timing until the analysis is ready to choose its own
-grid.
+When the next analysis can accept each feature on its original time grid, keep
+the objects in a `FeatureBundle` and pass a `TemporalPayload` instead of
+forcing a wide table. The payload retains the feature's values, times, clock,
+and interval information until the analysis chooses a sampling grid.
 
 Requesting table output requires pandas. Missing pandas, unsupported object
-types, incompatible extra-column lengths, and under-specified cross-clock wide
-merges produce errors rather than partial tables.
+types, incompatible extra-column lengths, and cross-clock wide merges that omit
+the required clock or matching choices produce errors rather than partial
+tables.
 
 ## See also
 

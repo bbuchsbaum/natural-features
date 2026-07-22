@@ -1,6 +1,6 @@
 ---
 title: "Five feature types, five concepts"
-subtitle: "A compact tutorial for routing, schemas, temporal objects, tables, and provenance."
+subtitle: "See how feature IDs, input types, time representation, tables, and origin metadata fit together."
 sidebar: cookbook
 ---
 
@@ -12,7 +12,7 @@ This page uses one workflow shape:
 
 `stimulus -> extract_features() -> typed outputs -> align_to() -> table or plot`
 
-The five feature routes are:
+The five requested features are:
 
 - `text.tokenize` to turn text into word events.
 - `language.discourse` to show a feature that depends on word events.
@@ -119,7 +119,7 @@ feature_objects = [
 ]
 ```
 
-## Concept 1: feature IDs route between objects
+## Concept 1: a feature ID determines what input a method receives
 
 The planner resolves each feature ID to an input. The important row is `language.discourse`: it does not read the raw string. It reads the word events produced by `text.tokenize`.
 
@@ -141,9 +141,11 @@ for result in [text_result, audio_result, video_result]:
 md_table(["feature", "input", "returns", "opt-in"], rows)
 ```
 
-The input column is a quick routing check. `input:text`, `input:audio`, and `input:video` come from the stimulus. `ref:text_tokenize.default` comes from an earlier step in the same plan.
+The input column shows where each method gets its data. `input:text`,
+`input:audio`, and `input:video` come directly from the stimulus.
+`ref:text_tokenize.default` comes from an earlier step in the same plan.
 
-## Concept 2: schemas tell you how time is represented
+## Concept 2: the output type determines how time is stored
 
 `EventSeries` stores intervals. `FeatureSeries` stores sampled values with a time axis. The summary below shows the object type before any table export.
 
@@ -199,7 +201,7 @@ The plot below uses the same objects, not separate plotting fixtures. Word event
 
 ```{python}
 #| echo: false
-#| fig-cap: "Five feature routes on three timelines: text/language, audio/speech, and vision."
+#| fig-cap: "Five features on three timelines: text/language, audio/speech, and vision."
 #| fig-width: 8
 #| fig-height: 6
 fig, axes = plt.subplots(3, 1, constrained_layout=True)
@@ -241,9 +243,12 @@ axes[2].legend(loc="upper right")
 plt.show()
 ```
 
-## Concept 4: table export is a view
+## Concept 4: table export makes a rows-and-columns copy
 
-Use table helpers when a modeling or QC step wants rows. The event table keeps interval columns; the feature table has one row per time-feature pair; the alignment table records source-to-target row mappings.
+Use table helpers when a modeling or quality-control step expects rows and
+columns. The event table keeps interval columns; the feature table has one row
+per time-feature pair; the alignment table records source-to-target row
+matches.
 
 ```{python}
 #| echo: false
@@ -268,9 +273,11 @@ print("Alignment table:\n")
 md_table(alignment_table.columns.tolist(), alignment_table.itertuples(index=False, name=None))
 ```
 
-## Concept 5: provenance travels with the object
+## Concept 5: each object records how it was produced
 
-Every feature object carries extractor metadata. The metadata is what lets a downstream table or cache entry point back to the extractor and parameter hash that produced it.
+Every feature object carries the extractor name and a hash of its parameters.
+When the object is exported to a table or stored in a cache, these fields still
+identify the method and settings that produced it.
 
 ```{python}
 #| echo: false
@@ -289,9 +296,9 @@ for feature_id, obj, _role in feature_objects:
 md_table(["feature", "extractor", "params hash", "backend/mode"], provenance_rows)
 ```
 
-## Boundary it closes
+## Six questions to keep separate
 
-This tutorial separates five questions that are often mixed together:
+This tutorial separates six questions that are often mixed together:
 
 - Which feature ID should I request?
 - Does the feature read a stimulus or another feature object?

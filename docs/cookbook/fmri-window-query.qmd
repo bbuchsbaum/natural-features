@@ -1,6 +1,6 @@
 ---
 title: "Query a run-aware fMRI window"
-subtitle: "Use the compatibility layer to sample a `FeatureSeries` on a run TR grid."
+subtitle: "Select a run window and sample a `FeatureSeries` on that run's TR grid."
 sidebar: cookbook
 ---
 
@@ -52,15 +52,17 @@ sampled = query_feature_window_tr(
 }
 ```
 
-## Boundary it closes
+## What this query changes
 
-The query uses explicit clock mappings for window selection while preserving
-the feature object contract in the returned `FeatureSeries`. It also resamples,
-so it is a compatibility operation rather than the preferred native handoff.
+The clock map determines which source rows fall inside the requested run
+window. `query_feature_window_tr()` then resamples those values at the run's TR
+times, so the returned row count and values can differ from the source. The
+result is still a `FeatureSeries` with named feature columns and timing
+metadata.
 
-For new modeling pipelines, keep the source feature unchanged, create a
-`FeatureBundle`, and pass `bundle.temporal_payload(...)` downstream. Let the
-modeling library own TR sampling and HRF policy.
+If the next analysis should choose its own sampling and hemodynamic response
+function (HRF), keep the source feature unchanged. Put it in a `FeatureBundle`
+and pass `bundle.temporal_payload(...)` to that analysis instead.
 
 ## See also
 

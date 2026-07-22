@@ -121,4 +121,4 @@ TR, interpolation rule, HRF, lags, and design-matrix policy explicitly.
 
 ## See also
 
-[Native temporal contract](../spec/native-temporal-contract.qmd) · [Table interchange](../concepts/table-interchange.qmd)
+[Native temporal contract](../spec/native-temporal-contract.qmd) · [Tables and DataFrames](../concepts/table-interchange.qmd)

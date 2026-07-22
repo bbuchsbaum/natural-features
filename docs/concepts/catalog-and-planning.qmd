@@ -15,8 +15,8 @@ The high-level workflow separates discovery, planning, and execution.
 | `extract_features()` | Produce the planned outputs. | Yes |
 
 This separation is useful when an extractor is slow, costly, or depends on an
-optional model. You can inspect the route and parameters before any model is
-loaded or any media is processed.
+optional model. You can see the exact extractor, input, and parameters before
+any model is loaded or any media is processed.
 
 ## The catalogue is the menu
 
@@ -79,23 +79,23 @@ the recipe executor. Nothing runs during that conversion.
 ## How path and multimodal inputs are understood
 
 Known file suffixes are associated with image, audio, video, text, or NumPy
-inputs. A multimodal movie can expose both video and audio routes. Planning
-still checks that every requested feature can be reached from the modalities
-actually available; a video-only input cannot satisfy an audio-only extractor
+inputs. A movie may provide both video frames and an audio stream. Planning
+checks that each requested feature can be computed from the inputs that are
+actually present. A video-only input cannot satisfy an audio-only extractor
 unless an earlier step explicitly produces audio.
 
 ## Why a request may be rejected during planning
 
-An unknown feature name has no registered route. A modality mismatch means the
-requested method needs a different kind of input—for example, an audio method
-was given only an image. Optional, costly, or placeholder routes require the
-corresponding explicit opt-in. These are planning errors, so they occur before
-extraction starts.
+An unknown feature name has no registered method. An input mismatch means the
+requested method needs a different kind of data—for example, an audio method
+was given only an image. Optional, costly, or placeholder methods require the
+corresponding explicit opt-in. These errors occur before extraction starts.
 
 Planning does not prove that an optional Python package, model file, API
-credential, or system program is installed. The budget controls which routes
-may enter a plan; the [Execution modes](execution-modes.qmd) page explains what
-happens if a chosen backend is unavailable when the plan runs.
+credential, or system program is installed. The budget controls which methods
+may be included in a plan; the [Execution modes](execution-modes.qmd) page
+explains what happens if the required software is unavailable during
+execution.
 
 ## See also
 

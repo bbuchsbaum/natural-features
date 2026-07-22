@@ -46,10 +46,17 @@ merge_feature_tables(features, format="wide")
 merge_feature_tables(features, format="long").loc[:, ["time_s", "feature", "value", "output_name"]]
 ```
 
-## Boundary it closes
+## Why wide output is limited to `FeatureSeries`
 
-Wide output is intentionally restricted to dense `FeatureSeries` values. Event and track outputs need long/object tables because they do not share a single dense feature axis.
+In a wide feature table, each row represents one shared time and each feature
+column contributes one value at that time. `FeatureSeries` fits that shape.
+
+An `EventSeries` instead contains intervals that can begin and end at different
+times. A `TrackSeries` adds a tracked-identity axis. Putting either object into
+the same wide table would require an extra decision about matching times,
+repeating values, or aggregating rows. Use an event, object, or long table until
+the analysis has made that decision explicitly.
 
 ## See also
 
-[Table interchange](../concepts/table-interchange.qmd)
+[Tables and DataFrames](../concepts/table-interchange.qmd)

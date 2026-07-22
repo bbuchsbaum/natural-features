@@ -1,6 +1,6 @@
 ---
 title: "Cookbook"
-subtitle: "Task recipes that name the feature route and the boundary condition."
+subtitle: "Runnable examples for common feature-extraction tasks."
 sidebar: cookbook
 ---
 

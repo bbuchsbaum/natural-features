@@ -17,9 +17,9 @@ frame rate, the starting time, and the name of the clock used by those times.
 It validates those facts immediately, before a feature-computing method can
 produce a plausible-looking result from malformed input.
 
-## One wrapper for each kind of input
+## One object for each kind of input
 
-| Wrapper | Data it holds | Timing it adds |
+| Object | Data it holds | Timing it adds |
 |---|---|---|
 | `ImageStimulus` | One grayscale or color image | An optional onset and duration |
 | `VideoStimulus` | A sequence of frames with time on the first axis | Frames per second and a start time |
@@ -27,7 +27,7 @@ produce a plausible-looking result from malformed input.
 | `TextStimulus` | A Python string | Optional onset and offset arrays when text is already timed |
 | `MultiModalStimulus` | Any non-empty combination of image, video, audio, and text | The clock relationships shared by those inputs |
 
-Here is a small example with the four wrappers that each hold one kind of
+Here is a small example with the four objects that each hold one kind of
 input:
 
 ```{python}
@@ -80,17 +80,18 @@ clipped to the range from 0 to 1. Videos must contain at least one frame and
 have a positive frame rate. Audio must contain at least one sample, have one or
 two dimensions, and have a positive sample rate. Text must be a Python string.
 
-`MultiModalStimulus` must contain at least one modality. When its components
+`MultiModalStimulus` must contain at least one kind of input. When its components
 carry clock mappings, those mappings must agree. A contradiction is reported
 when the object is built, not deferred until alignment.
 
-## Where the wrapper stops
+## What these objects load—and what they leave to workflows
 
-A stimulus wrapper describes media already in memory or loaded by one of its
+A stimulus object describes media already in memory or loaded by one of its
 specific constructors. It is not a universal media decoder. High-level
-workflows handle path coercion and broader media preparation. The wrapper also
-does not align a stimulus to a scanner merely because both have numeric start
-times; that requires an explicit clock map.
+workflows decide how to turn common file paths into stimulus objects and handle
+broader media preparation. A stimulus object also does not align media to a
+scanner merely because both have numeric start times; that requires an
+explicit clock map.
 
 ## See also
 

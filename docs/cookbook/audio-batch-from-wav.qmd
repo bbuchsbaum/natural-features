@@ -53,9 +53,14 @@ long_table
 collapsed
 ```
 
-## Boundary it closes
+## Why the workflow returns two tables
 
-The workflow gives each file a stable `file_id`, keeps time-sampled rows separate from collapsed summaries, and prefixes feature names by extractor family.
+The long table keeps the time course: each row identifies a file, a time, and
+its feature values. The collapsed table deliberately removes time and returns
+one summary row per file. Keeping them separate makes it clear whether an
+analysis uses within-recording changes or only whole-recording summaries.
+Feature names are prefixed with the method that produced them so columns from
+different methods do not collide.
 
 ## See also
 

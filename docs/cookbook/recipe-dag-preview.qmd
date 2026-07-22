@@ -6,7 +6,8 @@ sidebar: cookbook
 
 ## Use when
 
-You want to review feature routing before running an extractor chain.
+You want to review how extraction steps depend on inputs and on one another
+before running them.
 
 ```{python}
 from natural_features.core.recipe import as_mermaid
@@ -26,10 +27,12 @@ recipe
 print(as_mermaid(recipe))
 ```
 
-## Boundary it closes
+## What the graph lets you inspect
 
-The graph shows where values enter as `input:` tokens and where step outputs become downstream references. That makes routing review separate from runtime execution.
+The arrows show which steps read the original inputs and which steps read an
+earlier step's output. Use the graph to spot a wrong input or a missing
+dependency before execution. Creating the graph does not run any extractor.
 
 ## See also
 
-[Recipes and DAGs](../concepts/recipes-and-dags.qmd)
+[Recipes and execution graphs](../concepts/recipes-and-dags.qmd)

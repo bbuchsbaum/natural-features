@@ -26,10 +26,10 @@ shapes and plots.
 | `modalities` | The kinds of input the extractor can consume |
 | `output_schema` | Whether the result is a dense feature, an event series, a track series, or another declared output |
 | `default_params` | The settings used unless you override them |
-| `requires` | Extra packages, models, programs, or services the route may need |
+| `requires` | Extra packages, models, programs, or services the feature may need |
 | `dependency_class` | The broad kind of dependency involved |
-| `cost_class` | The route's planning cost category |
-| `requires_opt_in` | Whether the default planning budget excludes the route |
+| `cost_class` | How the planner classifies the method's compute or dependency cost |
+| `requires_opt_in` | Whether the default planning budget excludes the feature |
 | `is_public` | Whether the ID belongs to the stable user-facing catalogue |
 
 For example, inspect the MFCC entry before changing its number of coefficients
@@ -55,32 +55,34 @@ mfcc = next(
 ## Public IDs and internal IDs
 
 `available_features()` shows public IDs by default. These are the names the
-project treats as its stable compatibility surface. Registered internal and
-legacy aliases remain available for reproducing an older recipe or testing a
-lower-level implementation, but they appear only with
-`public_only=False`.
+project promises to keep stable within the public API version. Registered
+internal and legacy aliases remain available for reproducing an older recipe
+or testing a lower-level implementation, but they appear only with
+`public_only=False`. They do not carry the same stability promise as public
+IDs.
 
 Public does not mean “installed locally” or “cheap to run.” It means the name
-and contract are part of the user-facing API. Dependency and cost fields
-answer the separate question of whether the route can run in a given
-environment.
+and documented behavior are part of the user-facing API. The dependency and
+cost fields answer the separate question of what the method needs in order to
+run.
 
 ## Planning budgets filter the list
 
-The `budget` argument controls which routes appear:
+The `budget` argument controls which features appear:
 
 | Budget | Entries included |
 |---|---|
-| `default` | Base routes that do not require explicit opt-in |
-| `allow_python` | Base routes plus optional Python-backed routes, but not placeholders |
+| `default` | Features that do not require explicit opt-in |
+| `allow_python` | Default features plus optional Python-backed features, but not placeholders |
 | `all` | Every registered cost class; placeholders still require `include_placeholders=True` |
 
-The budget is permission to consider a route. It does not install its
+The budget is permission to consider a feature. It does not install its
 dependencies or download a model.
 
 `as_dataframe=True` returns the same entries as a pandas table. Unknown budget
 names are rejected, and placeholder entries remain hidden unless they are
-explicitly requested.
+explicitly requested. A placeholder reserves a catalogue name for a feature
+that is not presented as a normal runnable method.
 
 ## Current feature families
 
@@ -117,8 +119,8 @@ print(":::")
 ```
 
 The catalogue describes and filters extractors. It does not run them. Use
-`plan_features()` to see the route for a particular input and
-`extract_features()` to execute it.
+`plan_features()` to see the chosen extractor, input connection, and parameters
+for a particular request, then use `extract_features()` to execute it.
 
 ## See also
 

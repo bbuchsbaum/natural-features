@@ -1,6 +1,6 @@
 ---
 title: "Export events to a table"
-subtitle: "Convert an `EventSeries` to rectangular rows with provenance columns."
+subtitle: "Convert an `EventSeries` to rows while retaining timing and origin metadata."
 sidebar: cookbook
 ---
 
@@ -24,7 +24,9 @@ table.loc[:, ["onset_s", "offset_s", "duration_s", "label", "extractor_name"]]
 
 ## Keep the object too
 
-The table is an interchange view. Keep the `EventSeries` when you need schema, object methods, or exact metadata.
+The table is a copy for code that expects rows and columns. Keep the
+`EventSeries` when you need its methods, its exact metadata, or the versioned
+description of its fields stored in `schema`.
 
 ```{python}
 {
@@ -36,4 +38,4 @@ The table is an interchange view. Keep the `EventSeries` when you need schema, o
 
 ## See also
 
-[Table interchange](../concepts/table-interchange.qmd)
+[Tables and DataFrames](../concepts/table-interchange.qmd)

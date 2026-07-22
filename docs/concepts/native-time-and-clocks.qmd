@@ -130,15 +130,15 @@ clock, support, metadata, versioned object description (the schema), and known
 clock mappings. A target clock may be requested, but a target sampling grid is
 not chosen.
 
-## Choices this layer requires you to make explicitly
+## Decisions the library will not make for you
 
-The clock layer will not align unrelated clocks without a map. It will not
+Clock conversion will not align unrelated clocks without a map. It will not
 upsample every feature to the fastest observed rate. It will not make a wide
 join across clocks unless the caller supplies a target clock and a join policy.
 These refusals prevent numeric timestamps that mean different things from
 being combined silently.
 
-The layer also does not choose a repetition time (TR), interpolate features
+`natural_features` also does not choose a repetition time (TR), interpolate features
 onto scan samples, convolve an HRF, or build a design matrix. Those are
 modeling decisions and belong in the downstream analysis that knows the
 scientific question.

@@ -49,7 +49,7 @@ offset between feature and experiment time. New code can supply full
 
 ## Two kinds of query
 
-`query_feature_window()` selects the native feature rows that fall inside a
+`query_feature_window()` selects the original feature rows that fall inside a
 run window. It may express their coordinates on the feature, experiment, or
 run-relative clock, but it does not change the number of rows merely to match
 the scan TR.
@@ -57,7 +57,7 @@ the scan TR.
 `query_feature_window_tr()` performs an additional, explicit step: it samples
 the selected feature onto the run's TR grid using the requested method, which
 defaults to `mean`. This is a resampling operation, so the output row count and
-values may differ from the native feature.
+values may differ from the original feature.
 
 | `output_time` | Coordinates written on the result |
 |---|---|
@@ -68,20 +68,22 @@ values may differ from the native feature.
 The query window can likewise be interpreted relative to the run or as
 absolute experiment time. Its end must be later than its start.
 
-## Why these helpers are labeled compatibility helpers
+## When to use these older query helpers
 
-The main `natural_features` contract now stops at lossless native-time
-bookkeeping and `TemporalPayload`. New modeling code should usually receive
-native feature rows and choose its TR sampling, interpolation, lags, and
-hemodynamic response function (HRF) in the downstream analysis library.
+These functions remain available for analyses that already query features by
+run or expect values sampled at each TR. In new modeling code, it is usually
+better to pass the original feature rows and their timing in a
+`TemporalPayload`, which retains the values, times, clock, and interval
+information. The modeling library can then choose its TR sampling,
+interpolation, lags, and hemodynamic response function (HRF) in one place.
 
 The fMRI query helpers remain for existing workflows that deliberately want a
 run slice or a TR-sampled feature. They do not estimate an HRF, convolve a
 feature with one, or build a design matrix.
 
-Unknown run numbers, non-positive TRs or run lengths, inconsistent clock-map
-endpoints, invalid output-time names, and windows whose end does not follow
-their start are rejected.
+The functions reject unknown run numbers, non-positive TRs or run lengths,
+clock maps whose source and target do not match the declared clocks, invalid
+output-time names, and windows whose end does not follow their start.
 
 ## See also
 

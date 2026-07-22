@@ -6,11 +6,16 @@ sidebar: cookbook
 
 ## Use when
 
-You want one docs page that covers every public feature family and shows what the main output schemas look like. Model-backed and API-backed feature IDs are listed from the live catalogue; the plotted examples use local synthetic inputs or deterministic fallback routes so the page can render without external datasets.
+You want one docs page that covers every public feature family and shows
+examples of the main output object types. Model-backed and API-backed feature
+IDs are listed from the live catalogue; the plotted examples use local
+synthetic inputs or explicitly requested deterministic substitutes so the page
+can render without external datasets.
 
 Where an executable example includes an optional backend, it explicitly sets
-`execution_mode="fallback"`. The `allow_python` budget makes those routes
-eligible; it does not silently change their default fail-fast behavior.
+`execution_mode="fallback"`. The `allow_python` budget makes those methods
+eligible; it does not change the default behavior of reporting an error when
+required software is missing.
 
 ```{python}
 #| echo: false
@@ -62,7 +67,7 @@ def _normalize_columns(values):
 
 ## Catalogue coverage
 
-This grid is generated from `available_features(budget="all", include_placeholders=True)` when the site renders. It covers the public feature catalogue, including routes that need optional runtimes.
+This grid is generated from `available_features(budget="all", include_placeholders=True)` when the site renders. It covers the public feature catalogue, including methods that need optional software.
 
 ```{python}
 #| echo: false
@@ -88,7 +93,7 @@ for family in sorted(groups):
 
 {len(rows)} {id_word} · {opt_in} opt-in {opt_word}
 
-**Schemas:** {schemas}
+**Output types:** {schemas}
 
 **Examples:** {examples}
 :::
@@ -96,7 +101,7 @@ for family in sorted(groups):
 print(":::")
 
 schemas = sorted({entry.output_schema for entry in entries})
-print(f"\n*{len(entries)} public feature IDs across {len(groups)} families. Output schemas: " + ", ".join(f"`{s}`" for s in schemas) + ".*")
+print(f"\n*{len(entries)} public feature IDs across {len(groups)} families. Declared output types: " + ", ".join(f"`{s}`" for s in schemas) + ".*")
 ```
 
 ## Audio and speech
@@ -177,13 +182,15 @@ axes[2].set_ylabel("mel bin")
 plt.show()
 ```
 
-The same source also has embedding and posterior routes in the catalogue. This
+The same source also has embedding and posterior methods in the catalogue. This
 build explicitly selects their deterministic fallback policy, then keeps the
 plot focused on low-dimensional diagnostics.
 
 ## Text, events, and language
 
-Text starts as word events, then feeds language and speech-derived token features. This route covers `EventSeries` and word-aligned `FeatureSeries` objects.
+Text starts as word events, then feeds language and speech-derived token
+features. The example therefore includes both `EventSeries` and word-aligned
+`FeatureSeries` objects.
 
 ```{python}
 #| echo: false
@@ -212,7 +219,7 @@ articulatory = text_result.features["speech.articulatory"]
 ```
 
 ```{python}
-#| fig-cap: "Word events and normalized word-aligned feature values from language and speech routes."
+#| fig-cap: "Word events and normalized word-aligned values from language and speech features."
 #| fig-width: 8
 #| fig-height: 5
 labels = [str(x) for x in words.label]
@@ -248,7 +255,9 @@ plt.show()
 
 ## Video and vision
 
-The video example uses a moving synthetic blob with color variation. It exercises low-level vision, spatial, motion, face-proxy, and social-proxy routes from the public catalogue.
+The video example uses a moving synthetic blob with color variation. It
+exercises low-level vision, spatial, motion, face-proxy, and social-proxy
+methods from the public catalogue.
 
 ```{python}
 #| echo: false
@@ -318,7 +327,10 @@ plt.show()
 
 ## Feature transforms and tracks
 
-Feature transform IDs operate on existing `FeatureSeries` objects. The public `TrackSeries` route is diarization, which normally needs an optional backend, so this page uses a synthetic two-track object to show the schema and plot shape.
+Feature transform IDs operate on existing `FeatureSeries` objects. Diarization
+is the public feature that returns a `TrackSeries`, and it normally needs
+optional software. This page therefore uses a synthetic two-track object to
+show how time, track identity, and values are arranged.
 
 ```{python}
 #| echo: false
@@ -365,7 +377,7 @@ axes[0].plot(rms_feature.times_s, rms_feature.values[:, 0], label="input rms", c
 axes[0].plot(resampled.times_s, resampled.values[:, 0], "o-", label="resampled", color="#34d399")
 axes[0].plot(hrf.times_s, hrf.values[:, 0], label="hrf", color="#f59e0b")
 axes[0].plot(lagged.times_s, lagged.values[:, 0], label="lag 0", color="#f472b6")
-axes[0].set_title("features.* routes")
+axes[0].set_title("features.* transforms")
 axes[0].set_xlabel("time (s)")
 axes[0].legend(fontsize=8)
 
@@ -385,6 +397,9 @@ axes[1].legend(fontsize=8)
 plt.show()
 ```
 
-## Boundary it closes
+## How this page stays current
 
-The generated catalogue grid keeps coverage tied to registered specs. The plots keep schema coverage tied to executed objects. When a new public feature family is added, it appears in the grid automatically; when a new schema is added, this page should gain a plotted object for that schema.
+The catalogue grid is generated from the registered feature definitions, so a
+new public feature family appears automatically. The plots come from executed
+examples. If the library adds a new output object type, this page should add an
+example and plot that make its row and time structure visible.
