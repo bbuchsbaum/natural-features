@@ -1,22 +1,91 @@
 ---
 title: "Feature Catalogue"
-subtitle: "`available_features()` - feature families, schemas, and opt-in status."
+subtitle: "Read the feature inventory and choose an ID with its inputs, output, and requirements in view."
 sidebar: concepts
 ---
 
-## What it is
+## What the catalogue is for
 
-The feature catalogue is generated from registered extractor specs. It is the reader-facing inventory of feature IDs, modalities, output schemas, dependency classes, and opt-in status.
+The feature catalogue is the package's live inventory of extractors—the
+functions and models that compute features. Use it when you know the kind of
+measurement you want but need its exact feature ID, accepted input, return
+type, default settings, or dependency requirements.
 
-Use the [complete feature catalog](../tour/index.qmd) when choosing an
-extractor. It adds a source-checked interpretation, output type, extraction
-pattern, fallback warning, and method reference for every public feature ID.
+The [complete feature catalog](../tour/index.qmd) adds a short scientific
+meaning, extraction pattern, fallback warning, and method reference for every
+public feature ID. The executable gallery in [Inspect and plot feature
+types](../cookbook/feature-type-gallery.qmd) shows representative output
+shapes and plots.
 
-By default, `available_features()` returns the public catalogue: the stable feature IDs that match the R package compatibility surface. Internal extractor IDs remain registered for recipes, debugging, and lower-level workflows, but they are hidden from the high-level catalogue unless you request them with `public_only=False`.
+## How to read one catalogue entry
 
-For an executable gallery that plots representative outputs, see [Inspect and plot feature types](../cookbook/feature-type-gallery.qmd).
+| Field | Plain-language meaning |
+|---|---|
+| `feature_id` | The stable name to pass to `plan_features()` or `extract_features()` |
+| `label` | A human-readable name |
+| `modalities` | The kinds of input the extractor can consume |
+| `output_schema` | Whether the result is a dense feature, an event series, a track series, or another declared output |
+| `default_params` | The settings used unless you override them |
+| `requires` | Extra packages, models, programs, or services the route may need |
+| `dependency_class` | The broad kind of dependency involved |
+| `cost_class` | The route's planning cost category |
+| `requires_opt_in` | Whether the default planning budget excludes the route |
+| `is_public` | Whether the ID belongs to the stable user-facing catalogue |
 
-## Current families
+For example, inspect the MFCC entry before changing its number of coefficients
+or time step:
+
+```{python}
+from natural_features.workflows import available_features
+
+mfcc = next(
+    entry
+    for entry in available_features(budget="all")
+    if entry.feature_id == "audio.mfcc"
+)
+
+{
+    "input": mfcc.modalities,
+    "returns": mfcc.output_schema,
+    "defaults": mfcc.default_params,
+    "requires_opt_in": mfcc.requires_opt_in,
+}
+```
+
+## Public IDs and internal IDs
+
+`available_features()` shows public IDs by default. These are the names the
+project treats as its stable compatibility surface. Registered internal and
+legacy aliases remain available for reproducing an older recipe or testing a
+lower-level implementation, but they appear only with
+`public_only=False`.
+
+Public does not mean “installed locally” or “cheap to run.” It means the name
+and contract are part of the user-facing API. Dependency and cost fields
+answer the separate question of whether the route can run in a given
+environment.
+
+## Planning budgets filter the list
+
+The `budget` argument controls which routes appear:
+
+| Budget | Entries included |
+|---|---|
+| `default` | Base routes that do not require explicit opt-in |
+| `allow_python` | Base routes plus optional Python-backed routes, but not placeholders |
+| `all` | Every registered cost class; placeholders still require `include_placeholders=True` |
+
+The budget is permission to consider a route. It does not install its
+dependencies or download a model.
+
+`as_dataframe=True` returns the same entries as a pandas table. Unknown budget
+names are rejected, and placeholder entries remain hidden unless they are
+explicitly requested.
+
+## Current feature families
+
+The cards below are generated from the live registry when this page renders.
+The prefix before the first dot groups related feature IDs.
 
 ```{python}
 #| echo: false
@@ -47,24 +116,10 @@ for family in sorted(groups):
 print(":::")
 ```
 
-## Invariants
-
-- Feature IDs come from extractor specs registered in `Registry.with_builtin_specs()`.
-- `available_features()` lists public feature IDs by default.
-- `available_features(public_only=False)` includes internal and legacy extractor IDs such as implementation-level aliases.
-- `available_features(budget="default")` excludes costly or optional routes unless they are base routes.
-- `available_features(budget="allow_python")` includes optional Python backends but still excludes placeholder entries by default.
-- `available_features(as_dataframe=True)` returns the same entries as a pandas table.
-
-## What it refuses
-
-- Unknown budget names.
-- Placeholder entries unless `include_placeholders=True`.
-
-## What it doesn't do
-
-The catalogue does not execute extractors or install optional dependencies. It tells you what can be planned.
+The catalogue describes and filters extractors. It does not run them. Use
+`plan_features()` to see the route for a particular input and
+`extract_features()` to execute it.
 
 ## See also
 
-[List and plan features](../start/02-list-and-plan-features.qmd) · [Inspect and plot feature types](../cookbook/feature-type-gallery.qmd) · [Execution modes](execution-modes.qmd)
+[Complete feature catalog](../tour/index.qmd) · [Catalogue and planning](catalog-and-planning.qmd) · [Execution modes](execution-modes.qmd)

@@ -1,39 +1,96 @@
 ---
 title: "Audio Batch Workflows"
-subtitle: "`extract_audio_files()` and `extract_audio_dir()` - clip matrices and collapsed summaries."
+subtitle: "Turn a collection of short WAV clips into comparable feature matrices and optional file summaries."
 sidebar: concepts
 ---
 
-## What it is
+## The job this workflow is designed for
 
-Audio batch workflows are ergonomic wrappers for short WAV clips. They read files, extract selected low-level features, resample each feature space to a shared resolution, and optionally collapse each file to summary statistics.
+Use the audio batch workflow when each WAV file is one observation—for
+example, one spoken response, sound effect, or short recording—and you want
+the same acoustic columns for every file.
 
-## Invariants
+`extract_audio_files()` accepts an explicit list of paths.
+`extract_audio_dir()` first finds paths in a directory with a pattern such as
+`*.wav`, then runs the same workflow. Both return an `AudioBatchResult` with
+one `AudioFileResult` per file.
 
-- `resolution_s` must be positive.
-- Unknown feature names raise before extraction.
-- Selected feature names are prefixed in output columns.
-- `collapse` supports `mean`, `sd`, `min`, and `max`.
-- `as_dataframe=True` requires pandas.
+## What happens to each file
 
-## What it refuses
+The workflow reads the WAV file, computes the selected low-level feature
+families, and samples those families onto the time step given by
+`resolution_s`. With `resolution_s=0.25`, the output has one time row every
+quarter second. The default resampling method is `mean`, so values inside each
+time bin are averaged.
 
-- Unsupported collapse statistics.
-- Unknown selected feature names.
-- Non-WAV paths passed to `AudioStimulus.from_wav()`.
+This resampling is deliberate and local to the batch workflow. It differs from
+the native-grid handoff described in [Native time and clocks](native-time-and-clocks.qmd),
+where no common grid is chosen.
 
-## What it doesn't do
+Columns are prefixed with their feature family. An RMS column might be named
+`rms.rms`; an MFCC column begins with `mfcc.`. The prefix prevents similarly
+named measurements from different extractors from colliding.
 
-The batch workflow is not a general media decoder. It expects WAV files and delegates feature computation to registered low-level audio helpers.
+## Available feature families
 
-## Available batch feature names
+| Name | What it contributes |
+|---|---|
+| `rms` | Root-mean-square signal energy |
+| `mel` | Mel-scaled spectral bands |
+| `mfcc` | Mel-frequency cepstral coefficients and, by default, their deltas |
+| `spectral_stats` | Summary measurements of the spectrum |
+| `vad` | Energy-based voice activity values |
+| `opensmile_egemaps` | eGeMAPS low-level descriptors through the optional openSMILE backend |
 
-```{python}
-from natural_features.workflows.audio_batch import _FEATURES
+If `selected_features` is omitted, the workflow uses `rms`, `mfcc`,
+`spectral_stats`, and `vad`.
 
-sorted(_FEATURES)
+## The three output views
+
+Each file result always contains `times_s`, `feature_names`, and a numeric
+`matrix`. The first matrix axis follows time; the second follows feature name.
+
+With `as_dataframe=True`, `long_dataframe` combines all file matrices and adds
+`file_id` and `time_s` columns. This view preserves the time course.
+
+With `collapse` set, the workflow also summarizes each feature column across
+all times in a file. The supported summaries are `mean`, `sd`, `min`, and
+`max`, and several may be requested together, as in `mean+sd`. The resulting
+`collapsed_dataframe` has one row per file.
+
+Collapsing discards within-file timing. It is appropriate only when the next
+analysis needs one fixed-length vector per recording.
+
+## A representative call
+
+```python
+from natural_features import extract_audio_dir
+
+result = extract_audio_dir(
+    "clips/",
+    pattern="*.wav",
+    resolution_s=0.25,
+    selected_features=["rms", "mfcc", "vad"],
+    collapse="mean+sd",
+)
 ```
+
+The [audio batch cookbook](../cookbook/audio-batch-from-wav.qmd) contains a
+runnable example that creates a WAV file and inspects both output tables.
+
+## Errors and boundaries
+
+`resolution_s` must be positive. Unknown feature names and unsupported
+collapse statistics are rejected before a misleading output can be assembled.
+Table output requires pandas. `AudioStimulus.from_wav()` accepts WAV input; the
+batch workflow is not a general decoder for MP3, video containers, or remote
+media.
+
+Optional feature families still follow the requested [execution
+mode](execution-modes.qmd). The batch wrapper coordinates files and columns; it
+does not change the scientific meaning of a feature-computing method or install
+the package, model, or program that implements it.
 
 ## See also
 
-[Extract audio features from WAV files](../cookbook/audio-batch-from-wav.qmd)
+[Extract audio features from WAV files](../cookbook/audio-batch-from-wav.qmd) · [Execution modes](execution-modes.qmd)

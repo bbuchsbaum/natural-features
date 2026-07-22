@@ -1,42 +1,84 @@
 ---
 title: "Feature Objects"
-subtitle: "`FeatureSeries`, `EventSeries`, `TrackSeries` - time-aligned outputs."
+subtitle: "Three data shapes for measurements, events, and tracked objects over time."
 sidebar: concepts
 ---
 
-## What it is
+## Why there are three object types
 
-Feature objects are immutable dataclasses for extracted stimulus features. Dense features use `FeatureSeries`, bounded events use `EventSeries`, and tracked objects use `TrackSeries`.
+Extracted features do not all have the same shape. Loudness might be measured
+every 10 milliseconds. A transcript contains words with a beginning and an
+end. A face tracker may follow several faces across many video frames. Forcing
+all three into the same table would discard useful structure or fill the table
+with repeated and missing values.
 
-## Invariants
+`natural_features` therefore uses three temporal object types:
 
-- `FeatureSeries.values` has at least two dimensions and its first axis matches `times_s`.
-- `FeatureSeries.dims[0]` is `time`.
-- `EventSeries.onset_s` and `offset_s` have the same shape.
-- `EventSeries.offset_s` is greater than or equal to `onset_s` for every event.
-- `TrackSeries.values` uses time on the first axis and track on the second axis.
-- All three object types require `extractor_id` and `params_hash` in `metadata`.
-- All three object types declare a clock and temporal support in `timebase`.
-- Per-row temporal bounds match the time axis and remain on the declared clock.
+| Object | Use it for | A row means |
+|---|---|---|
+| `FeatureSeries` | Repeated measurements such as loudness, embeddings, or frame descriptors | One measurement time or window |
+| `EventSeries` | Bounded events such as words, phonemes, cuts, or detected objects | One event with an onset and an offset |
+| `TrackSeries` | The same named objects followed across time | One time step across one or more tracks |
 
-## What it refuses
+“Temporal” simply means that every row has a stated position in time.
 
-- Non-monotonic time arrays.
-- Missing required metadata fields.
-- Event labels or confidence arrays with lengths that do not match events.
-- Track values whose time or track axes do not match `times_s` and `track_id`.
+## `FeatureSeries`: a matrix whose first axis is time
 
-## What it doesn't do
+A `FeatureSeries` keeps a numeric `values` array next to `times_s`. The first
+axis of `values` must have one entry for every time. For example, an array with
+shape `(100, 13)` can represent 13 acoustic measurements at each of 100 time
+steps. The `dims` field names those axes and must begin with `time`.
 
-These objects do not choose a storage backend, feature extractor, interpolation
-grid, HRF, or fMRI design. They define the native container contract those
-layers consume.
+A time can represent an instant or a window. If a measurement summarizes the
+audio from 1.00 to 1.03 seconds, the object preserves those bounds; it does not
+pretend the row is an infinitesimal point.
 
-`Timeline` and `FeatureAlignment` sit beside these objects. They describe how rows in a feature object map to another temporal frame without changing the feature object itself.
+## `EventSeries`: one onset and offset per event
+
+An `EventSeries` stores matching `onset_s` and `offset_s` arrays. Labels and
+confidence values are optional, but when present they must have one value per
+event. An event may have zero duration, but its end can never precede its
+start.
+
+For a spoken word, one row might mean: label “room,” onset 4.20 seconds,
+offset 4.61 seconds, confidence 0.94. The interval is part of the object rather
+than an informal convention attached later.
+
+## `TrackSeries`: time by tracked identity
+
+A `TrackSeries` has time on its first axis and tracked identity on its second.
+If a video contains 60 frames and three tracked faces, the first two dimensions
+of `values` are 60 by 3. `track_id` says which face occupies each position on
+the second axis. Additional axes can hold coordinates, appearance features, or
+other measurements.
+
+## The information every object carries
+
+Each object names its clock and describes whether its rows are points, fixed
+windows, or individually bounded intervals. Each also carries an
+`extractor_id`, which names the method that produced it, and a `params_hash`,
+which is a short fingerprint of that method's settings. Together these fields
+are provenance: information about where an array came from and how it was
+made.
+
+The objects are immutable: alignment and clock conversion create a new object
+instead of rewriting the original values in place.
+
+## Errors are raised before the object can become ambiguous
+
+Times must be finite and sorted from earliest to latest. Array lengths and axes
+must agree. Interval ends must not precede their starts. Required provenance
+fields must be present. These checks prevent a malformed temporal object from
+silently entering table export or alignment.
+
+## What these objects do not decide
+
+Feature objects preserve extracted data on its original time grid. They do not
+choose a database, interpolate to a new rate, convolve a hemodynamic response
+function (HRF), or build an fMRI design matrix. `Timeline` and
+`FeatureAlignment` describe a relationship to another timeline without
+changing the original object.
 
 ## See also
 
-[Extract features](../start/03-extract-features.qmd) · [Unified workflow](unified-workflow.qmd) · [Feature object schemas](../spec/feature-object-schemas.qmd) · [API reference](../reference/index.qmd)
-
-[Native time and clocks](native-time-and-clocks.qmd) explains how multiple
-feature rates coexist without upsampling.
+[Unified workflow](unified-workflow.qmd) · [Native time and clocks](native-time-and-clocks.qmd) · [Feature object schemas](../spec/feature-object-schemas.qmd) · [API reference](../reference/index.qmd)

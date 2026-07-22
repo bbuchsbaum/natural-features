@@ -1,35 +1,102 @@
 ---
 title: "Catalogue and Planning"
-subtitle: "`available_features()`, `plan_features()`, `extract_features()` - choose before running."
+subtitle: "Inspect what is available and what will run before extraction begins."
 sidebar: concepts
 ---
 
-## What it is
+## Three calls, three different jobs
 
-The workflow catalogue is built from extractor specs. A plan chooses a route from available input modalities to requested feature IDs and records the extractor, input token, parameters, output schema, and opt-in status for each step.
+The high-level workflow separates discovery, planning, and execution.
 
-The catalogue separates the stable public surface from implementation-level extractor IDs. `available_features()` reports public IDs by default, while `available_features(public_only=False)` exposes every registered spec. Explicit planning can still target a registered internal ID when you need to reproduce a recipe or test a lower-level extractor.
+| Call | Question it answers | Does feature computation run? |
+|---|---|---:|
+| `available_features()` | What feature IDs can I ask for? | No |
+| `plan_features()` | How would my requested features be produced from this input? | No |
+| `extract_features()` | Produce the planned outputs. | Yes |
 
-## Invariants
+This separation is useful when an extractor is slow, costly, or depends on an
+optional model. You can inspect the route and parameters before any model is
+loaded or any media is processed.
 
-- `available_features()` returns `FeatureCatalogEntry` rows derived from registered extractor specs.
-- Public catalogue rows have `is_public=True`.
-- `plan_features()` returns a `FeaturePlan` unless `as_dataframe=True`.
-- `FeaturePlan.to_recipe()` emits a recipe dictionary with a `features` list.
-- Path inputs with image, audio, video, text, or NumPy suffixes are coerced to the matching stimulus or path contract.
-- A stimulus named `movie` expands to audio and video modality planning.
+## The catalogue is the menu
 
-## What it refuses
+Each catalogue row describes one requestable feature ID. It states what input
+kind the feature accepts, what object type it returns, what dependencies it
+needs, its default parameters, and whether it requires explicit opt-in.
 
-- Feature IDs that are not registered.
-- Requests whose input modality cannot be routed.
-- Optional or costly feature requests under the default budget.
-- Placeholder features unless explicitly included.
+```{python}
+from natural_features.workflows import available_features
 
-## What it doesn't do
+text_entries = available_features(modality="text")
+[
+    {
+        "feature_id": entry.feature_id,
+        "returns": entry.output_schema,
+        "requires_opt_in": entry.requires_opt_in,
+    }
+    for entry in text_entries
+]
+```
 
-Planning does not run the extractor. Execution begins when the plan is converted to a recipe and passed through the recipe executor.
+By default, this call shows public feature IDs: the stable names intended for
+users. `public_only=False` also includes internal names used by older recipes,
+lower-level tests, and implementation details. Most users should start with
+the public list.
+
+## A plan is the filled-in order
+
+A plan combines a requested feature with the actual input you supplied. It
+chooses the registered extractor—the function or model that computes the
+feature—connects it to a compatible input, merges its default parameters with
+your overrides, and records the expected output type.
+
+```{python}
+from natural_features.workflows import plan_features
+
+plan = plan_features(
+    "The scene opens.",
+    features=["text.tokenize"],
+)
+
+[
+    {
+        "requested": row.feature_id,
+        "step_id": row.step_id,
+        "extractor": row.use,
+        "input": row.input_token,
+        "returns": row.output_schema,
+    }
+    for row in plan.rows
+]
+```
+
+In this example, `input:text` means “pass the text input to this step.” It is a
+connection in the plan, not a file path or a second copy of the text.
+
+`FeaturePlan.to_recipe()` converts the plan into the dictionary consumed by
+the recipe executor. Nothing runs during that conversion.
+
+## How path and multimodal inputs are understood
+
+Known file suffixes are associated with image, audio, video, text, or NumPy
+inputs. A multimodal movie can expose both video and audio routes. Planning
+still checks that every requested feature can be reached from the modalities
+actually available; a video-only input cannot satisfy an audio-only extractor
+unless an earlier step explicitly produces audio.
+
+## Why a request may be rejected during planning
+
+An unknown feature name has no registered route. A modality mismatch means the
+requested method needs a different kind of input—for example, an audio method
+was given only an image. Optional, costly, or placeholder routes require the
+corresponding explicit opt-in. These are planning errors, so they occur before
+extraction starts.
+
+Planning does not prove that an optional Python package, model file, API
+credential, or system program is installed. The budget controls which routes
+may enter a plan; the [Execution modes](execution-modes.qmd) page explains what
+happens if a chosen backend is unavailable when the plan runs.
 
 ## See also
 
-[List and plan features](../start/02-list-and-plan-features.qmd) · [Extract features](../start/03-extract-features.qmd) · [Evidence](../evidence/index.qmd)
+[List and plan features](../start/02-list-and-plan-features.qmd) · [Feature catalogue](feature-catalogue.qmd) · [Extract features](../start/03-extract-features.qmd)

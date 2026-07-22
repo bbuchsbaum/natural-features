@@ -1,41 +1,97 @@
 ---
 title: "Stimuli"
-subtitle: "`ImageStimulus`, `VideoStimulus`, `AudioStimulus`, `TextStimulus` - typed media inputs."
+subtitle: "Give raw media a known shape, timing, and clock before extraction starts."
 sidebar: concepts
 ---
 
-## What it is
+## The problem a stimulus object solves
 
-Stimulus wrappers are dataclasses that put media arrays or text behind a small
-validation contract. They carry timing fields such as frame rate, onset,
-duration, sample rate, or start offset before extraction begins. Every wrapper
-also declares a `clock` and carries a `TemporalContext` for mappings to media,
-experiment, run, or scan clocks.
+A NumPy array does not say what it represents. A three-dimensional array might
+be one color image, a stack of grayscale video frames, or multichannel audio
+arranged incorrectly. It also does not say when the data begins or how quickly
+time advances.
 
-## Invariants
+A stimulus object adds that missing meaning. It stores the media together with
+the facts an extractor needs to interpret it: which axis is time, the sample or
+frame rate, the starting time, and the name of the clock used by those times.
+It validates those facts immediately, before a feature-computing method can
+produce a plausible-looking result from malformed input.
 
-- `ImageStimulus.image` is numeric and normalized to floating values clipped to `[0, 1]`.
-- `VideoStimulus.frames` has a time axis first and a positive `fps`.
-- `AudioStimulus.samples` is one- or two-dimensional and has a positive sample rate.
-- `TextStimulus.text` is a Python string.
-- `MultiModalStimulus` contains at least one non-empty modality.
-- Clock identifiers are non-empty, and multimodal clock mappings must be mutually consistent.
+## One wrapper for each kind of input
 
-## What it refuses
+| Wrapper | Data it holds | Timing it adds |
+|---|---|---|
+| `ImageStimulus` | One grayscale or color image | An optional onset and duration |
+| `VideoStimulus` | A sequence of frames with time on the first axis | Frames per second and a start time |
+| `AudioStimulus` | Mono samples or samples-by-channel audio | Samples per second and a start time |
+| `TextStimulus` | A Python string | Optional onset and offset arrays when text is already timed |
+| `MultiModalStimulus` | Any non-empty combination of image, video, audio, and text | The clock relationships shared by those inputs |
 
-- Empty images, videos, or audio arrays.
-- Invalid image, video, or audio ranks.
-- Non-finite image onset values.
-- Negative image duration values.
-- Multi-modal inputs with no modalities.
+Here is a small example with the four wrappers that each hold one kind of
+input:
 
-## What it doesn't do
+```{python}
+import numpy as np
 
-The wrappers do not decode arbitrary video containers by themselves. Path
-coercion and media preparation live in workflow and preprocessing helpers. A
-`start_offset_s` is a coordinate on the wrapper's declared clock; it is not an
-implicit stimulus-to-scan mapping.
+from natural_features.core.stimulus import (
+    AudioStimulus,
+    ImageStimulus,
+    TextStimulus,
+    VideoStimulus,
+)
+
+image = ImageStimulus.from_array(
+    np.zeros((8, 8, 3)),
+    onset_s=0.5,
+    duration_s=1.0,
+)
+video = VideoStimulus.from_array(np.zeros((4, 8, 8, 3)), fps=2.0)
+audio = AudioStimulus.from_array(np.zeros(1600), sr_hz=16000)
+text = TextStimulus("The scene opens.")
+
+{
+    "image_shape": image.image.shape,
+    "video_frame_times_s": video.frame_times_s.tolist(),
+    "audio_duration_s": audio.samples.shape[0] / audio.sr_hz,
+    "text": text.text,
+}
+```
+
+The four video frames occur at 0.0, 0.5, 1.0, and 1.5 seconds because the
+video rate is two frames per second. The 1,600 audio samples last 0.1 seconds
+at 16,000 samples per second.
+
+## What “clock” means here
+
+A clock is a named time origin. The default clock is `stimulus`, where 0
+seconds usually means the beginning of the stimulus. If the same recording
+began 23 seconds after a scanner run began, stimulus time and scan time are not
+the same coordinates. Store that relationship explicitly with a clock map;
+do not hide it in `start_offset_s`.
+
+The [Native time and clocks](native-time-and-clocks.qmd) page develops this
+example and explains clock conversion step by step.
+
+## What is checked immediately
+
+Images must be numeric, non-empty, and shaped as height-by-width with an
+optional color-channel axis. Image values are converted to floating point and
+clipped to the range from 0 to 1. Videos must contain at least one frame and
+have a positive frame rate. Audio must contain at least one sample, have one or
+two dimensions, and have a positive sample rate. Text must be a Python string.
+
+`MultiModalStimulus` must contain at least one modality. When its components
+carry clock mappings, those mappings must agree. A contradiction is reported
+when the object is built, not deferred until alignment.
+
+## Where the wrapper stops
+
+A stimulus wrapper describes media already in memory or loaded by one of its
+specific constructors. It is not a universal media decoder. High-level
+workflows handle path coercion and broader media preparation. The wrapper also
+does not align a stimulus to a scanner merely because both have numeric start
+times; that requires an explicit clock map.
 
 ## See also
 
-[Wrap a stimulus](../start/01-wrap-a-stimulus.qmd) · [Native time and clocks](native-time-and-clocks.qmd) · [Feature objects](feature-objects.qmd) · [Feature object schemas](../spec/feature-object-schemas.qmd)
+[Wrap a stimulus](../start/01-wrap-a-stimulus.qmd) · [Feature objects](feature-objects.qmd) · [Feature object schemas](../spec/feature-object-schemas.qmd)

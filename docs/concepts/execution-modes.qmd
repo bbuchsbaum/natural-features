@@ -1,55 +1,103 @@
 ---
 title: "Execution Modes"
-subtitle: "`execution_mode`, `strict_dependency`, and `budget` - choose failure behavior deliberately."
+subtitle: "Separate permission to plan an optional method from what should happen if it cannot run."
 sidebar: concepts
 ---
 
-## What it is
+## Two separate decisions
 
-Execution settings separate two decisions: whether a feature is allowed into
-the plan, and what happens if its named backend is missing at runtime. Optional
-backends are excluded from the base installation when they require large model
-weights, API credentials, extra Python packages, or system programs such as
-ffmpeg and Tesseract.
+Some feature methods need extra Python packages, large model files, API
+credentials, or system programs such as ffmpeg or Tesseract. This underlying
+package, model, service, or program is the method's backend. The workflow asks
+two separate questions about optional methods.
 
-## Planning budgets
+First, may the method enter the plan? The `budget` argument answers this during
+planning. Second, if its required backend is unavailable at runtime, should
+execution stop or use a clearly marked substitute? `execution_mode` answers
+that during execution.
 
-| Budget | Planning effect |
+Allowing a route into a plan does not guarantee that its dependencies are
+installed.
+
+## Decision 1: planning budget
+
+| Budget | What the planner may select |
 |---|---|
-| `default` | base routes that do not require opt-in |
-| `allow_python` | optional Python-backed routes, excluding placeholders |
-| `all` | all registered routes, including costly routes that still may need dependencies |
+| `default` | Base routes that do not require explicit opt-in |
+| `allow_python` | Base routes plus optional Python-backed routes, excluding placeholders |
+| `all` | All cost classes, including costly routes; placeholders still require their own opt-in |
 
-## Runtime modes
+For example, `vision.clip` is visible to a plan only after the Python-backed
+route is allowed:
 
-| Setting | Runtime effect |
+```{python}
+from natural_features.workflows import plan_features
+
+plan = plan_features(
+    "image",
+    features=["vision.clip"],
+    budget="allow_python",
+)
+
+{
+    "feature": plan.rows[0].feature_id,
+    "execution_mode": plan.rows[0].params["execution_mode"],
+}
+```
+
+The result records `strict`, the default runtime behavior. Planning this route
+does not import the model, download weights, or inspect the local cache.
+
+## Decision 2: runtime behavior
+
+| Setting | What happens if the named backend is unavailable |
 |---|---|
-| omitted (default) | use the named method; raise if its backend is unavailable |
-| `execution_mode="strict"` | explicitly select the default fail-fast behavior |
-| `execution_mode="fallback"` | explicitly request a deterministic proxy with different semantics and provenance, where one exists |
-| `strict_dependency=True` | compatibility flag for strict dependency behavior |
-| `strict_dependency=False` | compatibility alias for explicitly requested fallback behavior |
+| Omitted | Stop with an error. This is the default. |
+| `execution_mode="strict"` | Explicitly request the same fail-fast behavior. |
+| `execution_mode="fallback"` | Use a deterministic substitute if that method provides one, and record the substitution in the output's origin metadata. |
 
-## Invariants
+Why stop by default? A proxy computation is not the named scientific method.
+Silently returning it could make a successful run look like evidence that the
+requested model actually ran.
 
-- Budget checks happen during planning.
-- Named methods fail rather than silently returning a different computation.
-- Runtime fallback/strict behavior is represented in extractor parameters.
-- Explicit fallback outputs annotate the substituted backend and reason in
-  provenance metadata where implemented.
+Fallback mode must therefore be requested in the parameters for the specific
+feature:
 
-## What it refuses
+```{python}
+fallback_plan = plan_features(
+    "image",
+    features=["vision.clip"],
+    budget="allow_python",
+    feature_params={
+        "vision.clip": {"execution_mode": "fallback"},
+    },
+)
 
-- Unsupported budget names.
-- Strict optional backends without their required packages, models, or system tools.
+fallback_plan.rows[0].params["execution_mode"]
+```
 
-## What it doesn't do
+When a fallback is used, methods that support it record the substitute backend
+and the reason in their provenance, meaning metadata about how the output was
+made. Fallback mode is useful
+for exercising a workflow or testing downstream plumbing. It is not evidence
+that CLIP, Whisper, or another named model produced the values.
 
-These settings do not download models automatically. For model-backed
-extractors, local cache policy is controlled by extractor parameters such as
-`local_files_only`. Fallback mode is a development convenience, not evidence
-that the named scientific method ran.
+## The older `strict_dependency` flag
+
+`strict_dependency=True` is the compatibility spelling for strict behavior.
+`strict_dependency=False` is treated as an explicit request for fallback
+behavior. New code should use `execution_mode`, because the values `strict`
+and `fallback` state the choice directly. Conflicting old and new settings are
+rejected.
+
+## What remains your responsibility
+
+Execution modes do not install packages, fetch credentials, or download model
+weights automatically. Model-backed extractors may expose a setting such as
+`local_files_only` to control cache and download policy. An unsupported budget
+name is rejected during planning; a missing dependency in strict mode is
+reported when execution reaches that extractor.
 
 ## See also
 
-[Media and optional backends](../start/05-media-and-optional-backends.qmd) · [Feature catalogue](feature-catalogue.qmd)
+[Media and optional backends](../start/05-media-and-optional-backends.qmd) · [Feature catalogue](feature-catalogue.qmd) · [Catalogue and planning](catalog-and-planning.qmd)

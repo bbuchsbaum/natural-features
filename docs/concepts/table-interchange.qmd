@@ -1,37 +1,45 @@
 ---
 title: "Table Interchange"
-subtitle: "`as_feature_table()`, `as_event_table()`, `as_object_table()`, `merge_feature_tables()`."
+subtitle: "Convert typed temporal objects to pandas tables without inventing missing timing decisions."
 sidebar: concepts
 ---
 
-## What it is
+## Why tables are an export format, not the primary object
 
-Table interchange turns typed feature objects into pandas tables for inspection, modeling, and joins. The object remains the in-memory contract; the table is the rectangular exchange form.
+A pandas table is convenient for inspection, plotting, statistics, and file
+export. It is less good at preserving the natural structure of every feature.
+A dense matrix, a list of bounded events, and a set of tracked objects do not
+become the same kind of data merely because all three can be written as rows.
 
-## Invariants
+`natural_features` therefore keeps typed feature objects in memory and creates
+tables when you ask for them. The table is a rectangular exchange format; the
+typed object remains the source of truth.
 
-- `as_feature_table()` emits one row per time-by-feature value.
-- `as_event_table()` emits one row per event.
-- `as_object_table()` normalizes event or track objects to object-centric columns such as `object_id`, `object_type`, `onset_s`, and geometry fields.
-- `as_temporal_table()` dispatches by object type.
-- `merge_feature_tables(format="wide")` accepts only `FeatureSeries` outputs.
-- Temporal tables include `time_reference`; bounded rows include onset and offset.
+## How each object becomes rows
 
-## What it refuses
+| Input object | Table function | Meaning of one output row |
+|---|---|---|
+| `FeatureSeries` | `as_feature_table()` | One feature value at one time |
+| `EventSeries` | `as_event_table()` | One event with its onset, offset, label, and optional fields |
+| `TrackSeries` | `as_track_table()` | One tracked feature value for one track at one time |
+| Any of the three | `as_temporal_table()` | Dispatch to the matching conversion above |
 
-- Missing pandas when table output is requested.
-- Wide merges that include `EventSeries` or `TrackSeries` outputs.
-- Event or track extra columns whose lengths do not match the object row count.
-- Cross-clock wide merges without a temporal context, target clock, and join policy.
+Suppose a `FeatureSeries` has 100 times and 13 feature columns. Its long table
+has 1,300 rows: one row for each time-and-feature pair. This shape avoids
+pretending that feature names are part of the time axis.
 
-## What it doesn't do
+Every temporal table includes `time_reference`, the name of the clock used by
+its time columns. Rows with temporal extent also include onset and offset
+columns. Origin-information columns can be included so the name of the
+feature-computing method and the fingerprint of its settings survive export.
 
-Table helpers do not resample features or invent timeline mappings. Use
-`ExtractFeaturesResult.align_to()` first when you need to record how source rows
-map to word, event, frame, or custom timelines. For heterogeneous native grids,
-keep a `FeatureBundle` and defer rectangularization to the downstream analysis.
+## Object tables use a common vocabulary
 
-## Canonical event columns
+`as_object_table()` is for event detections and tracks that should share
+object-oriented columns. It normalizes fields such as `object_id`,
+`object_type`, `onset_s`, `offset_s`, confidence, and geometry. This makes it
+possible to compare object-producing extractors without erasing their extra
+fields.
 
 ```{python}
 from natural_features.core.interchange import OBJECT_CANONICAL_COLUMNS
@@ -39,6 +47,39 @@ from natural_features.core.interchange import OBJECT_CANONICAL_COLUMNS
 OBJECT_CANONICAL_COLUMNS[:10]
 ```
 
+An extra event column is included only when it has one value per event. A
+mismatched length is rejected because the library cannot know which event the
+extra values belong to.
+
+## Long and wide merges make different promises
+
+A long merge stacks rows while retaining names that identify their source. It
+can represent dense features, events, and tracks without requiring them to
+share columns.
+
+A wide merge places several feature columns beside one another on shared rows.
+That operation is defined only for `FeatureSeries` outputs because event and
+track rows do not have the same rectangular meaning. A wide merge across
+different clocks also requires a temporal context, a target clock, and a join
+policy. Without those choices, equal-looking timestamps may refer to different
+origins.
+
+## Table conversion does not align or resample
+
+The table helpers preserve the rows they receive. They do not interpolate a
+feature to a new rate, infer a mapping between clocks, or guess how words map
+to frames. Use `ExtractFeaturesResult.align_to()` first when you need a recorded
+relationship to a word, event, frame, or custom timeline.
+
+When the next analysis can accept native grids, keep the objects in a
+`FeatureBundle` and hand over a temporal payload instead of forcing a wide
+table. This preserves timing until the analysis is ready to choose its own
+grid.
+
+Requesting table output requires pandas. Missing pandas, unsupported object
+types, incompatible extra-column lengths, and under-specified cross-clock wide
+merges produce errors rather than partial tables.
+
 ## See also
 
-[Align features to a timeline](../cookbook/timeline-alignment.qmd) · [Export events to a table](../cookbook/event-table-export.qmd) · [Merge feature tables](../cookbook/feature-table-merge.qmd)
+[Export events to a table](../cookbook/event-table-export.qmd) · [Merge feature tables](../cookbook/feature-table-merge.qmd) · [Align features to a timeline](../cookbook/timeline-alignment.qmd)

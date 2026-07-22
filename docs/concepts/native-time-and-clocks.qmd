@@ -1,40 +1,148 @@
 ---
 title: "Native Time and Clocks"
-subtitle: "Keep feature timing lossless until a downstream model chooses a grid."
+subtitle: "Preserve each feature's original timing until a later analysis chooses a common grid."
 sidebar: concepts
 ---
 
-## What it is
+## Start with a concrete timing problem
 
-A temporal coordinate is meaningful only together with its clock and support.
-`ClockRef` names the clock, `ClockMap` relates two clocks, `SupportSpec` says
-whether a row is a point or interval, and `TemporalContext` holds a consistent
-graph of clock mappings.
+Suppose an audio recording begins 12.5 seconds after an experiment begins.
+Two seconds into the audio is therefore 14.5 seconds into the experiment.
+Both numbers are correct, but they answer different questions because they use
+different starting points.
 
-`FeatureBundle` groups different native grids without forcing them into one
-table. Its `temporal_payload()` method is the handoff boundary for downstream
-modeling.
+| Event | On the audio clock | On the experiment clock |
+|---|---:|---:|
+| Recording begins | 0.0 s | 12.5 s |
+| A word begins two seconds later | 2.0 s | 14.5 s |
 
-## Invariants
+A bare value such as “2.0 seconds” is incomplete. To interpret it, you also
+need to know which clock supplied zero.
 
-- Every temporal object declares a clock through `timebase.reference`.
-- A clock map means `target = scale * source + offset_s`.
-- Contradictory paths through a temporal context are rejected.
-- Clock conversion preserves values and row count.
-- Window and interval support survives conversion and storage.
+“Native time” means the time coordinates and row spacing produced by the
+feature-computing method, before any later interpolation or resampling.
 
-## What it refuses
+## A clock is a named time origin
 
-- Implicit cross-clock alignment.
-- Silent resampling to the fastest feature grid.
-- Wide joins across clocks without an explicit target and policy.
-- Treating TR or HRF settings as properties of a native feature.
+`ClockRef` gives a clock a stable name such as `audio`, `stimulus`,
+`experiment`, or `scan:run-01`. It is not a stopwatch object and it does not
+read the computer's wall clock. It is a label that answers: “Seconds measured
+from what origin?”
 
-## What it doesn't do
+Every temporal feature object names its clock through
+`timebase.reference`. This prevents code from treating audio time, experiment
+time, and scan-run time as interchangeable merely because all three are stored
+as seconds.
 
-The clock layer does not convolve an HRF, interpolate onto TRs, or build a
-design matrix. Those choices belong to downstream analysis libraries.
+## A clock map translates coordinates
+
+`ClockMap` records how to translate a time on one clock into a time on another.
+The rule is:
+
+\[
+\text{target time} = (\text{scale} \times \text{source time}) + \text{offset}
+\]
+
+Read the rule from left to right:
+
+1. Start with a coordinate on the source clock.
+2. Multiply it by `scale`. The usual value is 1, meaning both clocks advance
+   at the same rate.
+3. Add `offset_s`, the difference between the two zero points in seconds.
+4. The result is a coordinate on the target clock.
+
+For the recording above, the scale is 1 and the offset is 12.5 seconds:
+
+```{python}
+from natural_features import ClockMap
+
+audio_to_experiment = ClockMap(
+    "audio",
+    "experiment",
+    scale=1.0,
+    offset_s=12.5,
+)
+
+audio_to_experiment.apply(2.0)
+```
+
+The result is 14.5. A scale other than 1 is useful when two recording systems
+advance at slightly different rates. For example, a scale of 1.0002 says that
+one second on the source clock spans 1.0002 seconds on the target clock. Scale
+must always be positive.
+
+## A temporal context keeps several translations consistent
+
+`TemporalContext` is a collection of clock maps that belong together. If it
+knows how to translate stimulus time to experiment time and experiment time to
+scan time, it can combine those two steps when asked for stimulus-to-scan
+coordinates.
+
+```{python}
+from natural_features import TemporalContext
+
+context = TemporalContext(
+    (
+        ClockMap("audio", "experiment", offset_s=12.5),
+        ClockMap("experiment", "scan:run-01", offset_s=-10.0),
+    )
+)
+
+context.convert(2.0, source="audio", target="scan:run-01")
+```
+
+The result is 4.5 seconds on the scan-run clock: 2.0 + 12.5 - 10.0. If two
+different paths through the stored maps imply different answers, construction
+fails with an error. The library will not choose one contradictory answer.
+
+## Support says how much time a row represents
+
+A coordinate alone still does not say whether a row describes an instant or a
+span of time. `SupportSpec` records that meaning.
+
+| Support kind | Meaning | Example |
+|---|---|---|
+| `point` | The row belongs to one instant. | A video frame timestamped at 3.0 s |
+| `window` | Every row summarizes a fixed-width span. | A 30 ms acoustic window centered at 3.0 s |
+| `interval` | Each row has its own onset and offset. | A word lasting from 3.0 to 3.4 s |
+
+For a fixed window, the anchor says whether the stored time marks the window's
+beginning, center, or end. For an interval, the row stores both bounds
+directly. Clock conversion transforms these bounds along with the main time
+coordinate.
+
+## Conversion is not resampling
+
+Changing clocks changes coordinate labels; it does not create, delete, or
+interpolate feature rows. If a feature has 100 values before conversion, it
+has the same 100 values afterward. Only its time coordinates, temporal bounds,
+and clock name change.
+
+This distinction matters when several features have different native rates.
+An audio feature measured every 10 milliseconds and a language feature
+measured once per word should stay at those rates. `FeatureBundle` holds both
+objects together with their shared clock maps without forcing them into one
+wide table.
+
+`FeatureBundle.temporal_payload()` packages one native feature for a downstream
+model. The payload contains its values or events, original row structure,
+clock, support, metadata, versioned object description (the schema), and known
+clock mappings. A target clock may be requested, but a target sampling grid is
+not chosen.
+
+## Choices this layer requires you to make explicitly
+
+The clock layer will not align unrelated clocks without a map. It will not
+upsample every feature to the fastest observed rate. It will not make a wide
+join across clocks unless the caller supplies a target clock and a join policy.
+These refusals prevent numeric timestamps that mean different things from
+being combined silently.
+
+The layer also does not choose a repetition time (TR), interpolate features
+onto scan samples, convolve an HRF, or build a design matrix. Those are
+modeling decisions and belong in the downstream analysis that knows the
+scientific question.
 
 ## See also
 
-[Native temporal contract](../spec/native-temporal-contract.qmd) · [Keep heterogeneous features on native grids](../cookbook/native-grid-handoff.qmd) · [Feature objects](feature-objects.qmd)
+[Keep heterogeneous features on native grids](../cookbook/native-grid-handoff.qmd) · [Native temporal contract](../spec/native-temporal-contract.qmd) · [Feature objects](feature-objects.qmd)

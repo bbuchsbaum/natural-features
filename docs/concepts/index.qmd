@@ -1,19 +1,34 @@
 ---
 title: "Concepts"
-subtitle: "The objects and contracts behind extraction."
+subtitle: "Plain-language explanations of the objects, choices, and safeguards behind extraction."
 sidebar: concepts
 ---
 
-Start with the object you hold, then move to the system that plans how to create it:
+The concept pages answer the questions that arise between “I have a stimulus”
+and “I have features ready for analysis.” They explain why the library keeps
+certain information, when it asks you to make a choice, and what it will not
+guess on your behalf.
 
-- [Stimuli](stimuli.qmd)
-- [Feature objects](feature-objects.qmd)
-- [Unified workflow](unified-workflow.qmd)
-- [Catalogue and planning](catalog-and-planning.qmd)
-- [Feature catalogue](feature-catalogue.qmd)
-- [Execution modes](execution-modes.qmd)
-- [Recipes and DAGs](recipes-and-dags.qmd)
-- [Table interchange](table-interchange.qmd)
-- [Native time and clocks](native-time-and-clocks.qmd)
-- [fMRI windowing](fmri-windowing.qmd)
-- [Audio batch workflows](audio-batch-workflows.qmd)
+## Choose a page by question
+
+| Your question | Start here |
+|---|---|
+| How do I give an image, video, recording, or passage of text to the library? | [Stimuli](stimuli.qmd) |
+| Why are some outputs matrices, some events, and some tracked objects? | [Feature objects](feature-objects.qmd) |
+| What happens from extraction through alignment and table export? | [Unified workflow](unified-workflow.qmd) |
+| How can I see what will run before I run it? | [Catalogue and planning](catalog-and-planning.qmd) |
+| How do I choose among the available feature IDs? | [Feature catalogue](feature-catalogue.qmd) |
+| What happens when an optional model or program is missing? | [Execution modes](execution-modes.qmd) |
+| What is a recipe, and why does it have a graph? | [Recipes and execution graphs](recipes-and-dags.qmd) |
+| When should I turn feature objects into pandas tables? | [Table interchange](table-interchange.qmd) |
+| How can features sampled at different rates keep their original timing? | [Native time and clocks](native-time-and-clocks.qmd) |
+| How do the older fMRI window helpers relate feature time to scan time? | [fMRI windowing](fmri-windowing.qmd) |
+| How do I process a directory of short WAV files as one batch? | [Audio batch workflows](audio-batch-workflows.qmd) |
+
+## A useful reading order
+
+If you are new to the package, read [Stimuli](stimuli.qmd), [Feature
+objects](feature-objects.qmd), and [Unified workflow](unified-workflow.qmd)
+first. Read [Native time and clocks](native-time-and-clocks.qmd) before
+combining features that were sampled at different rates or recorded on
+different clocks. The remaining pages explain particular workflow choices.

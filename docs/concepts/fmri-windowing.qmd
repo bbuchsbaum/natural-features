@@ -1,43 +1,88 @@
 ---
 title: "fMRI Windowing"
-subtitle: "Compatibility queries for stimulus features on run clocks."
+subtitle: "Describe scan runs and query feature time without confusing it with native feature time."
 sidebar: concepts
 ---
 
-## What it is
+## The timing problem
 
-fMRI windowing helpers describe run timing separately from feature timing. A
-`RunGrid` stores the TR, run start, run length, named clocks, and an explicit
-feature-to-experiment `ClockMap`. Query helpers slice feature objects by run and
-optionally resample to the run TR grid.
+An fMRI run has its own sampling schedule. The repetition time, or TR, is the
+time between successive image volumes. A run with TR 2 seconds and five
+volumes has sample times 0, 2, 4, 6, and 8 seconds relative to the start of
+that run.
 
-These are compatibility helpers. The primary `natural_features` contract ends
-at lossless native-time bookkeeping and `TemporalPayload`; new HRF/TR/design
-workflows should live in downstream modeling libraries.
+The same run may begin at 100 seconds on an experiment-wide clock. Its sample
+times are then 100, 102, 104, 106, and 108 seconds on that clock. A stimulus
+feature can use yet another origin. Windowing is reliable only when these
+relationships are stated.
 
-## Invariants
+## `RunGrid` describes one run
 
-- `tr_s` must be positive.
-- `n_trs_by_run` must contain positive integers.
-- `run_starts_s`, when supplied, must match the number of runs.
-- `feature_to_experiment_by_run`, when supplied, must match the number of runs
-  and each map must use the declared feature and experiment clocks.
-- Legacy `feature_t0_by_run`, when supplied, must match the number of runs.
-- Query windows require `t_end_s > t_start_s`.
-- Output time can be `absolute`, `run_relative`, or `feature`.
+A `RunGrid` stores the TR, number of volumes, experiment-wide start time, and
+the names of the feature and experiment clocks. It also stores an explicit map
+from feature time to experiment time. From these facts it derives a run clock
+whose zero is the beginning of that run.
 
-## What it refuses
+`ExperimentGrid` is a collection of `RunGrid` objects. The helper
+`build_experiment_grid()` constructs both from common run-level inputs:
 
-- Unknown run indices.
-- Empty or non-positive run definitions.
-- Invalid output-time modes.
-- Windows whose end is not later than their start.
+```{python}
+from natural_features import build_experiment_grid
 
-## What it doesn't do
+grid = build_experiment_grid(
+    tr_s=2.0,
+    n_trs_by_run=[5],
+    run_starts_s=[100.0],
+)
+run = grid.get_run(1)
 
-Windowing does not estimate an HRF model. TR resampling here remains for
-compatibility; prefer handing native payloads to downstream modeling code.
+{
+    "experiment_times_s": run.times_s.tolist(),
+    "run_clock": str(run.run_clock),
+    "run_end_s": run.end_s,
+}
+```
+
+The older `feature_t0_s` and `feature_t0_by_run` arguments express a simple
+offset between feature and experiment time. New code can supply full
+`ClockMap` objects when the relationship also includes a scale difference.
+
+## Two kinds of query
+
+`query_feature_window()` selects the native feature rows that fall inside a
+run window. It may express their coordinates on the feature, experiment, or
+run-relative clock, but it does not change the number of rows merely to match
+the scan TR.
+
+`query_feature_window_tr()` performs an additional, explicit step: it samples
+the selected feature onto the run's TR grid using the requested method, which
+defaults to `mean`. This is a resampling operation, so the output row count and
+values may differ from the native feature.
+
+| `output_time` | Coordinates written on the result |
+|---|---|
+| `absolute` | Experiment-wide seconds |
+| `run_relative` | Seconds from the beginning of the selected run |
+| `feature` | The feature object's own clock |
+
+The query window can likewise be interpreted relative to the run or as
+absolute experiment time. Its end must be later than its start.
+
+## Why these helpers are labeled compatibility helpers
+
+The main `natural_features` contract now stops at lossless native-time
+bookkeeping and `TemporalPayload`. New modeling code should usually receive
+native feature rows and choose its TR sampling, interpolation, lags, and
+hemodynamic response function (HRF) in the downstream analysis library.
+
+The fMRI query helpers remain for existing workflows that deliberately want a
+run slice or a TR-sampled feature. They do not estimate an HRF, convolve a
+feature with one, or build a design matrix.
+
+Unknown run numbers, non-positive TRs or run lengths, inconsistent clock-map
+endpoints, invalid output-time names, and windows whose end does not follow
+their start are rejected.
 
 ## See also
 
-[Native temporal contract](../spec/native-temporal-contract.qmd) · [Query a run-aware fMRI window](../cookbook/fmri-window-query.qmd) · [fMRI querying reference](../reference/query_feature_window_tr.qmd)
+[Query a run-aware fMRI window](../cookbook/fmri-window-query.qmd) · [Native time and clocks](native-time-and-clocks.qmd) · [fMRI querying reference](../reference/query_feature_window_tr.qmd)

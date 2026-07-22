@@ -1,47 +1,94 @@
 ---
-title: "Recipes and DAGs"
-subtitle: "`FeaturePlan.to_recipe()`, `execute_recipe()`, `as_mermaid()` - explicit execution graphs."
+title: "Recipes and Execution Graphs"
+subtitle: "Make every extraction step, input, dependency, and parameter visible before it runs."
 sidebar: concepts
 ---
 
-## What it is
+## A recipe is a saved set of extraction instructions
 
-A recipe is a dictionary with a `features` list. Each step names an extractor in `use`, an optional stable `id`, an input mapping, and parameter overrides. A DAG is the resolved dependency graph implied by `input:` tokens, `ref:` tokens, and `depends_on`.
+A call to `extract_features()` is convenient for interactive work. A recipe is
+the same kind of request written as an ordinary Python dictionary that can be
+inspected, tested, and saved. Its top-level `features` list contains one entry
+for every extraction step.
 
-## Invariants
-
-- A recipe must contain `features`, and `features` must be a list.
-- Every enabled step must have a non-empty `use` value.
-- Step IDs must be unique.
-- `params`, `inputs`, `outputs`, and `postprocess` fields must be mappings when present.
-- `ref:<step>.<output>` inputs must refer to previous known outputs.
-- Declared output schemas are checked against returned object types during execution.
-
-## What it refuses
-
-- Unknown step keys.
-- Duplicate step IDs.
-- Unknown extractor names.
-- Unknown `input:` keys or `ref:` targets.
-- Output objects that do not match declared `FeatureSeries`, `EventSeries`, or `TrackSeries` schemas.
-
-## What it doesn't do
-
-Recipes do not install optional backends or download models. They record the execution contract for registered extractors.
-
-## Minimal graph
+Planning can generate the recipe for you:
 
 ```{python}
-from natural_features.core.recipe import as_mermaid
 from natural_features.workflows import plan_features
 
 plan = plan_features(
     "The scene opens.",
     features=["text.tokenize"],
 )
+
+plan.to_recipe()
+```
+
+The generated step says which extractor to `use`, gives the step a stable
+`id`, connects it to `input:text`, and records its parameter values. An
+extractor is the registered function or model that computes a feature. Nothing
+has run yet.
+
+## What the fields mean
+
+| Field | Meaning |
+|---|---|
+| `id` | A unique name for this step, used by later steps and reports |
+| `use` | The registered extractor to call |
+| `inputs` | Where each extractor argument gets its value |
+| `params` | Settings passed to the extractor |
+| `outputs` | Optional declarations of the names and object types the step should return |
+| `depends_on` | Other steps that must finish first even when their output is not passed directly |
+| `postprocess` | Optional transformations applied after extraction |
+| `enabled` | Whether this step participates in the run |
+
+An input token such as `input:text` refers to an original workflow input. A
+reference such as `ref:words.events` means “use the `events` output from the
+earlier step named `words`.” References make data flow explicit; they are not
+arbitrary strings interpreted by the extractor.
+
+## Why the recipe becomes a graph
+
+When one step consumes another step's output, the recipe is no longer just a
+list. It is a directed acyclic graph, often shortened to DAG:
+
+“Directed” means each connection points from producer to consumer. “Acyclic”
+means the connections cannot loop back to an earlier dependency. “Graph” means
+the steps may branch and rejoin instead of forming one straight chain.
+
+The graph determines a safe execution order. A tokenizer can run before a
+word-level language feature that consumes its events, while two independent
+audio features can run without depending on each other.
+
+```{python}
+from natural_features.core.recipe import as_mermaid
+
 print(as_mermaid(plan.to_recipe()))
 ```
 
+The printed Mermaid text can be rendered as a flow diagram. This is useful for
+reviewing a larger recipe before running expensive steps.
+
+## Validation happens before execution
+
+A recipe must contain a `features` list. Every enabled step needs a non-empty
+registered extractor name, and every step ID must be unique. Fields such as
+`params`, `inputs`, `outputs`, and `postprocess` must be mappings. References
+must point to outputs that an earlier known step declares. Dependency cycles
+are rejected.
+
+After a step runs, declared output schemas are also checked. A step that
+promises a `FeatureSeries` cannot silently return an `EventSeries` or an
+untyped array.
+
+## What a recipe does not provide
+
+A recipe records what should run; it does not install an optional package or
+program, download a model, or make missing credentials appear. Those runtime
+choices are covered by [Execution modes](execution-modes.qmd). A recipe also
+does not make a method scientifically appropriate merely because the route is
+valid.
+
 ## See also
 
-[Preview a recipe DAG](../cookbook/recipe-dag-preview.qmd) · [Catalogue and planning](catalog-and-planning.qmd)
+[Preview a recipe graph](../cookbook/recipe-dag-preview.qmd) · [Catalogue and planning](catalog-and-planning.qmd) · [Execution modes](execution-modes.qmd)
