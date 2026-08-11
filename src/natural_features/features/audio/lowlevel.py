@@ -105,6 +105,8 @@ def mel(
     log: bool = True,
 ) -> FeatureSeries:
     x = _mono(stimulus.samples)
+
+    
     power, _freqs, _ = _stft_power(x, stimulus.sr_hz, hop_s, win_s)
     n_fft = int(2 * (power.shape[1] - 1))
     fmax = float(fmax if fmax is not None else stimulus.sr_hz / 2.0)
@@ -114,6 +116,7 @@ def mel(
         vals = np.log10(np.maximum(vals, 1e-10))
     vals = vals.astype(np.float32)
     times = times_from_hop(vals.shape[0], hop_s, start_offset_s=stimulus.start_offset_s, center=True, window_s=win_s)
+
     metadata = extractor_metadata(
         "audio.lowlevel.mel",
         params={"hop_s": hop_s, "win_s": win_s, "n_mels": n_mels, "fmin": fmin, "fmax": fmax, "log": log},

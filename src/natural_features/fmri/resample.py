@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from scipy.ndimage import gaussian_filter1d
+
 from natural_features.core.feature_types import FeatureSeries
 from natural_features.core.timebase import TimebaseSpec
 from natural_features.features.common import extractor_metadata
@@ -33,7 +35,6 @@ def _resample_mean(times: np.ndarray, values: np.ndarray, tr_grid: np.ndarray, t
             out[i] = values[0]
     return out
 
-
 def resample_feature_series(
     feature: FeatureSeries,
     tr_s: float,
@@ -41,6 +42,7 @@ def resample_feature_series(
     method: str = "mean",
     duration_s: float | None = None,
     time_grid_s: np.ndarray | None = None,
+    temporal_filter="gaussian"
 ) -> FeatureSeries:
     if feature.values.ndim != 2:
         raise ValueError("resample_feature_series currently supports 2-D FeatureSeries only")

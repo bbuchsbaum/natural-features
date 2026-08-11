@@ -17,6 +17,7 @@ from natural_features.fmri.design import concat_feature_series
 from natural_features.fmri.resample import build_tr_grid, resample_feature_series
 
 
+
 @dataclass
 class AudioFileResult:
     file_id: str
@@ -40,7 +41,7 @@ class AudioBatchResult:
 _FEATURES = {
     "rms": (rms, {"hop_s": 0.01, "win_s": 0.03}),
     "mel": (mel, {"hop_s": 0.01, "win_s": 0.03, "n_mels": 64}),
-    "mfcc": (mfcc, {"hop_s": 0.01, "win_s": 0.03, "n_mfcc": 13, "n_mels": 40, "include_deltas": True}),
+    "mfcc": (mfcc, {"hop_s": 0.01, "win_s": 0.03, "n_mfcc": 13, "n_mels": 40, "include_deltas": True}), # the number of output mfcc doesn't correspond to the arg
     "spectral_stats": (spectral_stats, {"hop_s": 0.01, "win_s": 0.03}),
     "vad": (energy_vad, {"hop_s": 0.02, "win_s": 0.03, "threshold": 0.5}),
     "opensmile_egemaps": (egemaps_lld, {"frame_s": 0.01}),
@@ -157,6 +158,8 @@ def extract_audio_files(
     as_dataframe: bool = True,
     collapse: str | list[str] | None = None,
 ) -> AudioBatchResult:
+    
+
     if resolution_s <= 0:
         raise ValueError("resolution_s must be > 0")
     selected_features = selected_features or ["rms", "mfcc", "spectral_stats", "vad"]
@@ -175,6 +178,7 @@ def extract_audio_files(
     for raw in paths:
         p = Path(raw)
         stim = AudioStimulus.from_wav(p)
+
         dm = _extract_selected_features(
             stim,
             selected_features=selected_features,
@@ -183,6 +187,7 @@ def extract_audio_files(
             resample_method=resample_method,
             execution_mode=execution_mode,
         )
+
         names = [str(n) for n in dm.coords.get("feature", [])]
         df = None
         collapsed_vector = None
@@ -193,6 +198,8 @@ def extract_audio_files(
             df.insert(0, "time_s", dm.times_s)
             df.insert(0, "file_id", p.stem)
             long_rows.append(df)
+
+
         if collapse_stats is not None:
             collapsed_vector, collapsed_names = _collapse_matrix(dm.values, names, collapse_stats)
             if pd_collapse is not None:
@@ -210,6 +217,7 @@ def extract_audio_files(
             collapsed_vector=collapsed_vector,
             collapsed_dataframe=collapsed_df,
         )
+
     long_df = None
     if pd is not None:
         long_df = pd.concat(long_rows, ignore_index=True) if long_rows else pd.DataFrame()
@@ -218,6 +226,7 @@ def extract_audio_files(
         collapsed_batch_df = (
             pd_collapse.concat(collapsed_rows, ignore_index=True) if collapsed_rows else pd_collapse.DataFrame()
         )
+
     return AudioBatchResult(
         files=files,
         long_dataframe=long_df,
@@ -239,6 +248,8 @@ def extract_audio_dir(
 ) -> AudioBatchResult:
     d = Path(directory)
     paths = sorted(d.glob(pattern))
+
+
     return extract_audio_files(
         paths=paths,
         resolution_s=resolution_s,
