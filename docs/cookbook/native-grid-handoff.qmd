@@ -93,6 +93,109 @@ slow_scan = bundle.in_clock("slow", "scan:run-01")
 The 100 ms and 500 ms features retain six and four rows. There is no finest-grid
 upsampling step and no silent interpolation.
 
+## Prepare a continuous predictor without choosing the TR
+
+Continuous acoustic predictors make the ordering especially important. For
+example, extract 12 MFCC channels on their acoustic grid first. The following
+synthetic recording keeps the example runnable without an external audio file.
+
+```{python}
+from natural_features.core.stimulus import AudioStimulus
+from natural_features.features.audio.lowlevel import mfcc
+from natural_features.fmri.resample import resample_feature_series
+
+sr_hz = 16_000
+audio_time_s = np.arange(4 * sr_hz, dtype=np.float64) / sr_hz
+samples = (
+    0.15 * np.sin(2 * np.pi * 180 * audio_time_s)
+    + 0.08 * np.sin(2 * np.pi * 620 * audio_time_s)
+) * (0.6 + 0.4 * np.sin(2 * np.pi * 0.7 * audio_time_s))
+audio = AudioStimulus.from_array(samples.astype(np.float32), sr_hz=sr_hz)
+
+mfcc_native = mfcc(
+    audio,
+    hop_s=0.01,
+    win_s=0.025,
+    n_mfcc=12,
+    n_mels=40,
+    include_deltas=False,
+)
+
+{
+    "shape": mfcc_native.shape,
+    "hop_s": mfcc_native.timebase.hop_s,
+    "first_times_s": mfcc_native.times_s[:3].tolist(),
+    "channels": mfcc_native.coords["feature"],
+}
+```
+
+`mfcc_native` has one row every 10 ms. Its timestamps are the centers of the
+25 ms analysis windows, so use `times_s` rather than rebuilding times from row
+numbers. Nothing in this extraction introduces a scan repetition time.
+
+A smaller sub-TR grid can reduce the amount of downstream work while retaining
+the timing of acoustic changes. This step is optional:
+
+```{python}
+mfcc_100ms = resample_feature_series(
+    mfcc_native,
+    tr_s=0.1,
+    method="mean",
+)
+
+{
+    "native_rows": mfcc_native.shape[0],
+    "aggregated_rows": mfcc_100ms.shape[0],
+    "aggregated_spacing_s": float(np.median(np.diff(mfcc_100ms.times_s))),
+}
+```
+
+Despite the compatibility argument name `tr_s`, `0.1` here is an intermediate
+feature resolution, not the scan TR. Omitting this call leaves the 10 ms MFCC
+grid intact.
+
+Choose either `mfcc_native` or `mfcc_100ms`, then standardize each channel on
+the stimulus or run scope required by the analysis:
+
+```{python}
+mfcc_for_model = mfcc_100ms
+mean = mfcc_for_model.values.mean(axis=0, keepdims=True)
+sd = mfcc_for_model.values.std(axis=0, keepdims=True)
+mfcc_z = (mfcc_for_model.values - mean) / np.maximum(sd, 1e-8)
+
+model_input = {
+    "times_s": mfcc_for_model.times_s,
+    "values": mfcc_z,
+    "channels": mfcc_for_model.coords["feature"],
+    "clock": str(mfcc_for_model.clock),
+}
+```
+
+The modeling library can now convolve all 12 continuous channels on this grid
+and evaluate the convolved predictors at the scan acquisition times. Sampling
+at the scan TR therefore happens after convolution, unless the analysis makes
+an explicit choice to do otherwise.
+
+In an amplitude-weighted representation, each standardized MFCC value is the
+amplitude attached to its sample time. For channel $j$, a discrete
+approximation to continuous convolution is
+
+$$
+r_j(t) = \sum_m z_j(t_m) h(t - t_m) \Delta t.
+$$
+
+Some modeling interfaces represent a sampled continuous predictor as weighted
+impulses. For such an interface, pass `mfcc_z * dt`, where `dt` is the sample
+spacing in seconds, so the discrete sum approximates a continuous convolution
+integral. If the modeling library already integrates piecewise-constant samples
+or applies quadrature weights itself, pass `mfcc_z` and do not apply `dt` a
+second time. This scaling convention belongs to the modeling interface, not to
+the stored MFCC feature.
+
+For multiple runs, create one model input per run and preserve its clock map.
+Keeping runs separate prevents a downstream convolution from carrying the
+response tail from the end of one run into the beginning of the next.
+
 ## Hand one native feature downstream
 
 ```{python}
@@ -111,6 +214,11 @@ The payload contains native values or event bounds, its clock, support, schema,
 metadata, and all known clock mappings. A downstream library can then choose a
 TR, interpolation rule, HRF, lags, and design-matrix policy explicitly.
 
+For a continuous `FeatureSeries` such as `mfcc_native`, the same method returns
+`values`, `times_s`, temporal bounds, channel coordinates, and clock mappings.
+Those fields are sufficient for the continuous-predictor workflow above; no
+wide table or common feature grid is required.
+
 ## Refuses to
 
 - Treat feature row number as time.
@@ -118,6 +226,8 @@ TR, interpolation rule, HRF, lags, and design-matrix policy explicitly.
 - Merge different clocks into a wide table without a target clock and join
   policy.
 - Store TR or HRF choices as if they were native feature metadata.
+- Downsample a continuous feature to the scan TR merely because it will later
+  enter an fMRI model.
 
 ## See also
 
