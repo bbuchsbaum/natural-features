@@ -24,6 +24,11 @@ post = res.posteriorgrams  # FeatureSeries(time x phone_like_class)
 art = res.articulatory     # FeatureSeries(time x articulatory_feature)
 ```
 
+CTC inference selects CUDA, then MPS, then CPU (`ctc_device="auto"`) and reuses a
+process-level model cache across calls. Stimuli longer than 30 s are split with
+1 s overlap; interior overlap frames are dropped before the posteriorgram is
+stitched.
+
 Common encodings:
 
 - Probabilities (default): `art.values[t, f]` in `[0, 1]` style occupancy/probability.

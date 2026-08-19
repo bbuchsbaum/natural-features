@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- CTC phone posteriors cache the loaded model across calls, place it on CUDA/MPS/CPU
+  via `device="auto"`, and chunk audio longer than 30 s with 1 s overlap.
 - Cookbook and example for extracting `audio.rms` and sampling it onto a scan
   TR grid, including a 2 s TR with stimulus onset at 0.67 s.
 - Explicit temporal contracts: `ClockRef`, affine `ClockMap`, `SupportSpec`,
