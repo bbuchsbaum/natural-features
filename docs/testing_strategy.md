@@ -55,6 +55,16 @@ For local validation against the SNL sentence dataset:
 - override root with `NF_SNL_DATA_ROOT`
 - enable tests with `NF_ENABLE_EXTERNAL_DATA=1`
 
+A longer local soundtrack (Down the Rabbit Hole) can be dropped at:
+
+- default path: `data/stimuli/DownTheRabbitHoleFinal_mono_exp120_NR16_pad.wav`
+- override path with `NF_RABBIT_HOLE_WAV`
+
+The WAV is gitignored and is not required for CI. When it is present,
+`tests/external/test_rabbit_hole_rms_tr.py` extracts `audio.rms` and samples it
+onto a 2 s TR grid with stimulus onset at 0.67 s. The same workflow is covered
+on synthetic audio by `tests/unit/test_rms_tr_alignment.py`.
+
 Run:
 
 ```bash

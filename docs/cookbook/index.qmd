@@ -12,6 +12,7 @@ Current recipes:
 - [Five feature types, five concepts](five-feature-concepts.qmd)
 - [Inspect and plot feature types](feature-type-gallery.qmd)
 - [Extract audio features from WAV files](audio-batch-from-wav.qmd)
+- [Sample RMS energy onto a TR grid](rms-energy-to-tr-grid.qmd)
 - [Preview a recipe DAG](recipe-dag-preview.qmd)
 - [Export events to a table](event-table-export.qmd)
 - [Merge feature tables](feature-table-merge.qmd)

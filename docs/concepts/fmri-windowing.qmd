@@ -87,4 +87,4 @@ output-time names, and windows whose end does not follow their start.
 
 ## See also
 
-[Query a run-aware fMRI window](../cookbook/fmri-window-query.qmd) · [Native time and clocks](native-time-and-clocks.qmd) · [fMRI querying reference](../reference/query_feature_window_tr.qmd)
+[Query a run-aware fMRI window](../cookbook/fmri-window-query.qmd) · [Sample RMS energy onto a TR grid](../cookbook/rms-energy-to-tr-grid.qmd) · [Native time and clocks](native-time-and-clocks.qmd) · [fMRI querying reference](../reference/query_feature_window_tr.qmd)

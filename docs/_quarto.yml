@@ -101,6 +101,7 @@ website:
         - cookbook/five-feature-concepts.qmd
         - cookbook/feature-type-gallery.qmd
         - cookbook/audio-batch-from-wav.qmd
+        - cookbook/rms-energy-to-tr-grid.qmd
         - cookbook/recipe-dag-preview.qmd
         - cookbook/event-table-export.qmd
         - cookbook/feature-table-merge.qmd
