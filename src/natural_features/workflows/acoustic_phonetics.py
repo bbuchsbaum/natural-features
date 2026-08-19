@@ -10,6 +10,7 @@ from natural_features.core.feature_bundle import inherit_temporal_contract
 from natural_features.core.feature_types import FeatureSeries
 from natural_features.core.stimulus import AudioStimulus
 from natural_features.features.speech.phonology import (
+    CTCModelRuntime,
     acoustic_phone_posteriors,
     articulatory_from_posteriors,
     ctc_phone_posteriors,
@@ -30,6 +31,10 @@ def extract_acoustic_phonetics(
     posterior_backend: str = "ctc",
     ctc_model: str = "bobboyms/wav2vec2-base-en-phoneme-ctc-41h",
     ctc_local_files_only: bool = True,
+    ctc_device: str = "auto",
+    ctc_chunk_window_s: float = 30.0,
+    ctc_chunk_overlap_s: float = 1.0,
+    ctc_runtime: CTCModelRuntime | None = None,
     execution_mode: str | None = None,
     ctc_strict_dependency: bool | None = None,
     resolution_s: float | None = None,
@@ -51,6 +56,15 @@ def extract_acoustic_phonetics(
         Hugging Face CTC model id for posterior extraction.
     ctc_local_files_only:
         If true, only load local model files (no download attempts).
+    ctc_device:
+        ``auto`` selects CUDA, then MPS, then CPU; an explicit device may be set.
+    ctc_chunk_window_s:
+        Maximum stimulus duration for a single CTC forward pass. Longer audio is
+        split with overlap.
+    ctc_chunk_overlap_s:
+        Overlap between adjacent CTC chunks. Interior overlap frames are dropped.
+    ctc_runtime:
+        Optional preloaded CTC runtime. When omitted, a process-level cache is used.
     ctc_strict_dependency:
         If true, fail when transformers/torch/model is unavailable.
     resolution_s:
@@ -76,6 +90,10 @@ def extract_acoustic_phonetics(
             local_files_only=ctc_local_files_only,
             execution_mode=mode,
             strict_dependency=ctc_strict_dependency,
+            runtime=ctc_runtime,
+            device=ctc_device,
+            chunk_window_s=ctc_chunk_window_s,
+            chunk_overlap_s=ctc_chunk_overlap_s,
         )
     elif posterior_backend == "acoustic":
         post = acoustic_phone_posteriors(stim, hop_s=hop_s)

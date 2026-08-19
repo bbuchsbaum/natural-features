@@ -838,6 +838,9 @@ extractors:
       execution_mode: { type: str, default: strict }
       strict_dependency: { type: bool }
       drop_special_tokens: { type: bool, default: true }
+      device: { type: str, default: auto, choices: [auto, cuda, mps, cpu] }
+      chunk_window_s: { type: float, default: 30.0 }
+      chunk_overlap_s: { type: float, default: 1.0 }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
 
@@ -858,6 +861,9 @@ extractors:
       execution_mode: { type: str, default: strict }
       strict_dependency: { type: bool }
       drop_special_tokens: { type: bool, default: true }
+      device: { type: str, default: auto, choices: [auto, cuda, mps, cpu] }
+      chunk_window_s: { type: float, default: 30.0 }
+      chunk_overlap_s: { type: float, default: 1.0 }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
 
