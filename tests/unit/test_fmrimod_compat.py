@@ -47,7 +47,7 @@ def test_event_variable_conversion_and_hrf_mapping() -> None:
 def test_hrf_regressor_spmg1_lags_energy() -> None:
     from natural_features.core.stimulus import AudioStimulus
     from natural_features.core.timebase import ClockMap, TemporalContext
-    from natural_features.core.feature_bundle import temporal_object_in_clock
+    from natural_features.core.feature_bundle import in_clock
     from natural_features.fmri.compat import hrf_regressor
     from natural_features.workflows.extract_features import extract_features
 
@@ -63,7 +63,7 @@ def test_hrf_regressor_spmg1_lags_energy() -> None:
     stim_onset_s = 0.67
     tr_s = 2.0
     n_trs = int(np.ceil((stim_onset_s + duration_s) / tr_s))
-    rms_scan = temporal_object_in_clock(
+    rms_scan = in_clock(
         rms,
         "scan:run-01",
         context=TemporalContext(

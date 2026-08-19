@@ -31,6 +31,8 @@ All notable changes to this project will be documented in this file.
   now preserve explicit clock, support, row bounds, and temporal context.
 - `RunGrid` and fMRI query compatibility helpers use explicit clock mappings
   internally; `feature_t0_s` remains a compatibility shorthand.
+- `in_clock` is the public name for rewriting a feature's times into another
+  clock without resampling. `temporal_object_in_clock` remains as an alias.
 - Multiscale provider fallback now prefers `local_bow` over random local hash fallback.
 - API compatibility contract advanced to version 2: named feature methods and
   stable workflows now fail fast when an optional backend is unavailable.

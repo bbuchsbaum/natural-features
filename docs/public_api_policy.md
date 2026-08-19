@@ -27,6 +27,7 @@ A breaking change to these stable symbols requires incrementing:
 - `TimebaseSpec`
 - `FeatureBundle`
 - `TemporalPayload`
+- `in_clock`
 - `temporal_object_in_clock`
 - `FrameTimeline`
 - `Timeline`

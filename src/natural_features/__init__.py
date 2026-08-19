@@ -38,6 +38,7 @@ from .public_api import (  # noqa: F401
     query_feature_window,
     query_feature_window_tr,
     query_feature_zoo_window_tr,
+    in_clock,
     temporal_object_in_clock,
 )
 
@@ -55,6 +56,7 @@ __all__ = [
     "TimebaseSpec",
     "FeatureBundle",
     "TemporalPayload",
+    "in_clock",
     "temporal_object_in_clock",
     "FrameTimeline",
     "Timeline",

@@ -5,7 +5,7 @@ import inspect
 import numpy as np
 import pytest
 
-from natural_features.core.feature_bundle import FeatureBundle, temporal_object_in_clock
+from natural_features.core.feature_bundle import FeatureBundle, in_clock
 from natural_features.core.feature_types import EventSeries, FeatureSeries
 from natural_features.core.frame_timeline import FrameTimeline
 from natural_features.core.timebase import (
@@ -144,7 +144,9 @@ def test_feature_bundle_converts_clocks_without_resampling_or_copying_values() -
     assert slow_scan.values is slow.values
     np.testing.assert_allclose(fast_scan.times_s, fast_times - 23.0)
     np.testing.assert_allclose(events_scan.onset_s, events.onset_s - 23.0)
-    assert np.isclose(context.convert(30.0, source="stimulus", target="scan:run-01"), 7.0)
+    assert np.isclose(
+        context.convert(30.0, source="stimulus", target="scan:run-01"), 7.0
+    )
 
     payload = bundle.temporal_payload("fast", target_clock="scan:run-01")
     assert payload.clock == "scan:run-01"
@@ -170,16 +172,14 @@ def test_per_row_bounds_transform_with_clock_scale() -> None:
         ),
     )
     context = TemporalContext((ClockMap("media", "scanner", scale=2.0, offset_s=5.0),))
-    observed = temporal_object_in_clock(feature, "scanner", context=context)
+    observed = in_clock(feature, "scanner", context=context)
     np.testing.assert_allclose(observed.times_s, [7.0, 11.0])
     np.testing.assert_allclose(observed.time_bounds_s, [[6.0, 8.0], [9.0, 13.0]])
     np.testing.assert_array_equal(observed.values, feature.values)
 
 
 def test_frame_timeline_maps_events_across_explicit_clocks() -> None:
-    context = TemporalContext(
-        (ClockMap("stimulus", "scan:run-01", offset_s=-23.0),)
-    )
+    context = TemporalContext((ClockMap("stimulus", "scan:run-01", offset_s=-23.0),))
     events = EventSeries(
         onset_s=np.array([30.0]),
         offset_s=np.array([30.4]),

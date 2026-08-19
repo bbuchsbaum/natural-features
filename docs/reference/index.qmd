@@ -16,7 +16,8 @@ Typed time-aligned containers. Concept: [Feature objects](../concepts/feature-ob
 | [TimebaseSpec](TimebaseSpec.qmd#natural_features.TimebaseSpec) |  |
 | [FeatureBundle](FeatureBundle.qmd#natural_features.FeatureBundle) | A collection of native-grid features sharing temporal mappings. |
 | [TemporalPayload](TemporalPayload.qmd#natural_features.TemporalPayload) | Dependency-free native temporal payload for a modeling consumer. |
-| [temporal_object_in_clock](temporal_object_in_clock.qmd#natural_features.temporal_object_in_clock) | Return a coordinate-transformed copy without resampling its values. |
+| [in_clock](in_clock.qmd#natural_features.in_clock) | Rewrite feature times into another clock without resampling values. |
+| [temporal_object_in_clock](temporal_object_in_clock.qmd#natural_features.temporal_object_in_clock) | Alias of `in_clock`. |
 | [Timeline](Timeline.qmd#natural_features.Timeline) | A named interval timeline used as an alignment target. |
 | [FeatureAlignment](FeatureAlignment.qmd#natural_features.FeatureAlignment) | Alignment of one temporal feature output to a target timeline. |
 

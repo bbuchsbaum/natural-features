@@ -13,6 +13,7 @@ website:
       - reference/TimebaseSpec.qmd
       - reference/FeatureBundle.qmd
       - reference/TemporalPayload.qmd
+      - reference/in_clock.qmd
       - reference/temporal_object_in_clock.qmd
       - reference/Timeline.qmd
       - reference/FeatureAlignment.qmd

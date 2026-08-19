@@ -7,7 +7,7 @@ from typing import Iterable
 
 import numpy as np
 
-from natural_features.core.feature_bundle import temporal_object_in_clock
+from natural_features.core.feature_bundle import in_clock
 from natural_features.core.feature_types import FeatureSeries
 from natural_features.core.timebase import (
     ClockMap,
@@ -257,7 +257,7 @@ def query_feature_window(
         time_bounds_s=native_bounds,
         temporal_context=context,
     )
-    transformed = temporal_object_in_clock(
+    transformed = in_clock(
         native,
         output_reference,
         context=context,

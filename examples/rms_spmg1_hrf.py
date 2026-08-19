@@ -19,7 +19,7 @@ from natural_features import (
     ClockMap,
     TemporalContext,
     extract_features,
-    temporal_object_in_clock,
+    in_clock,
 )
 from natural_features.fmri.compat import has_fmrimod, hrf_regressor
 from natural_features.util.io import atomic_numpy_savez, atomic_write_json
@@ -67,7 +67,7 @@ def main() -> int:
     audio = result.inputs["audio"]
     duration_s = float(audio.samples.shape[0] / audio.sr_hz)
     n_trs = int(np.ceil((float(args.stim_onset_s) + duration_s) / float(args.tr_s)))
-    rms_scan = temporal_object_in_clock(
+    rms_scan = in_clock(
         rms,
         "scan:run-01",
         context=TemporalContext(

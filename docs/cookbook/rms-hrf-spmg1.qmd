@@ -47,7 +47,7 @@ from natural_features import (
     ClockMap,
     TemporalContext,
     extract_features,
-    temporal_object_in_clock,
+    in_clock,
 )
 from natural_features.fmri.compat import has_fmrimod, hrf_regressor
 
@@ -73,7 +73,7 @@ with tempfile.TemporaryDirectory() as tmp:
 
 rms = result.features["audio.rms"]
 n_trs = int(np.ceil((stim_onset_s + duration_s) / tr_s))
-rms_scan = temporal_object_in_clock(
+rms_scan = in_clock(
     rms,
     "scan:run-01",
     context=TemporalContext(

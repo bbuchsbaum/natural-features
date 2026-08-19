@@ -14,6 +14,7 @@ EXPECTED_STABLE_EXPORTS = [
     "TimebaseSpec",
     "FeatureBundle",
     "TemporalPayload",
+    "in_clock",
     "temporal_object_in_clock",
     "FrameTimeline",
     "Timeline",
@@ -50,6 +51,7 @@ def test_stable_exports_are_exact_and_available() -> None:
     assert nf.STABLE_EXPORTS == EXPECTED_STABLE_EXPORTS
     for symbol in EXPECTED_STABLE_EXPORTS:
         assert hasattr(nf, symbol)
+    assert nf.in_clock is nf.temporal_object_in_clock
 
 
 def test_experimental_namespaces_are_declared() -> None:

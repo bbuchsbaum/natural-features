@@ -68,13 +68,17 @@ def inherit_temporal_contract(value: Any, sources: Iterable[Any]) -> Any:
     return replace(value, timebase=timebase, temporal_context=combined)
 
 
-def _combined_context(obj: TemporalFeature, context: TemporalContext | None) -> TemporalContext:
+def _combined_context(
+    obj: TemporalFeature, context: TemporalContext | None
+) -> TemporalContext:
     if context is None:
         return obj.temporal_context
     return obj.temporal_context.merged(context)
 
 
-def _transformed_timebase(timebase: TimebaseSpec, target: ClockRef, scale: float) -> TimebaseSpec:
+def _transformed_timebase(
+    timebase: TimebaseSpec, target: ClockRef, scale: float
+) -> TimebaseSpec:
     return TimebaseSpec(
         kind=timebase.kind,
         reference=target,
@@ -91,13 +95,16 @@ def _transformed_timebase(timebase: TimebaseSpec, target: ClockRef, scale: float
     )
 
 
-def temporal_object_in_clock(
+def in_clock(
     obj: TemporalFeature,
     target: ClockRef | str,
     *,
     context: TemporalContext | None = None,
 ) -> TemporalFeature:
-    """Return a coordinate-transformed copy without resampling its values."""
+    """Rewrite ``obj`` times into ``target`` without resampling values.
+
+    This is the free-function form of :meth:`FeatureBundle.in_clock`.
+    """
 
     target_ref = ClockRef(target)
     combined = _combined_context(obj, context)
@@ -107,7 +114,10 @@ def temporal_object_in_clock(
         bounds = None
         if obj.time_bounds_s is not None:
             bounds = np.column_stack(
-                [mapping.apply(obj.time_bounds_s[:, 0]), mapping.apply(obj.time_bounds_s[:, 1])]
+                [
+                    mapping.apply(obj.time_bounds_s[:, 0]),
+                    mapping.apply(obj.time_bounds_s[:, 1]),
+                ]
             )
         return FeatureSeries(
             values=obj.values,
@@ -135,7 +145,10 @@ def temporal_object_in_clock(
     bounds = None
     if obj.time_bounds_s is not None:
         bounds = np.column_stack(
-            [mapping.apply(obj.time_bounds_s[:, 0]), mapping.apply(obj.time_bounds_s[:, 1])]
+            [
+                mapping.apply(obj.time_bounds_s[:, 0]),
+                mapping.apply(obj.time_bounds_s[:, 1]),
+            ]
         )
     return TrackSeries(
         times_s=mapping.apply(obj.times_s),
@@ -221,9 +234,10 @@ class FeatureBundle:
         object.__setattr__(self, "metadata", dict(self.metadata))
 
     def in_clock(self, name: str, target: ClockRef | str) -> TemporalFeature:
+        """Return feature ``name`` with times rewritten into ``target``."""
         if name not in self.features:
             raise KeyError(f"unknown feature {name!r}")
-        return temporal_object_in_clock(
+        return in_clock(
             self.features[name],
             target,
             context=self.temporal_context,
@@ -282,10 +296,14 @@ class FeatureBundle:
         )
 
 
+temporal_object_in_clock = in_clock
+
+
 __all__ = [
     "FeatureBundle",
     "TemporalFeature",
     "TemporalPayload",
+    "in_clock",
     "inherit_temporal_contract",
     "temporal_object_in_clock",
 ]
