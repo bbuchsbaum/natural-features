@@ -1,6 +1,7 @@
 """fMRI-oriented transforms for feature spaces."""
 
 from .compat import (
+    hrf_regressor,
     event_series_to_fmrimod_event_variable,
     has_fmrimod,
     map_hrf_name,
@@ -29,6 +30,7 @@ __all__ = [
     "has_fmrimod",
     "hrf_convolve",
     "hrf_kernel",
+    "hrf_regressor",
     "map_hrf_name",
     "query_feature_window",
     "query_feature_window_tr",

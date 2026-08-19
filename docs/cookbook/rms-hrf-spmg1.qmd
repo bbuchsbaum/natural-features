@@ -1,0 +1,173 @@
+---
+title: "Convolve RMS energy with an SPMG1 HRF"
+subtitle: "Keep native `audio.rms` timing, then let `fmrimod` build the predicted BOLD regressor."
+sidebar: cookbook
+---
+
+## Use when
+
+You have a continuous acoustic feature such as RMS energy and want a
+hemodynamic regressor on the scan TR grid. Extraction stays in
+`natural_features`. Convolution belongs in [fmrimod](https://github.com/bbuchsbaum/fmrimod).
+
+This page uses TR = 2 s, stimulus onset at scan t = 0.67 s, and fmrimod's
+`spmg1` canonical HRF. The executed cells use a short synthetic WAV so the
+docs site can render without a large local recording.
+
+```{python}
+#| echo: false
+import matplotlib.pyplot as plt
+import numpy as np
+
+plt.rcParams.update(
+    {
+        "figure.facecolor": "#111827",
+        "axes.facecolor": "#111827",
+        "axes.edgecolor": "#9ca3af",
+        "axes.labelcolor": "#e5e7eb",
+        "axes.titlecolor": "#f9fafb",
+        "xtick.color": "#d1d5db",
+        "ytick.color": "#d1d5db",
+        "grid.color": "#374151",
+        "text.color": "#f9fafb",
+        "legend.facecolor": "#111827",
+        "legend.edgecolor": "#4b5563",
+    }
+)
+```
+
+```{python}
+import tempfile
+import wave
+from pathlib import Path
+
+import numpy as np
+
+from natural_features import (
+    ClockMap,
+    TemporalContext,
+    extract_features,
+    temporal_object_in_clock,
+)
+from natural_features.fmri.compat import has_fmrimod, hrf_regressor
+
+tr_s = 2.0
+stim_onset_s = 0.67
+sr_hz = 8000
+duration_s = 16.0
+
+t = np.arange(int(duration_s * sr_hz), dtype=np.float32) / sr_hz
+envelope = np.full(t.shape, 0.03, dtype=np.float32)
+envelope[(t >= 4.0) & (t < 10.0)] = 0.35
+samples = envelope * np.sin(2.0 * np.pi * 220.0 * t)
+
+with tempfile.TemporaryDirectory() as tmp:
+    wav_path = Path(tmp) / "soundtrack.wav"
+    pcm = np.asarray(np.clip(samples, -1.0, 1.0) * 32767.0, dtype="<i2")
+    with wave.open(str(wav_path), "wb") as wav:
+        wav.setnchannels(1)
+        wav.setsampwidth(2)
+        wav.setframerate(sr_hz)
+        wav.writeframes(pcm.tobytes())
+    result = extract_features(wav_path, features=["audio.rms"])
+
+rms = result.features["audio.rms"]
+n_trs = int(np.ceil((stim_onset_s + duration_s) / tr_s))
+rms_scan = temporal_object_in_clock(
+    rms,
+    "scan:run-01",
+    context=TemporalContext(
+        (ClockMap("stimulus", "scan:run-01", offset_s=stim_onset_s),)
+    ),
+)
+```
+
+## Original feature, then SPMG1
+
+Native RMS remains one row every 10 ms. `hrf_regressor()`
+passes those samples to `fmrimod.regressor(..., hrf="spmg1")` as weighted
+impulses of mass `rms * hop_s`, then evaluates the convolution on the scan
+grid.
+
+```{python}
+if has_fmrimod():
+    bold = hrf_regressor(
+        rms_scan,
+        tr_s=tr_s,
+        n_scans=n_trs,
+        hrf="spmg1",
+        start_time=0.0,
+    )
+    summary = {
+        "native_rows": int(rms.values.shape[0]),
+        "native_hop_s": rms.timebase.hop_s,
+        "n_trs": int(bold.values.shape[0]),
+        "tr_times_s": bold.times_s.tolist(),
+        "spmg1_peak_s": float(bold.times_s[int(np.argmax(bold.values[:, 0]))]),
+    }
+else:
+    bold = None
+    summary = {
+        "native_rows": int(rms.values.shape[0]),
+        "native_hop_s": rms.timebase.hop_s,
+        "fmrimod": "not installed; convolution skipped",
+    }
+summary
+```
+
+```{python}
+fig, axes = plt.subplots(2, 1, figsize=(8.2, 5.2), sharex=True)
+axes[0].plot(rms_scan.times_s, rms.values[:, 0], color="#93c5fd", lw=1.0, label="native RMS")
+axes[0].axvline(stim_onset_s, color="#f9a8d4", ls="--", lw=1.0, label="audio t=0")
+axes[0].set_ylabel("RMS")
+axes[0].set_title("Original feature time series")
+axes[0].grid(True, alpha=0.35)
+axes[0].legend(loc="upper right", fontsize=8)
+
+if bold is not None:
+    axes[1].plot(
+        bold.times_s,
+        bold.values[:, 0],
+        color="#34d399",
+        marker="o",
+        lw=1.6,
+        label="SPMG1 regressor",
+    )
+    axes[1].set_title("fmrimod SPMG1-convolved regressor")
+else:
+    axes[1].text(
+        0.5,
+        0.5,
+        "Install fmrimod to compute the SPMG1 regressor",
+        ha="center",
+        va="center",
+        transform=axes[1].transAxes,
+    )
+    axes[1].set_title("SPMG1-convolved regressor")
+axes[1].axvline(stim_onset_s, color="#f9a8d4", ls="--", lw=1.0)
+axes[1].set_xlabel("scan time (s)")
+axes[1].set_ylabel("predicted BOLD")
+axes[1].grid(True, alpha=0.35)
+if bold is not None:
+    axes[1].legend(loc="upper right", fontsize=8)
+fig.tight_layout()
+fig
+```
+
+The lower trace is delayed and smoothed relative to RMS. That lag is the
+canonical SPM hemodynamic response, not a shift applied to the feature
+times. Loud RMS occupies audio 4–10 s (scan 4.67–10.67 s); the SPMG1 peak
+falls several seconds later.
+
+Install fmrimod from source when it is not already on `PYTHONPATH`:
+
+```bash
+python -m pip install "fmrimod @ git+https://github.com/bbuchsbaum/fmrimod.git"
+```
+
+A command-line wrapper for a local soundtrack is
+`examples/rms_spmg1_hrf.py`.
+
+## See also
+
+[Sample RMS energy onto a TR grid](rms-energy-to-tr-grid.qmd) · [Keep heterogeneous features on native grids](native-grid-handoff.qmd) · [fMRI windowing](../concepts/fmri-windowing.qmd)

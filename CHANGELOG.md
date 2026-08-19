@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Cookbook and example for extracting `audio.rms` and sampling it onto a scan
   TR grid, including a 2 s TR with stimulus onset at 0.67 s.
+- Cookbook and example for convolving native `audio.rms` with fmrimod's SPMG1
+  HRF to produce a scan-grid BOLD regressor.
 - Explicit temporal contracts: `ClockRef`, affine `ClockMap`, `SupportSpec`,
   `TemporalContext`, and `TimebaseSpec` serialization.
 - `FeatureBundle` and dependency-light `TemporalPayload` handoff objects that
