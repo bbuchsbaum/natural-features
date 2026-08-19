@@ -4,12 +4,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable
 
 from natural_features.core.execution import resolve_execution_mode
 from natural_features.core.feature_bundle import inherit_temporal_contract
 from natural_features.core.feature_types import FeatureSeries
 from natural_features.core.stimulus import AudioStimulus
 from natural_features.features.speech.phonology import (
+    CTCModelRuntime,
     acoustic_phone_posteriors,
     articulatory_from_posteriors,
     ctc_phone_posteriors,
@@ -30,6 +32,11 @@ def extract_acoustic_phonetics(
     posterior_backend: str = "ctc",
     ctc_model: str = "bobboyms/wav2vec2-base-en-phoneme-ctc-41h",
     ctc_local_files_only: bool = True,
+    ctc_device: str = "auto",
+    ctc_chunk_seconds: float = 30.0,
+    ctc_batch_size: int | None = None,
+    ctc_runtime: CTCModelRuntime | None = None,
+    ctc_progress_callback: Callable[[int, int], None] | None = None,
     execution_mode: str | None = None,
     ctc_strict_dependency: bool | None = None,
     resolution_s: float | None = None,
@@ -51,6 +58,17 @@ def extract_acoustic_phonetics(
         Hugging Face CTC model id for posterior extraction.
     ctc_local_files_only:
         If true, only load local model files (no download attempts).
+    ctc_device:
+        ``auto`` selects CUDA, then MPS, then CPU; an explicit device may be set.
+    ctc_chunk_seconds:
+        Maximum stimulus duration per CTC inference chunk.
+    ctc_batch_size:
+        Chunks per forward pass; defaults to four on CUDA, two on MPS, and one
+        on CPU.
+    ctc_runtime:
+        Optional preloaded model runtime shared by all stimuli in a pipeline run.
+    ctc_progress_callback:
+        Optional callback accepting completed and total chunk counts.
     ctc_strict_dependency:
         If true, fail when transformers/torch/model is unavailable.
     resolution_s:
@@ -76,6 +94,11 @@ def extract_acoustic_phonetics(
             local_files_only=ctc_local_files_only,
             execution_mode=mode,
             strict_dependency=ctc_strict_dependency,
+            runtime=ctc_runtime,
+            device=ctc_device,
+            chunk_seconds=ctc_chunk_seconds,
+            batch_size=ctc_batch_size,
+            progress_callback=ctc_progress_callback,
         )
     elif posterior_backend == "acoustic":
         post = acoustic_phone_posteriors(stim, hop_s=hop_s)

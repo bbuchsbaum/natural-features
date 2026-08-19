@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+from typing import Any, Callable
+
 import numpy as np
 
 from natural_features.core.execution import add_execution_provenance, resolve_execution_mode
@@ -61,6 +64,100 @@ DEFAULT_ACOUSTIC_PHONE_CLASSES: list[str] = [
     "central_vowel",
     "back_vowel",
 ]
+
+
+@dataclass
+class CTCModelRuntime:
+    """A loaded CTC processor/model pair reusable across many stimuli."""
+
+    processor: Any
+    model: Any
+    torch: Any
+    device: str
+    model_id: str
+    sample_rate_hz: int
+
+    def close(self) -> None:
+        """Release accelerator memory held by the runtime."""
+        self.model.to("cpu")
+        if self.device == "cuda":
+            self.torch.cuda.empty_cache()
+        elif self.device == "mps":
+            empty_cache = getattr(self.torch.mps, "empty_cache", None)
+            if empty_cache is not None:
+                empty_cache()
+
+
+def _resolve_torch_device(torch: Any, requested: str) -> str:
+    """Resolve ``auto`` to CUDA, MPS, or CPU and validate explicit devices."""
+    device = str(requested).strip().lower()
+    if device not in {"auto", "cuda", "mps", "cpu"}:
+        raise ValueError("ctc_device must be one of {'auto', 'cuda', 'mps', 'cpu'}")
+    if device == "auto":
+        if torch.cuda.is_available():
+            return "cuda"
+        mps = getattr(torch.backends, "mps", None)
+        return "mps" if mps is not None and mps.is_available() else "cpu"
+    if device == "cuda" and not torch.cuda.is_available():
+        raise RuntimeError("CUDA was requested for CTC extraction but is unavailable.")
+    if device == "mps":
+        mps = getattr(torch.backends, "mps", None)
+        if mps is None or not mps.is_available():
+            raise RuntimeError("MPS was requested for CTC extraction but is unavailable.")
+    return device
+
+
+def load_ctc_runtime(
+    *,
+    model: str = "bobboyms/wav2vec2-base-en-phoneme-ctc-41h",
+    local_files_only: bool = True,
+    device: str = "auto",
+) -> CTCModelRuntime:
+    """Load one reusable CTC runtime.
+
+    Args:
+        model: Hugging Face CTC model identifier or local model directory.
+        local_files_only: Refuse network downloads when true.
+        device: ``auto`` (CUDA, then MPS, then CPU), or an explicit device.
+    """
+    try:
+        import torch
+        from transformers import AutoModelForCTC, AutoProcessor  # type: ignore
+    except Exception as error:
+        raise RuntimeError(
+            "transformers+torch are required for CTC phoneme posterior extraction."
+        ) from error
+
+    selected_device = _resolve_torch_device(torch, device)
+    try:
+        processor = AutoProcessor.from_pretrained(
+            model, local_files_only=local_files_only
+        )
+        net = AutoModelForCTC.from_pretrained(
+            model, local_files_only=local_files_only
+        )
+    except Exception as error:
+        raise RuntimeError(
+            f"CTC model '{model}' unavailable. Install/download model and retry."
+        ) from error
+    try:
+        net = net.to(selected_device)
+        net.eval()
+    except Exception as error:
+        raise RuntimeError(
+            f"Unable to initialize CTC model '{model}' on {selected_device}: {error}"
+        ) from error
+    model_sr = int(
+        getattr(getattr(processor, "feature_extractor", None), "sampling_rate", 16000)
+    )
+    return CTCModelRuntime(
+        processor=processor,
+        model=net,
+        torch=torch,
+        device=selected_device,
+        model_id=model,
+        sample_rate_hz=model_sr,
+    )
 
 _CLASS_TO_FEATURES: dict[str, set[str]] = {
     "silence": {"silence"},
@@ -547,33 +644,72 @@ def ctc_phone_posteriors(
     execution_mode: str | None = None,
     strict_dependency: bool | None = None,
     drop_special_tokens: bool = True,
+    runtime: CTCModelRuntime | None = None,
+    device: str = "auto",
+    chunk_seconds: float = 30.0,
+    batch_size: int | None = None,
+    progress_callback: Callable[[int, int], None] | None = None,
 ) -> FeatureSeries:
+    """Extract CTC phone posteriors using chunked, optionally batched inference.
+
+    Args:
+        stimulus: Audio samples and their source timebase.
+        model: Hugging Face model identifier used when loading a runtime.
+        stride_s: Fallback acoustic-posterior hop size.
+        local_files_only: Refuse model downloads when true.
+        execution_mode: ``strict`` or explicit acoustic ``fallback`` behavior.
+        strict_dependency: Backwards-compatible alias for execution mode.
+        drop_special_tokens: Exclude tokenizer control symbols from output.
+        runtime: Preloaded runtime to reuse across multiple stimuli.
+        device: ``auto``, ``cuda``, ``mps``, or ``cpu`` when loading a runtime.
+        chunk_seconds: Maximum audio duration passed to the model at once.
+        batch_size: Chunks per forward pass. Defaults to 4 on CUDA, 2 on MPS,
+            and 1 on CPU, where model execution remains sequential.
+        progress_callback: Called with completed and total chunk counts.
+    """
     mode, strict_dependency = resolve_execution_mode(
         execution_mode=execution_mode,
         strict_dependency=strict_dependency,
     )
+    if chunk_seconds <= 0:
+        raise ValueError("chunk_seconds must be greater than zero")
+    if batch_size is not None and int(batch_size) <= 0:
+        raise ValueError("batch_size must be greater than zero when provided")
     params = {
         "model": model,
         "stride_s": stride_s,
         "local_files_only": local_files_only,
         "drop_special_tokens": drop_special_tokens,
+        "device": device,
+        "chunk_seconds": float(chunk_seconds),
+        "batch_size": batch_size,
     }
+    active_runtime = runtime
+    owns_runtime = runtime is None
     try:
-        import torch
-        from transformers import AutoModelForCTC, AutoProcessor  # type: ignore
-    except Exception:
+        if active_runtime is None:
+            active_runtime = load_ctc_runtime(
+                model=model,
+                local_files_only=local_files_only,
+                device=device,
+            )
+        elif active_runtime.model_id != model:
+            raise ValueError(
+                f"Preloaded CTC runtime uses '{active_runtime.model_id}', not '{model}'."
+            )
+    except Exception as error:
         if strict_dependency:
-            raise RuntimeError("transformers+torch are required for CTC phoneme posterior extraction.")
+            raise
         fallback = acoustic_phone_posteriors(stimulus, hop_s=stride_s)
         md = add_execution_provenance(
             extractor_metadata(
                 "speech.phonology.ctc_posteriors",
                 params=params,
-                extra={"backend": "fallback_acoustic_posteriors", "reason": "transformers/torch unavailable"},
+                extra={"backend": "fallback_acoustic_posteriors", "reason": str(error)},
             ),
             execution_mode=mode,
             fallback_used=True,
-            fallback_reason="transformers/torch unavailable",
+            fallback_reason=str(error),
         )
         return FeatureSeries(
             values=fallback.values,
@@ -585,41 +721,91 @@ def ctc_phone_posteriors(
         )
 
     try:
-        processor = AutoProcessor.from_pretrained(model, local_files_only=local_files_only)
-        net = AutoModelForCTC.from_pretrained(model, local_files_only=local_files_only)
-    except Exception:
-        if strict_dependency:
-            raise RuntimeError(f"CTC model '{model}' unavailable. Install/download model and retry.")
-        fallback = acoustic_phone_posteriors(stimulus, hop_s=stride_s)
-        md = add_execution_provenance(
-            extractor_metadata(
-                "speech.phonology.ctc_posteriors",
-                params=params,
-                extra={"backend": "fallback_acoustic_posteriors", "reason": "ctc model unavailable"},
-            ),
-            execution_mode=mode,
-            fallback_used=True,
-            fallback_reason="ctc model unavailable",
-        )
-        return FeatureSeries(
-            values=fallback.values,
-            times_s=fallback.times_s,
-            dims=fallback.dims,
-            coords=fallback.coords,
-            metadata=md,
-            timebase=fallback.timebase,
-        )
-
-    try:
+        assert active_runtime is not None
+        torch = active_runtime.torch
+        processor = active_runtime.processor
+        net = active_runtime.model
         wav = stimulus.samples.astype(np.float32)
         if wav.ndim == 2:
             wav = wav.mean(axis=1)
-        model_sr = int(getattr(getattr(processor, "feature_extractor", None), "sampling_rate", stimulus.sr_hz))
+        model_sr = active_runtime.sample_rate_hz
         wav_model = _resample_audio_linear(wav, from_sr=stimulus.sr_hz, to_sr=model_sr)
-        inputs = processor(wav_model, sampling_rate=model_sr, return_tensors="pt")
-        with torch.no_grad():
-            logits = net(**inputs).logits[0]  # T x V
-        probs = torch.softmax(logits, dim=-1).detach().cpu().numpy().astype(np.float32)
+        chunk_samples = max(1, int(round(float(chunk_seconds) * model_sr)))
+        chunks = [
+            wav_model[start : start + chunk_samples]
+            for start in range(0, len(wav_model), chunk_samples)
+        ]
+        resolved_batch_size = int(
+            batch_size
+            if batch_size is not None
+            else {"cuda": 4, "mps": 2}.get(active_runtime.device, 1)
+        )
+        probability_parts: list[np.ndarray] = []
+        time_parts: list[np.ndarray] = []
+        completed = 0
+        if progress_callback is not None:
+            progress_callback(0, len(chunks))
+        for batch_start in range(0, len(chunks), resolved_batch_size):
+            batch = chunks[batch_start : batch_start + resolved_batch_size]
+            inputs = processor(
+                batch,
+                sampling_rate=model_sr,
+                return_tensors="pt",
+                padding=True,
+                return_attention_mask=True,
+            )
+            model_inputs = {
+                key: value.to(active_runtime.device)
+                for key, value in inputs.items()
+            }
+            inference_context = getattr(torch, "inference_mode", torch.no_grad)
+            with inference_context():
+                batch_logits = net(**model_inputs).logits
+
+            input_lengths = [len(chunk) for chunk in batch]
+            if hasattr(net, "_get_feat_extract_output_lengths"):
+                output_lengths = (
+                    net._get_feat_extract_output_lengths(torch.tensor(input_lengths))
+                    .detach()
+                    .cpu()
+                    .tolist()
+                )
+            else:
+                padded_length = max(input_lengths)
+                output_lengths = [
+                    max(1, round(batch_logits.shape[1] * length / padded_length))
+                    for length in input_lengths
+                ]
+
+            for local_index, (chunk, output_length) in enumerate(
+                zip(batch, output_lengths)
+            ):
+                n_output = min(int(output_length), int(batch_logits.shape[1]))
+                logits = batch_logits[local_index, :n_output]
+                chunk_probs = (
+                    torch.softmax(logits, dim=-1)
+                    .detach()
+                    .cpu()
+                    .numpy()
+                    .astype(np.float32)
+                )
+                absolute_chunk = batch_start + local_index
+                chunk_start_s = absolute_chunk * chunk_samples / model_sr
+                chunk_duration_s = len(chunk) / model_sr
+                chunk_times = (
+                    stimulus.start_offset_s
+                    + chunk_start_s
+                    + np.arange(n_output, dtype=np.float64)
+                    * (chunk_duration_s / max(1, n_output))
+                )
+                probability_parts.append(chunk_probs)
+                time_parts.append(chunk_times)
+            completed += len(batch)
+            if progress_callback is not None:
+                progress_callback(completed, len(chunks))
+
+        probs = np.concatenate(probability_parts, axis=0)
+        times = np.concatenate(time_parts)
         vocab_size = int(probs.shape[1])
 
         tokenizer = getattr(processor, "tokenizer", None)
@@ -639,19 +825,25 @@ def ctc_phone_posteriors(
         else:
             labels = [norm if norm else str(raw) for norm, raw in zip(normalized_labels, labels)]
         probs = probs / np.maximum(probs.sum(axis=1, keepdims=True), 1e-8)
-    except Exception:
+    except Exception as error:
+        if owns_runtime and active_runtime is not None:
+            active_runtime.close()
         if strict_dependency:
-            raise
+            raise RuntimeError(
+                f"CTC inference failed on {active_runtime.device}: {error}. "
+                "Reduce ctc_batch_size or ctc_chunk_seconds if this was an "
+                "accelerator memory failure."
+            ) from error
         fallback = acoustic_phone_posteriors(stimulus, hop_s=stride_s)
         md = add_execution_provenance(
             extractor_metadata(
                 "speech.phonology.ctc_posteriors",
                 params=params,
-                extra={"backend": "fallback_acoustic_posteriors", "reason": "ctc inference failed"},
+                extra={"backend": "fallback_acoustic_posteriors", "reason": str(error)},
             ),
             execution_mode=mode,
             fallback_used=True,
-            fallback_reason="ctc inference failed",
+            fallback_reason=str(error),
         )
         return FeatureSeries(
             values=fallback.values,
@@ -665,16 +857,22 @@ def ctc_phone_posteriors(
     n_t = probs.shape[0]
     duration_s = float(stimulus.samples.shape[0] / stimulus.sr_hz)
     hop_s = max(duration_s / max(1, n_t), 1e-6)
-    times = times_from_hop(n_t, hop_s, start_offset_s=stimulus.start_offset_s)
     md = add_execution_provenance(
         extractor_metadata(
             "speech.phonology.ctc_posteriors",
             params=params,
-            extra={"backend": "transformers_ctc"},
+            extra={
+                "backend": "transformers_ctc",
+                "device": active_runtime.device,
+                "chunk_count": len(chunks),
+                "batch_size": resolved_batch_size,
+            },
         ),
         execution_mode=mode,
         fallback_used=False,
     )
+    if owns_runtime:
+        active_runtime.close()
     return FeatureSeries(
         values=probs.astype(np.float32),
         times_s=times,
