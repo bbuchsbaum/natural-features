@@ -1,0 +1,184 @@
+---
+title: "Sample RMS energy onto a TR grid"
+subtitle: "Extract `audio.rms`, then resample it to a 2 s scan grid whose first volume is 0.67 s before the soundtrack starts."
+sidebar: cookbook
+---
+
+## Use when
+
+You have a soundtrack and want one RMS energy value per fMRI volume. The scan
+starts first; the audio begins a fraction of a second later. This page uses
+TR = 2 s and a stimulus onset of 0.67 s on the scan clock.
+
+`extract_features()` keeps RMS on its native hop grid. Sampling onto TRs is a
+second, explicit step: `build_experiment_grid()` plus
+`query_feature_window_tr()`.
+
+The executed cells below use a short synthetic WAV so the docs site can render
+without a large local recording. The same calls apply to a file such as
+`data/stimuli/DownTheRabbitHoleFinal_mono_exp120_NR16_pad.wav`.
+
+```{python}
+#| echo: false
+import matplotlib.pyplot as plt
+import numpy as np
+
+plt.rcParams.update(
+    {
+        "figure.facecolor": "#111827",
+        "axes.facecolor": "#111827",
+        "axes.edgecolor": "#9ca3af",
+        "axes.labelcolor": "#e5e7eb",
+        "axes.titlecolor": "#f9fafb",
+        "xtick.color": "#d1d5db",
+        "ytick.color": "#d1d5db",
+        "grid.color": "#374151",
+        "text.color": "#f9fafb",
+        "legend.facecolor": "#111827",
+        "legend.edgecolor": "#4b5563",
+    }
+)
+```
+
+```{python}
+import tempfile
+import wave
+from pathlib import Path
+
+import numpy as np
+
+from natural_features import build_experiment_grid, extract_features, query_feature_window_tr
+
+tr_s = 2.0
+stim_onset_s = 0.67
+sr_hz = 8000
+duration_s = 16.0
+
+t = np.arange(int(duration_s * sr_hz), dtype=np.float32) / sr_hz
+envelope = np.full(t.shape, 0.03, dtype=np.float32)
+envelope[(t >= 4.0) & (t < 10.0)] = 0.35
+samples = envelope * np.sin(2.0 * np.pi * 220.0 * t)
+
+with tempfile.TemporaryDirectory() as tmp:
+    wav_path = Path(tmp) / "soundtrack.wav"
+    pcm = np.asarray(np.clip(samples, -1.0, 1.0) * 32767.0, dtype="<i2")
+    with wave.open(str(wav_path), "wb") as wav:
+        wav.setnchannels(1)
+        wav.setsampwidth(2)
+        wav.setframerate(sr_hz)
+        wav.writeframes(pcm.tobytes())
+
+    result = extract_features(wav_path, features=["audio.rms"])
+
+rms = result.features["audio.rms"]
+n_trs = int(np.ceil((stim_onset_s + duration_s) / tr_s))
+grid = build_experiment_grid(
+    tr_s=tr_s,
+    n_trs_by_run=[n_trs],
+    run_starts_s=[0.0],
+    feature_t0_s=stim_onset_s,
+)
+sampled = query_feature_window_tr(
+    rms,
+    grid,
+    run_index=1,
+    t_start_s=0.0,
+    t_end_s=n_trs * tr_s,
+    relative_to_run=True,
+    method="mean",
+    output_time="run_relative",
+)
+```
+
+## What the two grids are
+
+`feature_t0_s=0.67` means audio t = 0 is scan t = 0.67 s. The first TR is still
+at scan t = 0. On the audio clock that sample sits at −0.67 s, so the first
+volume averages whatever RMS rows fall in that TR window, including the start
+of the soundtrack.
+
+```{python}
+{
+    "native_hop_s": rms.timebase.hop_s,
+    "native_rows": int(rms.values.shape[0]),
+    "native_first_times_s": rms.times_s[:3].tolist(),
+    "n_trs": n_trs,
+    "tr_times_s": sampled.times_s.tolist(),
+    "audio_time_of_first_tr_s": float(sampled.times_s[0] - stim_onset_s),
+    "tr_rms": sampled.values[:, 0].tolist(),
+}
+```
+
+```{python}
+fig, ax = plt.subplots(figsize=(8.2, 3.2))
+ax.plot(rms.times_s + stim_onset_s, rms.values[:, 0], color="#93c5fd", lw=1.0, label="native RMS (scan clock)")
+ax.plot(sampled.times_s, sampled.values[:, 0], color="#fbbf24", marker="o", lw=1.6, label="TR-sampled RMS")
+ax.axvline(stim_onset_s, color="#f9a8d4", ls="--", lw=1.0, label="audio t=0")
+ax.set_xlabel("scan time (s)")
+ax.set_ylabel("RMS")
+ax.grid(True, alpha=0.35)
+ax.legend(loc="upper right", fontsize=8)
+fig.tight_layout()
+fig
+```
+
+The yellow points are one mean RMS value per 2 s TR. The loud block occupies
+audio 4–10 s, which is scan 4.67–10.67 s, so the points at 6 s, 8 s, and 10 s
+are the high ones.
+
+`method="mean"` averages native RMS rows whose times fall in `[t - TR/2, t + TR/2)`.
+Pass `method="linear"` if you want interpolation onto the TR instants instead
+of bin averaging.
+
+## Point the same calls at a local soundtrack
+
+The WAV is not in the repository. Copy it to `data/stimuli/` or pass its path:
+
+```python
+from pathlib import Path
+import numpy as np
+from natural_features import build_experiment_grid, extract_features, query_feature_window_tr
+
+wav_path = Path("data/stimuli/DownTheRabbitHoleFinal_mono_exp120_NR16_pad.wav")
+tr_s = 2.0
+stim_onset_s = 0.67
+
+result = extract_features(wav_path, features=["audio.rms"])
+rms = result.features["audio.rms"]
+audio = result.inputs["audio"]
+duration_s = audio.samples.shape[0] / audio.sr_hz
+n_trs = int(np.ceil((stim_onset_s + duration_s) / tr_s))
+
+grid = build_experiment_grid(
+    tr_s=tr_s,
+    n_trs_by_run=[n_trs],
+    run_starts_s=[0.0],
+    feature_t0_s=stim_onset_s,
+)
+sampled = query_feature_window_tr(
+    rms,
+    grid,
+    run_index=1,
+    t_start_s=0.0,
+    t_end_s=n_trs * tr_s,
+    relative_to_run=True,
+    method="mean",
+    output_time="run_relative",
+)
+```
+
+A command-line wrapper lives at `examples/rms_energy_to_tr_grid.py`.
+
+If the WAV is already padded so file t = 0 equals scan t = 0, set
+`stim_onset_s` / `feature_t0_s` to `0.0`.
+
+## When not to resample yet
+
+If the next step is hemodynamic convolution, keep `rms` on its native hop and
+hand it downstream as a `TemporalPayload`. TR sampling then happens after the
+HRF, in the modeling library. This page is for the case where the TR-sampled
+energy series is the object you want.
+
+## See also
+
+[Query a run-aware fMRI window](fmri-window-query.qmd) · [Keep heterogeneous features on native grids](native-grid-handoff.qmd) · [fMRI windowing](../concepts/fmri-windowing.qmd) · [Extract audio features from WAV files](audio-batch-from-wav.qmd)

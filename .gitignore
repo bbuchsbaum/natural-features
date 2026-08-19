@@ -12,6 +12,12 @@ artifacts/
 *.so
 .env
 
+# Local naturalistic media (not redistributed)
+data/stimuli/*.wav
+data/stimuli/*.mp3
+data/stimuli/*.flac
+data/stimuli/*.mp4
+
 # Local tracker/runtime files
 .dolt/
 *.db
