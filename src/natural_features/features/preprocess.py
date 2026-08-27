@@ -12,6 +12,7 @@ import warnings
 
 import numpy as np
 
+from natural_features.core.backend_errors import BackendDependencyError, BackendInferenceError
 from natural_features.core.execution import add_execution_provenance, resolve_execution_mode
 from natural_features.core.feature_bundle import inherit_temporal_contract
 from natural_features.core.feature_types import EventSeries, FeatureSeries
@@ -225,12 +226,11 @@ def text_tokenize(stimulus: TextStimulus | str, *, duration_s: float | None = No
     return inherit_temporal_contract(result, sources)
 
 
-def _empty_ocr_events(extractor_name: str, *, execution_mode: str, reason: str) -> EventSeries:
+def _empty_ocr_events(extractor_name: str, *, execution_mode: str) -> EventSeries:
     md = add_execution_provenance(
-        extractor_metadata(extractor_name, params={}, extra={"backend": "empty_fallback"}),
+        extractor_metadata(extractor_name, params={}, extra={"backend": "pytesseract"}),
         execution_mode=execution_mode,
-        fallback_used=True,
-        fallback_reason=reason,
+        fallback_used=False,
     )
     return EventSeries(
         onset_s=np.array([], dtype=np.float64),
@@ -272,12 +272,18 @@ def _image_ocr_backend(
         from PIL import Image  # type: ignore
         import pytesseract  # type: ignore
         from pytesseract import Output  # type: ignore
-    except Exception as exc:
-        raise RuntimeError("pytesseract and Pillow are required for OCR extraction") from exc
+    except ImportError as exc:
+        raise BackendDependencyError(
+            "OCR",
+            "pytesseract and Pillow are required",
+        ) from exc
 
     arr = _image_to_uint8(stimulus.image)
     pil = Image.fromarray(arr)
-    data = pytesseract.image_to_data(pil, output_type=Output.DICT)
+    try:
+        data = pytesseract.image_to_data(pil, output_type=Output.DICT)
+    except Exception as exc:
+        raise BackendInferenceError("OCR", "Tesseract image analysis failed") from exc
     labels: list[str] = []
     conf: list[float] = []
     x: list[float] = []
@@ -340,27 +346,22 @@ def image_ocr(
     execution_mode: str | None = None,
     strict_dependency: bool | None = None,
 ) -> EventSeries:
-    mode, strict = resolve_execution_mode(execution_mode=execution_mode, strict_dependency=strict_dependency)
+    mode, _strict = resolve_execution_mode(execution_mode=execution_mode, strict_dependency=strict_dependency)
     if not isinstance(stimulus, ImageStimulus):
         raise TypeError("image_ocr requires an ImageStimulus")
-    try:
-        result = _image_ocr_backend(
-            stimulus,
-            min_confidence=float(min_confidence),
-            duration_s=duration_s,
-            extractor_name="image.ocr",
-            execution_mode=mode,
-        )
-    except Exception as exc:
-        if strict:
-            raise RuntimeError("image.ocr failed in strict mode") from exc
-        result = _empty_ocr_events("image.ocr", execution_mode=mode, reason=str(exc))
+    result = _image_ocr_backend(
+        stimulus,
+        min_confidence=float(min_confidence),
+        duration_s=duration_s,
+        extractor_name="image.ocr",
+        execution_mode=mode,
+    )
     return inherit_temporal_contract(result, [stimulus])
 
 
 def _concat_event_series(events: list[EventSeries], *, extractor_name: str, execution_mode: str) -> EventSeries:
     if not events:
-        return _empty_ocr_events(extractor_name, execution_mode=execution_mode, reason="no frames")
+        return _empty_ocr_events(extractor_name, execution_mode=execution_mode)
     onset = np.concatenate([ev.onset_s for ev in events])
     offset = np.concatenate([ev.offset_s for ev in events])
     labels = np.concatenate([ev.label if ev.label is not None else np.array([], dtype=object) for ev in events])
@@ -394,7 +395,7 @@ def video_ocr(
     execution_mode: str | None = None,
     strict_dependency: bool | None = None,
 ) -> EventSeries:
-    mode, strict = resolve_execution_mode(execution_mode=execution_mode, strict_dependency=strict_dependency)
+    mode, _strict = resolve_execution_mode(execution_mode=execution_mode, strict_dependency=strict_dependency)
     if not isinstance(stimulus, VideoStimulus):
         raise TypeError("video_ocr requires a VideoStimulus")
     stride = max(1, int(stride_frames))
@@ -413,7 +414,7 @@ def video_ocr(
             min_confidence=min_confidence,
             duration_s=frame_duration,
             execution_mode=mode,
-            strict_dependency=strict,
+            strict_dependency=True,
         )
         if len(ev):
             ev_extra = dict(ev.extra)
@@ -430,13 +431,6 @@ def video_ocr(
                 temporal_context=ev.temporal_context,
             )
             events.append(ev)
-    if strict and not events:
-        result = _empty_ocr_events(
-            "video.ocr",
-            execution_mode=mode,
-            reason="no OCR text detected",
-        )
-        return inherit_temporal_contract(result, [stimulus])
     result = _concat_event_series(
         events,
         extractor_name="video.ocr",

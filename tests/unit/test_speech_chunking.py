@@ -3,7 +3,10 @@ from __future__ import annotations
 import numpy as np
 
 from natural_features.core.stimulus import AudioStimulus
-from natural_features.features.speech.asr import whisper_transcribe_chunked
+from natural_features.features.speech.asr import (
+    whisper_transcribe,
+    whisper_transcribe_chunked,
+)
 from natural_features.features.speech.chunking import aggregate_chunk_qc, plan_audio_chunks, stitch_word_events
 
 
@@ -29,9 +32,9 @@ def test_stitch_word_events_dedupes_overlap_tokens() -> None:
     stim = _audio(duration_s=2.0, sr=1000)
     w1 = whisper_transcribe_chunked(
         stim,
+        transcript_text="hello overlap",
         chunk_window_s=2.0,
         chunk_overlap_s=0.0,
-        execution_mode="fallback",
     )["words"]
     # Force overlap-style duplicate by stitching same object twice.
     out, conflicts = stitch_word_events([w1, w1], dedupe_tolerance_s=0.2)
@@ -57,13 +60,23 @@ def test_aggregate_chunk_qc_contract() -> None:
     assert qc["stitch_conflicts"] == 1
 
 
-def test_whisper_transcribe_chunked_monotonic_and_chunk_qc() -> None:
+def test_whisper_transcribe_chunked_monotonic_and_chunk_qc(monkeypatch) -> None:  # noqa: ANN001
     stim = _audio(duration_s=7.0, sr=8000)
+
+    def fake_transcribe(substim: AudioStimulus, **_kwargs: object) -> dict[str, object]:
+        return whisper_transcribe(
+            substim,
+            transcript_text="hello chunk",
+        )
+
+    monkeypatch.setattr(
+        "natural_features.features.speech.asr.whisper_transcribe",
+        fake_transcribe,
+    )
     out = whisper_transcribe_chunked(
         stim,
         chunk_window_s=2.5,
         chunk_overlap_s=0.5,
-        strict_dependency=False,
     )
     words = out["words"]
     qc = out["qc"]

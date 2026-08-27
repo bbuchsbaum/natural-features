@@ -103,8 +103,15 @@ pytest -q tests/external/test_real_optional_backends.py
 Corpus benchmark (manifest-driven):
 
 ```bash
-nf speech-benchmark --manifest tests/benchmarks/manifests/tier_a_alignment_manifest.json --json
+nf speech-benchmark \
+  --manifest tests/benchmarks/manifests/tier_a_alignment_manifest.json \
+  --backend none \
+  --execution-mode strict \
+  --json
 ```
+
+That Tier A command is the dependency-free transcript-timing baseline. Backend
+quality runs must name and install the backend being evaluated.
 
 To import from Dropbox source into repo-local data:
 

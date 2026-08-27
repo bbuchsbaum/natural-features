@@ -17,7 +17,15 @@ def _evaluate_gate():
 
 def test_evaluate_gate_soft_warning_only() -> None:
     evaluate_gate = _evaluate_gate()
-    report = {"summary": {"fallback_rate": 0.2, "token_f1_mean": 0.95}}
+    report = {
+        "summary": {
+            "n_items": 1,
+            "n_success": 1,
+            "n_failed": 0,
+            "fallback_rate": 0.2,
+            "token_f1_mean": 0.95,
+        }
+    }
     thresholds = {
         "metrics": {
             "fallback_rate": {"soft_max": 0.15, "hard_max": 0.4},
@@ -32,7 +40,14 @@ def test_evaluate_gate_soft_warning_only() -> None:
 
 def test_evaluate_gate_hard_failure() -> None:
     evaluate_gate = _evaluate_gate()
-    report = {"summary": {"boundary_mae_ms_mean": 1800.0}}
+    report = {
+        "summary": {
+            "n_items": 1,
+            "n_success": 1,
+            "n_failed": 0,
+            "boundary_mae_ms_mean": 1800.0,
+        }
+    }
     thresholds = {
         "metrics": {
             "boundary_mae_ms_mean": {"soft_max": 900.0, "hard_max": 1500.0},
@@ -41,3 +56,26 @@ def test_evaluate_gate_hard_failure() -> None:
     out = evaluate_gate(report, thresholds)
     assert out["passed"] is False
     assert any("hard_max" in f for f in out["failures"])
+
+
+def test_evaluate_gate_fails_closed_when_benchmark_execution_failed() -> None:
+    evaluate_gate = _evaluate_gate()
+    report = {
+        "summary": {
+            "n_items": 1,
+            "n_success": 0,
+            "n_failed": 1,
+            "boundary_mae_ms_mean": None,
+        }
+    }
+    thresholds = {
+        "metrics": {
+            "boundary_mae_ms_mean": {"hard_max": 1500.0},
+        }
+    }
+
+    out = evaluate_gate(report, thresholds)
+
+    assert out["passed"] is False
+    assert any("failed item" in failure for failure in out["failures"])
+    assert any("missing value" in failure for failure in out["failures"])

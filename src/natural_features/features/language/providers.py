@@ -10,6 +10,11 @@ from typing import Any, Protocol
 
 import numpy as np
 
+from natural_features.core.backend_errors import (
+    BackendDependencyError,
+    BackendInferenceError,
+    BackendLoadError,
+)
 from natural_features.util.hashing import stable_hash
 
 
@@ -30,7 +35,7 @@ def _bow_tokens(text: str) -> list[str]:
 
 @dataclass
 class LocalHashEmbeddingProvider:
-    """Deterministic local fallback provider (no external dependencies)."""
+    """Explicit deterministic local hash provider."""
 
     model_name: str = "local-hash-emb-256"
     dim: int = 256
@@ -56,7 +61,7 @@ class LocalHashEmbeddingProvider:
 
 @dataclass
 class LocalBoWEmbeddingProvider:
-    """Deterministic lexical bag-of-words embedding fallback."""
+    """Explicit deterministic lexical bag-of-words embedding provider."""
 
     model_name: str = "local-bow-emb-1024"
     dim: int = 1024
@@ -105,9 +110,9 @@ class OpenAIEmbeddingProvider:
     def __post_init__(self) -> None:
         key = self.api_key or os.environ.get(self.api_key_env_var)
         if not key:
-            raise RuntimeError(
-                f"Missing API key for provider=openai. "
-                f"Set `{self.api_key_env_var}` or provide `api_key` in provider_config."
+            raise BackendLoadError(
+                "OpenAI embeddings",
+                f"missing API key; set `{self.api_key_env_var}` or provide `api_key`",
             )
         object.__setattr__(self, "api_key", key)
 
@@ -116,16 +121,16 @@ class OpenAIEmbeddingProvider:
             return np.zeros((0, 0), dtype=np.float32)
         try:
             from openai import OpenAI  # type: ignore
-        except Exception as e:
-            raise RuntimeError(
-                "openai package is required for provider=openai. "
-                "Install optional dependency and retry."
-            ) from e
-        client = OpenAI(
-            api_key=self.api_key,
-            timeout=self.timeout_s,
-            max_retries=self.max_retries,
-        )
+        except ImportError as exc:
+            raise BackendDependencyError("OpenAI embeddings", "the openai package is required") from exc
+        try:
+            client = OpenAI(
+                api_key=self.api_key,
+                timeout=self.timeout_s,
+                max_retries=self.max_retries,
+            )
+        except Exception as exc:
+            raise BackendLoadError("OpenAI embeddings", "client initialization failed") from exc
         vectors: list[np.ndarray] = []
         step = max(1, int(self.batch_size))
         for i in range(0, len(texts), step):
@@ -143,10 +148,13 @@ class OpenAIEmbeddingProvider:
                 except Exception as exc:  # pragma: no cover - network/provider dependent
                     last_exc = exc
                     if attempt >= int(self.max_retries):
-                        raise RuntimeError("OpenAI embedding request failed after retries") from exc
+                        raise BackendInferenceError(
+                            "OpenAI embeddings",
+                            "request failed after retries",
+                        ) from exc
                     time.sleep(min(0.5 * (2**attempt), 4.0))
             if last_exc is not None:  # defensive
-                raise RuntimeError("OpenAI embedding request failed")
+                raise BackendInferenceError("OpenAI embeddings", "request failed")
         return np.stack(vectors, axis=0).astype(np.float32)
 
     def cache_descriptor(self) -> dict[str, Any]:

@@ -17,7 +17,6 @@ from natural_features.features.audio.lowlevel import rms
 from natural_features.features.common import extractor_metadata
 from natural_features.features.language.predictability import surprisal
 from natural_features.features.language.providers import (
-    LocalBoWEmbeddingProvider,
     make_embedding_provider,
     sanitize_provider_config,
 )
@@ -398,16 +397,8 @@ def extract_multiscale_language(
         "fallback_used": False,
     }
     if "sentence_embeddings" in families or "paragraph_embeddings" in families:
-        try:
-            provider = make_embedding_provider(provider_config)
-            provider_resolution["resolved_provider"] = str(provider.provider_name)
-        except Exception as exc:
-            if strict_dependency:
-                raise
-            provider = LocalBoWEmbeddingProvider()
-            provider_resolution["resolved_provider"] = str(provider.provider_name)
-            provider_resolution["fallback_used"] = True
-            provider_resolution["fallback_reason"] = f"{type(exc).__name__}: {exc}"
+        provider = make_embedding_provider(provider_config)
+        provider_resolution["resolved_provider"] = str(provider.provider_name)
 
     if "sentence_embeddings" in families:
         txt = [str(x) for x in (sentences.label if sentences.label is not None else np.array([], dtype=object))]

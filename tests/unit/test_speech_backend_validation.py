@@ -35,12 +35,41 @@ def test_runtime_check_whisperx_skips_without_audio() -> None:
         words=None,
         transcript_text=None,
         language="en",
-        execution_mode="fallback",
+        execution_mode="strict",
     )
     assert checked is False
     assert ok is None
     assert "no audio" in str(reason)
     assert details == {}
+
+
+def test_runtime_check_whisperx_uses_strict_contract(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured: dict[str, object] = {}
+
+    def _align(*_args, **kwargs):
+        captured.update(kwargs)
+        return {"qc": {"mode": "whisperx", "fallback_used": False}}
+
+    monkeypatch.setattr(
+        "natural_features.features.speech.validation.whisperx_align",
+        _align,
+    )
+    audio = AudioStimulus.from_array(np.zeros(1600, dtype=np.float32), sr_hz=16000)
+
+    checked, ok, reason, _details = _runtime_check_whisperx(
+        probe=BackendProbe(name="whisperx", available=True, version="x"),
+        audio=audio,
+        words=_words(),
+        transcript_text=None,
+        language="en",
+        execution_mode="strict",
+    )
+
+    assert checked is True
+    assert ok is True
+    assert reason is None
+    assert captured["execution_mode"] == "strict"
+    assert "strict_dependency" not in captured
 
 
 def test_runtime_check_mfa_handles_missing_executable(monkeypatch: pytest.MonkeyPatch) -> None:

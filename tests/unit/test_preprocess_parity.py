@@ -90,26 +90,24 @@ def test_text_tokenize_and_feature_preprocessing_chain() -> None:
     assert out.steps["lag"]["default"].values.shape[1] == 4
 
 
-def test_ocr_missing_dependency_returns_empty_fallback() -> None:
+def test_ocr_rejects_empty_same_name_fallback() -> None:
     reg = Registry.with_builtin_specs()
     image = ImageStimulus.from_array(np.ones((3, 3), dtype=np.float32))
-    out = execute_recipe(
-        {
-            "features": [
-                {
-                    "id": "ocr",
-                    "use": "image.ocr",
-                    "inputs": {"image": "input:image"},
-                    "params": {"execution_mode": "fallback"},
-                }
-            ]
-        },
-        registry=reg,
-        inputs={"image": image},
-    )
-    words = out.steps["ocr"]["default"]
-    assert len(words) >= 0
-    assert words.metadata["extractor_id"]
+    with pytest.raises(ValueError, match="must be one of"):
+        execute_recipe(
+            {
+                "features": [
+                    {
+                        "id": "ocr",
+                        "use": "image.ocr",
+                        "inputs": {"image": "input:image"},
+                        "params": {"execution_mode": "fallback"},
+                    }
+                ]
+            },
+            registry=reg,
+            inputs={"image": image},
+        )
 
 
 def test_video_audio_extract_requires_source_path() -> None:

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -231,7 +232,7 @@ def _validate_output_contracts(
     for out_key, out_spec in expected_outputs.items():
         if out_key not in outputs:
             raise ValueError(f"Step '{step_id}' missing declared output '{out_key}'")
-        schema = out_spec.get("schema") if isinstance(out_spec, dict) else None
+        schema = out_spec.get("schema") if isinstance(out_spec, Mapping) else None
         _validate_output_schema(step_id=step_id, output_key=out_key, schema=schema, value=outputs[out_key])
 
 

@@ -97,11 +97,11 @@ different computation.
 
 - `execution_mode="strict"` is the default and raises when the requested
   backend or model is unavailable.
-- `execution_mode="fallback"` explicitly requests a deterministic proxy, when
-  one exists, and records the substitution in provenance.
+- `execution_mode="fallback"` is rejected. A proxy or heuristic must have its
+  own feature ID and documentation instead of borrowing another method's name.
 
-Legacy `strict_dependency=True|False` arguments remain supported for backward
-compatibility.
+Legacy `strict_dependency=True` remains a compatibility alias.
+`strict_dependency=False` is rejected.
 
 ## Stable public API
 
@@ -137,7 +137,7 @@ nf extract tests/fixtures/recipe_baseline.yaml --video-npy clip.npy --video-fps 
 nf video-text movie.mp4 --video-fps 24 --table-out words.csv --json
 nf speech-validate-backends --json
 nf speech-doctor --json
-nf speech-benchmark --manifest tests/benchmarks/manifests/tier_a_alignment_manifest.json --json
+nf speech-benchmark --manifest tests/benchmarks/manifests/tier_a_alignment_manifest.json --backend none --json
 ```
 
 Run `nf <command> --help` for command-specific options.

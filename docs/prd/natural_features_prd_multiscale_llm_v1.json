@@ -44,7 +44,7 @@
     {
       "name": "Audio-only Researcher",
       "needs": [
-        "ASR fallback to generate timestamped transcript.",
+        "Configured ASR backend to generate a timestamped transcript.",
         "Same multiscale API regardless of transcript source.",
         "Quality metadata to filter unreliable spans."
       ]
@@ -64,7 +64,7 @@
     {
       "id": "FR-202",
       "name": "Input Modalities",
-      "description": "Support transcript input (with optional timestamps) and audio input (with ASR transcript fallback).",
+      "description": "Support transcript input (with optional timestamps) and audio input through an explicitly configured ASR backend.",
       "priority": "P0"
     },
     {
@@ -80,7 +80,7 @@
         "providers_initial": [
           "openai (opt-in)",
           "anthropic (opt-in, if embedding endpoint available in configured account)",
-          "local_hf (baseline fallback)"
+          "local_hf (explicit local provider)"
         ]
       }
     },
@@ -236,7 +236,7 @@
         "n_segments",
         "n_tokens",
         "missing_timestamp_fraction",
-        "provider_fallback_used",
+        "provider_name",
         "cache_hit_fraction"
       ]
     }
@@ -269,7 +269,7 @@
   },
   "api_examples": [
     {
-      "name": "audio_only_with_asr_fallback",
+      "name": "audio_only_with_configured_asr",
       "python": "extract_multiscale_language('clip.wav', scales_s=[2,4,16], provider_config={'provider':'openai','model':'text-embedding-model','api_key_env_var':'OPENAI_API_KEY'})"
     },
     {
@@ -293,7 +293,7 @@
         "FR-202"
       ],
       "criterion": "Audio-only input generates timestamped transcript events and then multiscale features without user-supplied transcript.",
-      "verification": "Integration test asserts ASR fallback path and output presence for all requested scales."
+      "verification": "Integration test asserts the configured ASR path and output presence for all requested scales."
     },
     {
       "id": "AC-203",

@@ -5,8 +5,9 @@ import subprocess
 import sys
 
 import numpy as np
+import pytest
 
-from natural_features.core.feature_types import EventSeries, FeatureSeries, TrackSeries
+from natural_features.core.feature_types import EventSeries, FeatureSeries
 from natural_features.core.registry import Registry
 from natural_features.core.stimulus import AudioStimulus, VideoStimulus
 from natural_features.features.audio.cochlear import audio_gammatone
@@ -174,100 +175,56 @@ def test_audio_gap_features_return_feature_series() -> None:
     gammatone = audio_gammatone(audio, n_channels=8)
     pitch = audio_pitch(audio)
     prosody = prosody_features(audio)
-    clap = audio_clap_embeddings(
-        audio,
-        model="natural-features-test/missing-clap",
-        stride_s=0.25,
-        dim=8,
-        strict_dependency=False,
-    )
-    ast = audio_ast_embeddings(
-        audio,
-        model="natural-features-test/missing-ast",
-        stride_s=0.25,
-        dim=8,
-        strict_dependency=False,
-    )
-
     assert isinstance(gammatone, FeatureSeries)
     assert gammatone.values.shape[1] == 8
     assert pitch.values.shape[1] == 2
     assert prosody.values.shape[1] == 6
-    assert clap.values.shape[1] == 8
-    assert ast.values.shape[1] == 8
-    assert clap.metadata["extractor_name"] == "audio.clap"
-    assert ast.metadata["extractor_name"] == "audio.ast"
-    assert clap.metadata["fallback_used"] is True
-    assert ast.metadata["fallback_used"] is True
+    with pytest.raises(ValueError, match="proxy and surrogate"):
+        audio_clap_embeddings(audio, execution_mode="fallback")
+    with pytest.raises(ValueError, match="proxy and surrogate"):
+        audio_ast_embeddings(audio, execution_mode="fallback")
 
 
 def test_language_gap_features_return_word_aligned_features() -> None:
     words = _words()
 
     discourse = discourse_features(words)
-    hidden = lm_hidden_states(
-        words,
-        model="natural-features-test/missing-causal-lm",
-        layers=[1],
-        strict_dependency=False,
-    )
-    syntax = syntactic_features(words, model="natural_features_missing_spacy_model", strict_dependency=False)
-
     assert discourse.values.shape == (len(words), 5)
-    assert hidden.values.shape[:2] == (len(words), 1)
-    assert hidden.metadata["extractor_name"] == "language.hidden_states"
-    assert hidden.metadata["fallback_used"] is True
-    assert syntax.values.shape == (len(words), 8)
     assert discourse.metadata["extractor_name"] == "language.discourse"
-    assert syntax.metadata["extractor_name"] == "language.syntax"
-    assert syntax.metadata["fallback_used"] is True
+    with pytest.raises(ValueError, match="proxy and surrogate"):
+        lm_hidden_states(words, execution_mode="fallback")
+    with pytest.raises(ValueError, match="proxy and surrogate"):
+        syntactic_features(words, execution_mode="fallback")
 
 
 def test_speech_gap_features_return_expected_contracts() -> None:
     audio = _audio()
     speech_audio = _speechy_audio()
 
-    hubert = hubert_hidden_states(
-        audio,
-        model="natural-features-test/missing-hubert",
-        layers=[1],
-        strict_dependency=False,
-    )
-    vad = neural_vad(audio, strict_dependency=False)
     vad_events = speech_vad(speech_audio)
-    diarization = speaker_diarization(audio, strict_dependency=False)
-    emotion = speech_emotion(audio, strict_dependency=False)
-
-    assert isinstance(hubert, FeatureSeries)
-    assert hubert.values.ndim == 3
-    assert hubert.values.shape[1] == 1
-    assert hubert.metadata["extractor_name"] == "speech.hubert"
-    assert vad.values.shape[1] == 1
-    assert vad.metadata["extractor_name"] == "speech.neural_vad"
     assert isinstance(vad_events, EventSeries)
     assert vad_events.metadata["extractor_name"] == "speech.vad"
     assert len(vad_events) >= 1
-    assert isinstance(diarization, TrackSeries)
-    assert diarization.values.shape[1:] == (1, 1)
-    assert diarization.metadata["extractor_name"] == "speech.diarization"
-    assert emotion.values.shape[1] == 4
-    assert emotion.metadata["extractor_name"] == "speech.emotion"
+    for fn in [
+        hubert_hidden_states,
+        neural_vad,
+        speaker_diarization,
+        speech_emotion,
+    ]:
+        with pytest.raises(ValueError, match="proxy and surrogate"):
+            fn(audio, execution_mode="fallback")
 
 
 def test_vision_gap_features_return_expected_contracts() -> None:
     video = _video()
 
     dct = vision_dct_features(video, k=6, size=8)
-    flow = optical_flow(video, strict_dependency=False)
-    semantic = vision_semantic_views(video, strict_dependency=False)
-
     assert dct.values.shape == (len(video.frame_times_s), 6)
     assert dct.metadata["extractor_name"] == "vision.dct"
-    assert flow.values.shape == (len(video.frame_times_s), 4)
-    assert flow.metadata["extractor_name"] == "vision.optical_flow"
-    assert len(semantic) == len(video.frame_times_s)
-    assert semantic.metadata["extractor_name"] == "vision.semantic_views"
-    assert set(semantic.label).issubset({"structured_scene", "colorful_scene", "bright_scene", "dark_scene"})
+    with pytest.raises(ValueError, match="proxy and surrogate"):
+        optical_flow(video, execution_mode="fallback")
+    with pytest.raises(ValueError, match="proxy and surrogate"):
+        vision_semantic_views(video, execution_mode="fallback")
 
 
 def test_extract_features_can_execute_new_public_gap_ids() -> None:
@@ -278,22 +235,19 @@ def test_extract_features_can_execute_new_public_gap_ids() -> None:
     )
     text_result = extract_features(
         "one two two",
-        features=["text.tokenize", "language.discourse", "language.syntax"],
+        features=["text.tokenize", "language.discourse"],
         budget="allow_python",
-        feature_params={"language.syntax": {"execution_mode": "fallback"}},
     )
     video_result = extract_features(
         _video(),
-        features=["vision.dct", "vision.semantic_views"],
+        features=["vision.dct", "vision.social_proxies"],
         budget="all",
-        feature_params={"vision.semantic_views": {"execution_mode": "fallback"}},
     )
 
     assert audio_result.features["audio.gammatone"].values.shape[1] == 4
     assert text_result.features["language.discourse"].values.shape[0] == 3
-    assert text_result.features["language.syntax"].values.shape[0] == 3
     assert video_result.features["vision.dct"].values.shape[1] == 64
-    assert len(video_result.features["vision.semantic_views"]) == len(_video().frame_times_s)
+    assert video_result.features["vision.social_proxies"].values.shape[1] == 3
 
 
 def test_extract_features_can_execute_r_public_alias_ids() -> None:
@@ -302,40 +256,22 @@ def test_extract_features_can_execute_r_public_alias_ids() -> None:
 
     audio_result = extract_features(
         audio,
-        features=["audio.egemaps", "speech.vad", "speech.wavlm", "speech.ctc"],
+        features=["audio.mel", "speech.vad"],
         budget="allow_python",
-        feature_params={
-            "audio.egemaps": {"execution_mode": "fallback"},
-            "speech.wavlm": {"layers": [1], "execution_mode": "fallback"},
-            "speech.ctc": {
-                "model": "natural-features-test/missing-ctc",
-                "execution_mode": "fallback",
-            },
-        },
     )
     text_result = extract_features(
         "one two two",
-        features=["text.tokenize", "language.hidden_states"],
+        features=["text.tokenize", "language.surface"],
         budget="allow_python",
-        feature_params={
-            "language.hidden_states": {
-                "model": "natural-features-test/missing-causal-lm",
-                "layers": [1],
-                "execution_mode": "fallback",
-            }
-        },
     )
     video_result = extract_features(
         video,
-        features=["vision.motion_energy", "vision.social_proxies"],
+        features=["vision.energy", "vision.social_proxies"],
         budget="allow_python",
-        feature_params={"vision.motion_energy": {"execution_mode": "fallback"}},
     )
 
-    assert audio_result.features["audio.egemaps"].values.ndim == 2
+    assert audio_result.features["audio.mel"].values.ndim == 2
     assert isinstance(audio_result.features["speech.vad"], EventSeries)
-    assert audio_result.features["speech.wavlm"].values.ndim == 3
-    assert audio_result.features["speech.ctc"].values.ndim == 2
-    assert text_result.features["language.hidden_states"].values.shape[:2] == (3, 1)
-    assert video_result.features["vision.motion_energy"].values.ndim == 2
+    assert text_result.features["language.surface"].values.shape == (3, 5)
+    assert video_result.features["vision.energy"].values.ndim == 2
     assert video_result.features["vision.social_proxies"].values.shape[1] == 3

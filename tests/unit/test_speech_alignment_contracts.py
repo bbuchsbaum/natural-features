@@ -57,7 +57,7 @@ def test_backend_probe_and_resolution_contract() -> None:
 
 def test_asr_contract_includes_metadata_and_qc_fields() -> None:
     a = _audio()
-    out = whisper_transcribe(a, transcript_text="hello world", strict_dependency=False)
+    out = whisper_transcribe(a, transcript_text="hello world")
     words = out["words"]
     qc = out["qc"]
     assert words.metadata["asr_model_name"] == "small"
@@ -69,7 +69,7 @@ def test_asr_contract_includes_metadata_and_qc_fields() -> None:
 
 def test_whisperx_align_explicit_passthrough_is_not_reported_as_fallback() -> None:
     a = _audio()
-    out = whisper_transcribe(a, transcript_text="hh ah l ow", strict_dependency=False)
+    out = whisper_transcribe(a, transcript_text="hh ah l ow")
     aligned = whisperx_align(a, out["words"], backend="none")
     qc = aligned["qc"]
     words = aligned["words"]
@@ -175,7 +175,7 @@ def test_mfa_align_uses_backend_when_available(monkeypatch: pytest.MonkeyPatch) 
 
 def test_mfa_align_requires_config_in_strict_mode() -> None:
     a = _audio()
-    out = whisper_transcribe(a, transcript_text="hello world", strict_dependency=False)
+    out = whisper_transcribe(a, transcript_text="hello world")
     from natural_features.features.speech.backends import AlignerResolution, BackendProbe
 
     probes = {
@@ -283,14 +283,12 @@ def test_non_english_transcript_passthrough_contract() -> None:
         a,
         transcript_text=transcript,
         language="es",
-        strict_dependency=False,
     )
     aligned = whisperx_align(
         a,
         asr["words"],
         backend="none",
         language="es",
-        strict_dependency=False,
     )
     out = aligned["words"]
     labels = [str(x) for x in np.asarray(out.label, dtype=object)]

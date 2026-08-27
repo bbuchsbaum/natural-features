@@ -31,9 +31,8 @@ def test_resolve_execution_mode_defaults_and_conflicts() -> None:
     assert mode == "strict"
     assert strict is True
 
-    mode, strict = resolve_execution_mode(execution_mode="fallback")
-    assert mode == "fallback"
-    assert strict is False
+    with pytest.raises(ValueError, match="proxy and surrogate"):
+        resolve_execution_mode(execution_mode="fallback")
 
     mode, strict = resolve_execution_mode(strict_dependency=True)
     assert mode == "strict"
@@ -54,47 +53,45 @@ def test_catalog_plan_defaults_named_model_to_strict_without_legacy_flag() -> No
     assert "strict_dependency" not in plan.rows[0].params
 
 
-def test_catalog_plan_preserves_explicit_legacy_fallback_request() -> None:
-    plan = plan_features(
-        "image",
-        features=["vision.clip"],
-        budget="allow_python",
-        feature_params={"vision.clip": {"strict_dependency": False}},
-    )
-
-    assert plan.rows[0].params["strict_dependency"] is False
-    assert "execution_mode" not in plan.rows[0].params
+def test_catalog_plan_rejects_legacy_fallback_request() -> None:
+    with pytest.raises(ValueError, match="Unknown parameter"):
+        plan_features(
+            "image",
+            features=["vision.clip"],
+            budget="allow_python",
+            feature_params={"vision.clip": {"strict_dependency": False}},
+        )
 
 
-def test_named_model_fails_by_default_and_proxy_requires_explicit_request(monkeypatch) -> None:  # noqa: ANN001
+def test_named_model_fails_and_rejects_proxy_substitution(monkeypatch) -> None:  # noqa: ANN001
     image = ImageStimulus.from_array(np.zeros((8, 8, 3), dtype=np.uint8))
     monkeypatch.setitem(sys.modules, "transformers", None)
 
     with pytest.raises(RuntimeError, match=r"transformers\+torch are required"):
         vision_clip_embeddings(image)
 
-    proxy = vision_clip_embeddings(image, execution_mode="fallback")
-    assert proxy.metadata["execution_mode"] == "fallback"
-    assert proxy.metadata["fallback_used"] is True
-    assert proxy.metadata["backend"] == "fallback_projection"
-    assert "CLIP" not in str(proxy.metadata["backend"])
+    with pytest.raises(ValueError, match="proxy and surrogate"):
+        vision_clip_embeddings(image, execution_mode="fallback")
 
 
 def test_asr_metadata_has_execution_mode() -> None:
-    out = whisper_transcribe(_audio(), execution_mode="fallback")
-    assert out["words"].metadata.get("execution_mode") == "fallback"
-    assert "fallback_used" in out["words"].metadata
-
-
-def test_ctc_posteriors_mark_fallback_provenance() -> None:
-    post = ctc_phone_posteriors(
+    out = whisper_transcribe(
         _audio(),
-        model="__missing__/__missing__",
-        local_files_only=True,
-        execution_mode="fallback",
+        transcript_text="explicit transcript",
+        execution_mode="strict",
     )
-    assert post.metadata.get("execution_mode") == "fallback"
-    assert post.metadata.get("fallback_used") is True
+    assert out["words"].metadata.get("execution_mode") == "strict"
+    assert out["words"].metadata["fallback_used"] is False
+
+
+def test_ctc_posteriors_reject_surrogate_execution() -> None:
+    with pytest.raises(ValueError, match="proxy and surrogate"):
+        ctc_phone_posteriors(
+            _audio(),
+            model="__missing__/__missing__",
+            local_files_only=True,
+            execution_mode="fallback",
+        )
 
 
 def test_ctc_posteriors_strict_mode_fails_loudly() -> None:
@@ -296,18 +293,18 @@ def test_speaker_diarization_strict_mode_uses_pyannote_backend(monkeypatch, tmp_
     np.testing.assert_array_equal(out.values[:, :, 0], np.asarray([[1, 0], [1, 0], [0, 1], [0, 1]]))
 
 
-def test_multiscale_language_provider_fallback_when_openai_unavailable(monkeypatch) -> None:
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+def test_multiscale_language_local_bow_is_an_explicit_provider() -> None:
     res = extract_multiscale_language(
-        "hello world this is a fallback provider test",
+        "hello world this is an explicit local provider test",
         scales_s=[2.0],
-        provider_config={"provider": "openai", "model": "text-embedding-3-large"},
-        execution_mode="fallback",
+        feature_families=["sentence_embeddings", "lexical_controls"],
+        provider_config={"provider": "local_bow", "dimension": 8},
+        execution_mode="strict",
     )
     prov = res.qc["provider_resolution"]
-    assert prov["requested_provider"] == "openai"
+    assert prov["requested_provider"] == "local_bow"
     assert prov["resolved_provider"] == "local_bow"
-    assert prov["fallback_used"] is True
+    assert prov["fallback_used"] is False
 
 
 def test_multiscale_language_provider_strict_mode_fails(monkeypatch) -> None:

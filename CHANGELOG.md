@@ -17,10 +17,10 @@ All notable changes to this project will be documented in this file.
   storage round trips, and temporal digests in catalog artifact identity.
 - Native-time specification, cookbook, and downstream modeling boundary docs.
 - Public API compatibility contract (`natural_features.public_api`) and policy documentation.
-- Unified strict/fallback execution mode with provenance metadata.
+- Strict execution policy with normalized method/backend provenance metadata.
 - Hardened recipe/schema validation with output contract checks.
 - Manifest v2 provenance exports with payload integrity hashes.
-- Local semantic fallback provider (`local_bow`) and provider quality upgrades.
+- Explicit local bag-of-words provider (`local_bow`) and provider quality upgrades.
 - Tier-A golden regression fixture and generator workflow.
 - CLI ergonomics: `nf validate`, `nf preset-list`, `nf preset-show`.
 - Onboarding and docs index.
@@ -33,13 +33,23 @@ All notable changes to this project will be documented in this file.
   internally; `feature_t0_s` remains a compatibility shorthand.
 - `in_clock` is the public name for rewriting a feature's times into another
   clock without resampling. `temporal_object_in_clock` remains as an alias.
-- Multiscale provider fallback now prefers `local_bow` over random local hash fallback.
-- API compatibility contract advanced to version 2: named feature methods and
-  stable workflows now fail fast when an optional backend is unavailable.
-- Deterministic proxies require an explicit `execution_mode="fallback"` (or
-  legacy `strict_dependency=False`) request.
+- API compatibility contract advanced to version 3: named feature methods are
+  strict-only. Proxy and surrogate quantities must have their own explicit
+  extractor or provider names and cannot be selected as fallback execution.
+- Language surprisal now computes summed causal-language-model subword negative
+  log probability in nats instead of token-length/character-diversity scores.
+- Catalogue execution modes enumerate only `strict`, fallback tags were removed,
+  and unknown parameter schema types now fail catalogue validation.
+- CLIP, DINO, CLAP, and AST outputs preserve the model's native embedding
+  width. The legacy `dim` argument is now an assertion and never truncates or
+  zero-pads representations.
 - Explicit alignment passthrough via `backend="none"` is a method choice and is
   no longer reported as fallback execution.
+- Artifact IDs now include the semantic values of feature, event, and track
+  payloads; equal metadata and timing can no longer alias distinct arrays.
+- Strict-only CI commands no longer request the removed fallback mode. The
+  dependency-free Tier A alignment baseline names `backend="none"` explicitly,
+  and its quality gate fails closed on failed cases or missing metrics.
 
 ### Migration Notes
 - Existing constructors remain valid and default to the `"stimulus"` clock.
@@ -51,8 +61,9 @@ All notable changes to this project will be documented in this file.
 - The `features.hrf` recipe route is deprecated. Keep native features in this
   package and perform HRF convolution, interpolation to TRs, lags, and design
   construction in `fmrimod`, `fmrireg`, `fmridesign`, or another modeling layer.
-- Code that deliberately uses deterministic proxies must now pass
-  `execution_mode="fallback"`. Omit the setting to require the named method.
-- Legacy `strict_dependency=False` remains supported as an explicit fallback
-  request; migrate saved recipes to `execution_mode="fallback"` when practical.
+- Remove `execution_mode="fallback"` and `strict_dependency=False` from saved
+  recipes. Choose an explicitly named proxy feature when one exists; otherwise
+  install/configure the named method's backend.
+- Consumers of `language.surprisal` must install the `transformers` and `torch`
+  dependencies and make the selected causal language model available.
 - If you consume exported manifests, prefer `manifest_version=2` fields (`payload_sha256`, `payload_bytes`).

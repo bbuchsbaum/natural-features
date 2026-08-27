@@ -4,6 +4,11 @@ from __future__ import annotations
 
 import numpy as np
 
+from natural_features.core.backend_errors import (
+    BackendDependencyError,
+    BackendInferenceError,
+    BackendLoadError,
+)
 from natural_features.core.execution import add_execution_provenance, resolve_execution_mode
 from natural_features.core.feature_types import EventSeries, FeatureSeries
 from natural_features.core.stimulus import AudioStimulus
@@ -548,7 +553,7 @@ def ctc_phone_posteriors(
     strict_dependency: bool | None = None,
     drop_special_tokens: bool = True,
 ) -> FeatureSeries:
-    mode, strict_dependency = resolve_execution_mode(
+    mode, _strict = resolve_execution_mode(
         execution_mode=execution_mode,
         strict_dependency=strict_dependency,
     )
@@ -561,54 +566,17 @@ def ctc_phone_posteriors(
     try:
         import torch
         from transformers import AutoModelForCTC, AutoProcessor  # type: ignore
-    except Exception:
-        if strict_dependency:
-            raise RuntimeError("transformers+torch are required for CTC phoneme posterior extraction.")
-        fallback = acoustic_phone_posteriors(stimulus, hop_s=stride_s)
-        md = add_execution_provenance(
-            extractor_metadata(
-                "speech.phonology.ctc_posteriors",
-                params=params,
-                extra={"backend": "fallback_acoustic_posteriors", "reason": "transformers/torch unavailable"},
-            ),
-            execution_mode=mode,
-            fallback_used=True,
-            fallback_reason="transformers/torch unavailable",
-        )
-        return FeatureSeries(
-            values=fallback.values,
-            times_s=fallback.times_s,
-            dims=fallback.dims,
-            coords=fallback.coords,
-            metadata=md,
-            timebase=fallback.timebase,
-        )
+    except ImportError as exc:
+        raise BackendDependencyError(
+            "phoneme CTC",
+            "transformers and torch are required",
+        ) from exc
 
     try:
         processor = AutoProcessor.from_pretrained(model, local_files_only=local_files_only)
         net = AutoModelForCTC.from_pretrained(model, local_files_only=local_files_only)
-    except Exception:
-        if strict_dependency:
-            raise RuntimeError(f"CTC model '{model}' unavailable. Install/download model and retry.")
-        fallback = acoustic_phone_posteriors(stimulus, hop_s=stride_s)
-        md = add_execution_provenance(
-            extractor_metadata(
-                "speech.phonology.ctc_posteriors",
-                params=params,
-                extra={"backend": "fallback_acoustic_posteriors", "reason": "ctc model unavailable"},
-            ),
-            execution_mode=mode,
-            fallback_used=True,
-            fallback_reason="ctc model unavailable",
-        )
-        return FeatureSeries(
-            values=fallback.values,
-            times_s=fallback.times_s,
-            dims=fallback.dims,
-            coords=fallback.coords,
-            metadata=md,
-            timebase=fallback.timebase,
-        )
+    except Exception as exc:
+        raise BackendLoadError("phoneme CTC", f"model '{model}' is unavailable") from exc
 
     try:
         wav = stimulus.samples.astype(np.float32)
@@ -639,28 +607,8 @@ def ctc_phone_posteriors(
         else:
             labels = [norm if norm else str(raw) for norm, raw in zip(normalized_labels, labels)]
         probs = probs / np.maximum(probs.sum(axis=1, keepdims=True), 1e-8)
-    except Exception:
-        if strict_dependency:
-            raise
-        fallback = acoustic_phone_posteriors(stimulus, hop_s=stride_s)
-        md = add_execution_provenance(
-            extractor_metadata(
-                "speech.phonology.ctc_posteriors",
-                params=params,
-                extra={"backend": "fallback_acoustic_posteriors", "reason": "ctc inference failed"},
-            ),
-            execution_mode=mode,
-            fallback_used=True,
-            fallback_reason="ctc inference failed",
-        )
-        return FeatureSeries(
-            values=fallback.values,
-            times_s=fallback.times_s,
-            dims=fallback.dims,
-            coords=fallback.coords,
-            metadata=md,
-            timebase=fallback.timebase,
-        )
+    except Exception as exc:
+        raise BackendInferenceError("phoneme CTC", "posterior inference failed") from exc
 
     n_t = probs.shape[0]
     duration_s = float(stimulus.samples.shape[0] / stimulus.sr_hz)

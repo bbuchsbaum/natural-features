@@ -137,8 +137,10 @@ def _check_r_catalog(features: dict[str, Any], r_repo: Path) -> list[str]:
                 f"!= live R bundles {sorted(r_entry['bundles'])!r}"
             )
         required = set(spec.get("required_default_keys") or [])
-        missing_defaults = sorted(r_entry["default_keys"] - required)
-        extra_required = sorted(required - r_entry["default_keys"])
+        r_only = set(spec.get("r_only_default_keys") or [])
+        expected_r_defaults = required | r_only
+        missing_defaults = sorted(r_entry["default_keys"] - expected_r_defaults)
+        extra_required = sorted(expected_r_defaults - r_entry["default_keys"])
         if missing_defaults:
             errors.append(f"{feature_id}: manifest required defaults missing live R keys {missing_defaults}")
         if extra_required:

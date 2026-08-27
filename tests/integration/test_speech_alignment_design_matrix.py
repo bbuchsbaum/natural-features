@@ -19,8 +19,8 @@ def test_aligned_words_to_design_matrix_e2e() -> None:
     wav = (0.2 * np.sin(2 * np.pi * 220 * t)).astype(np.float32)
     audio = AudioStimulus.from_array(wav, sr_hz=sr)
 
-    asr = whisper_transcribe(audio, transcript_text="HH AH0 L OW1 W ER1 L D", strict_dependency=False)
-    aligned = whisperx_align(audio, asr["words"], backend="none", strict_dependency=False)
+    asr = whisper_transcribe(audio, transcript_text="HH AH0 L OW1 W ER1 L D")
+    aligned = whisperx_align(audio, asr["words"], backend="none")
     words = aligned["words"]
 
     tr = 1.5

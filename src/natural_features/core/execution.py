@@ -1,44 +1,64 @@
-"""Execution-mode helpers for fail-fast vs explicit fallback behavior."""
+"""Execution policy and provenance for scientific extractors."""
 
 from __future__ import annotations
 
+from enum import Enum
 from typing import Any
 
-_VALID_MODES = {"strict", "fallback"}
+
+class ExecutionMode(str, Enum):
+    """Supported execution policies for named scientific methods.
+
+    A named extractor may use another implementation only when that
+    implementation computes the same scientific quantity.  Proxy or surrogate
+    quantities belong under their own extractor names, so the public execution
+    policy is intentionally strict-only.
+    """
+
+    STRICT = "strict"
+
+    def __str__(self) -> str:
+        return self.value
 
 
 def resolve_execution_mode(
     *,
-    execution_mode: str | None = None,
+    execution_mode: str | ExecutionMode | None = None,
     strict_dependency: bool | None = None,
-    default_mode: str = "strict",
-) -> tuple[str, bool]:
-    """Resolve execution mode, defaulting named methods to fail-fast execution.
+    default_mode: str | ExecutionMode = ExecutionMode.STRICT,
+) -> tuple[ExecutionMode, bool]:
+    """Resolve the strict-only execution policy.
 
-    ``strict_dependency`` remains a compatibility alias. Passing ``False`` is
-    therefore an explicit request for fallback behavior; omitting both controls
-    selects strict execution.
+    ``strict_dependency=True`` remains a compatibility alias.  The former
+    ``fallback`` mode and ``strict_dependency=False`` are rejected because they
+    allowed scientifically different quantities to be returned under a named
+    method's feature identifier.
     """
 
-    mode = str(execution_mode).strip().lower() if execution_mode is not None else str(default_mode).strip().lower()
-    if mode not in _VALID_MODES:
-        raise ValueError(f"execution_mode must be one of {_VALID_MODES}, got '{mode}'")
+    raw_mode = execution_mode if execution_mode is not None else default_mode
+    try:
+        mode = ExecutionMode(str(raw_mode).strip().lower())
+    except ValueError as exc:
+        raise ValueError(
+            "execution_mode must be 'strict'; proxy and surrogate methods "
+            "must use their own explicit extractor names"
+        ) from exc
 
     if strict_dependency is not None:
         strict_flag = bool(strict_dependency)
-        strict_from_mode = mode == "strict"
-        if execution_mode is not None and strict_flag != strict_from_mode:
-            raise ValueError("Conflicting execution controls: strict_dependency disagrees with execution_mode")
-        if execution_mode is None:
-            mode = "strict" if strict_flag else "fallback"
+        if not strict_flag:
+            raise ValueError(
+                "strict_dependency=False is no longer supported; proxy and "
+                "surrogate methods must use their own explicit extractor names"
+            )
 
-    return mode, mode == "strict"
+    return mode, True
 
 
 def add_execution_provenance(
     metadata: dict[str, Any],
     *,
-    execution_mode: str,
+    execution_mode: str | ExecutionMode,
     fallback_used: bool,
     fallback_reason: str | None = None,
     backend: str | None = None,
@@ -46,7 +66,7 @@ def add_execution_provenance(
     """Attach normalized execution provenance fields."""
 
     out = dict(metadata)
-    out["execution_mode"] = execution_mode
+    out["execution_mode"] = str(execution_mode)
     out["fallback_used"] = bool(fallback_used)
     if backend is not None:
         out["backend"] = backend

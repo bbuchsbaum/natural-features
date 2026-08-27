@@ -109,14 +109,19 @@ def build_tier_a_golden_reference(base_dir: str | Path) -> dict[str, Any]:
         posterior_backend="acoustic",
         hop_s=0.02,
         resolution_s=0.5,
-        execution_mode="fallback",
+        execution_mode="strict",
     )
 
     ml = extract_multiscale_language(
         transcript,
         scales_s=[2.0, 4.0, 16.0],
+        feature_families=[
+            "sentence_embeddings",
+            "paragraph_embeddings",
+            "lexical_controls",
+        ],
         provider_config={"provider": "local_bow", "dim": 256},
-        execution_mode="fallback",
+        execution_mode="strict",
         as_dataframe=False,
     )
 

@@ -1,0 +1,1 @@
+{"actor":"bbuchsbaum","entity":"bd-01KYSVVR3GE9MENW12M7STGKC7","kind":"reserve_open","mode":"exclusive","op":"20260730T161059.540615Z-p48778-c0000-rd8cb-h465285","paths":["tests/fixtures/golden_reference_v1.json"],"reservation_id":"rv-01KYSWP62MWVQSXWNT3F9XGNQK","ts":"2026-07-30T16:10:59.540615Z","ttl_s":3600,"v":1}

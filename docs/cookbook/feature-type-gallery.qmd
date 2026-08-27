@@ -9,13 +9,8 @@ sidebar: cookbook
 You want one docs page that covers every public feature family and shows
 examples of the main output object types. Model-backed and API-backed feature
 IDs are listed from the live catalogue; the plotted examples use local
-synthetic inputs or explicitly requested deterministic substitutes so the page
-can render without external datasets.
-
-Where an executable example includes an optional backend, it explicitly sets
-`execution_mode="fallback"`. The `allow_python` budget makes those methods
-eligible; it does not change the default behavior of reporting an error when
-required software is missing.
+synthetic inputs and explicitly named lightweight methods so the page can
+render without external datasets or model weights.
 
 ```{python}
 #| echo: false
@@ -130,22 +125,11 @@ audio_result = extract_features(
         "audio.mel",
         "audio.pitch",
         "audio.prosody",
-        "audio.clap",
         "speech.vad",
-        "speech.ctc",
     ],
     budget="allow_python",
     feature_params={
         "audio.mel": {"n_mels": 24},
-        "audio.clap": {
-            "dim": 12,
-            "stride_s": 0.25,
-            "execution_mode": "fallback",
-        },
-        "speech.ctc": {
-            "stride_s": 0.05,
-            "execution_mode": "fallback",
-        },
     },
 )
 ```
@@ -182,9 +166,9 @@ axes[2].set_ylabel("mel bin")
 plt.show()
 ```
 
-The same source also has embedding and posterior methods in the catalogue. This
-build explicitly selects their deterministic fallback policy, then keeps the
-plot focused on low-dimensional diagnostics.
+The catalogue also exposes model-backed embeddings and posterior methods. They
+are omitted from this self-contained build because named methods require their
+actual backends.
 
 ## Text, events, and language
 
@@ -200,21 +184,13 @@ text_result = extract_features(
     features=[
         "text.tokenize",
         "language.surface",
-        "language.syntax",
-        "language.surprisal",
         "speech.phonemes",
         "speech.articulatory",
     ],
     budget="allow_python",
-    feature_params={
-        "language.syntax": {"execution_mode": "fallback"},
-        "language.surprisal": {"execution_mode": "fallback"},
-    },
 )
 words = text_result.features["text.tokenize"]
 surface = text_result.features["language.surface"]
-syntax = text_result.features["language.syntax"]
-surprisal = text_result.features["language.surprisal"]
 articulatory = text_result.features["speech.articulatory"]
 ```
 
@@ -225,8 +201,6 @@ articulatory = text_result.features["speech.articulatory"]
 labels = [str(x) for x in words.label]
 matrix_parts = [
     ("surface", surface.values[:, :3], _feature_names(surface, 3)),
-    ("syntax", syntax.values[:, :4], _feature_names(syntax, 4)),
-    ("surprisal", surprisal.values[:, :1], _feature_names(surprisal, 1)),
     ("artic", articulatory.values[:, :3], _feature_names(articulatory, 3)),
 ]
 matrix = np.concatenate([part[1] for part in matrix_parts], axis=1)
@@ -256,7 +230,7 @@ plt.show()
 ## Video and vision
 
 The video example uses a moving synthetic blob with color variation. It
-exercises low-level vision, spatial, motion, face-proxy, and social-proxy
+exercises low-level vision, spatial, motion, and explicitly named social-proxy
 methods from the public catalogue.
 
 ```{python}
@@ -281,13 +255,11 @@ vision_result = extract_features(
         "vision.frame_diffs",
         "vision.motion",
         "vision.dct",
-        "vision.face",
         "vision.social_proxies",
     ],
     budget="allow_python",
     feature_params={
         "vision.dct": {"k": 12, "size": 16},
-        "vision.face": {"execution_mode": "fallback"},
     },
 )
 ```
@@ -298,7 +270,6 @@ vision_result = extract_features(
 #| fig-height: 6
 energy = vision_result.features["vision.energy"]
 motion = vision_result.features["vision.motion"]
-face = vision_result.features["vision.face"]
 social = vision_result.features["vision.social_proxies"]
 dct = vision_result.features["vision.dct"]
 
@@ -311,8 +282,7 @@ axes[0, 1].set_title("last frame")
 axes[0, 1].axis("off")
 
 axes[1, 0].plot(energy.times_s, _column(energy, "luminance"), label="luminance", color="#38bdf8")
-axes[1, 0].plot(motion.times_s, _column(motion, "flow_mag_mean"), label="motion", color="#f59e0b")
-axes[1, 0].plot(face.times_s, _column(face, "face_presence"), label="face proxy", color="#f472b6")
+axes[1, 0].plot(motion.times_s, _column(motion, "gradient_motion_mean"), label="gradient change", color="#f59e0b")
 axes[1, 0].plot(social.times_s, _column(social, "social_intensity_proxy"), label="social proxy", color="#34d399")
 axes[1, 0].set_title("framewise summaries")
 axes[1, 0].set_xlabel("time (s)")

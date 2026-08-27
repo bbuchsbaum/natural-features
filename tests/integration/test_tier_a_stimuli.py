@@ -79,7 +79,7 @@ def test_tier_a_transcript_alignment_and_articulatory_features() -> None:
     transcript = (ROOT / et["path"]).read_text(encoding="utf-8").strip()
     expected_words = int(et["diagnostics"]["word_count"])
 
-    out = whisper_transcribe(audio, transcript_text=transcript, strict_dependency=False)
+    out = whisper_transcribe(audio, transcript_text=transcript)
     words = out["words"]
     assert len(words) == expected_words
     assert np.all(np.diff(words.onset_s) >= 0)

@@ -46,7 +46,6 @@ def _runtime_check_whisperx(
             model="small",
             language=language,
             execution_mode=execution_mode,
-            strict_dependency=False,
         )
         check_words = asr["words"]
         details["word_source"] = "transcript_uniform_alignment"
@@ -59,7 +58,6 @@ def _runtime_check_whisperx(
             backend="whisperx",
             language=language,
             execution_mode=execution_mode,
-            strict_dependency=False,
         )
     except Exception as exc:
         return True, False, f"whisperx runtime check failed: {type(exc).__name__}", details
@@ -115,7 +113,7 @@ def validate_alignment_backends(
     words: EventSeries | None = None,
     transcript_text: str | None = None,
     language: str = "en",
-    execution_mode: str = "fallback",
+    execution_mode: str = "strict",
     timeout_s: float = 10.0,
 ) -> dict[str, Any]:
     """Validate alignment backend availability and runtime readiness.

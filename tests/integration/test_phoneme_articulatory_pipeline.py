@@ -23,8 +23,8 @@ def test_asr_alignment_to_phoneme_to_articulatory_pipeline() -> None:
     # Phone-coded transcript to validate interval and articulatory contracts.
     phone_transcript = "HH AH0 L OW1 W ER1 L D"
     audio = AudioStimulus.from_wav(TIER_A_AUDIO)
-    asr = whisper_transcribe(audio, transcript_text=phone_transcript, strict_dependency=False)
-    aligned = whisperx_align(audio, asr["words"], backend="none", strict_dependency=False)
+    asr = whisper_transcribe(audio, transcript_text=phone_transcript)
+    aligned = whisperx_align(audio, asr["words"], backend="none")
     phones = phoneme_events_from_words(
         aligned["words"],
         label_namespace="arpabet",

@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import numpy as np
 
+from natural_features.core.backend_errors import BackendDependencyError, BackendInferenceError
 from natural_features.core.execution import add_execution_provenance, resolve_execution_mode
 from natural_features.core.feature_types import FeatureSeries
 from natural_features.core.stimulus import VideoStimulus
 from natural_features.core.timebase import TimebaseSpec
 from natural_features.features.common import extractor_metadata
-from natural_features.features.vision.motion import optical_flow_mag
 from natural_features.features.vision.lowlevel import _to_gray
 
 
@@ -21,7 +21,7 @@ def motion_energy_pymoten(
     execution_mode: str | None = None,
     strict_dependency: bool | None = None,
 ) -> FeatureSeries:
-    mode, strict_dependency = resolve_execution_mode(
+    mode, _strict = resolve_execution_mode(
         execution_mode=execution_mode,
         strict_dependency=strict_dependency,
     )
@@ -41,26 +41,8 @@ def motion_energy_pymoten(
 
     try:
         import moten  # type: ignore
-    except ImportError:
-        if strict_dependency:
-            raise RuntimeError(
-                "pymoten/moten is not installed. Install optional dependency and retry."
-            )
-        proxy = optical_flow_mag(VideoStimulus.from_array(frames, fps=fps, start_offset_s=float(times[0])))
-        md = dict(proxy.metadata)
-        md["backend"] = "proxy"
-        md["backend_reason"] = "moten unavailable"
-        md["execution_mode"] = mode
-        md["fallback_used"] = True
-        md["fallback_reason"] = "moten unavailable"
-        return FeatureSeries(
-            values=proxy.values,
-            times_s=proxy.times_s,
-            dims=proxy.dims,
-            coords=proxy.coords,
-            metadata=md,
-            timebase=proxy.timebase,
-        )
+    except ImportError as exc:
+        raise BackendDependencyError("pymoten", "the moten package is required") from exc
 
     # This branch intentionally keeps API assumptions minimal across moten versions.
     gray = _to_gray(frames.astype(np.float32))
@@ -70,24 +52,8 @@ def motion_energy_pymoten(
             stimulus_fps=fps,
         )
         values = pyramid.project_stimulus(gray).astype(np.float32)
-    except Exception:
-        if strict_dependency:
-            raise
-        proxy = optical_flow_mag(VideoStimulus.from_array(frames, fps=fps, start_offset_s=float(times[0])))
-        md = dict(proxy.metadata)
-        md["backend"] = "proxy"
-        md["backend_reason"] = "moten projection failed"
-        md["execution_mode"] = mode
-        md["fallback_used"] = True
-        md["fallback_reason"] = "moten projection failed"
-        return FeatureSeries(
-            values=proxy.values,
-            times_s=proxy.times_s,
-            dims=proxy.dims,
-            coords=proxy.coords,
-            metadata=md,
-            timebase=proxy.timebase,
-        )
+    except Exception as exc:
+        raise BackendInferenceError("pymoten", "motion-energy projection failed") from exc
 
     metadata = add_execution_provenance(
         extractor_metadata(

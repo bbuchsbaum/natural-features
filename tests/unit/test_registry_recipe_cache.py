@@ -14,7 +14,7 @@ from natural_features.cli.main import main as cli_main
 from natural_features.core.feature_types import EventSeries
 from natural_features.core.recipe import as_mermaid, execute_recipe, plan_dag, validate_recipe
 from natural_features.core.registry import Registry
-from natural_features.core.stimulus import AudioStimulus, ImageStimulus, VideoStimulus
+from natural_features.core.stimulus import AudioStimulus, VideoStimulus
 from natural_features.flow.cache import cache_fingerprint, invalidation_reasons
 
 
@@ -85,9 +85,8 @@ def test_recipe_ref_wiring_with_custom_registry() -> None:
     assert out.steps["b"]["default"].values.shape[1] == out.steps["a"]["default"].values.shape[1]
 
 
-def test_builtin_registry_executes_image_vision_aliases() -> None:
+def test_builtin_registry_rejects_image_vision_fallback_recipes() -> None:
     reg = Registry.with_builtin_specs()
-    img = ImageStimulus.from_array(np.ones((4, 5, 3), dtype=np.float32), onset_s=0.25)
     recipe = {
         "features": [
             {"id": "energy", "use": "vision.energy", "inputs": {"image": "input:image"}},
@@ -105,10 +104,8 @@ def test_builtin_registry_executes_image_vision_aliases() -> None:
             },
         ]
     }
-    out = execute_recipe(recipe, registry=reg, inputs={"image": img})
-    assert out.steps["energy"]["default"].values.shape[0] == 1
-    assert out.steps["face"]["default"].values.shape[0] == 1
-    assert out.steps["clip"]["default"].values.shape == (1, 8)
+    with pytest.raises(ValueError, match="must be one of"):
+        execute_recipe(recipe, registry=reg, inputs={"image": object()})
 
 
 def test_recipe_rejects_unknown_params() -> None:
@@ -431,7 +428,7 @@ def test_cli_prep_video_with_mocked_ffmpeg(tmp_path, capsys, monkeypatch) -> Non
     assert audio_out.exists()
 
 
-def test_cli_speech_align_exports_ctm_textgrid_and_json(tmp_path, capsys) -> None:
+def test_cli_speech_align_rejects_removed_fallback_mode(tmp_path) -> None:
     wav_path = tmp_path / "audio.wav"
     sr = 8000
     t = np.arange(sr, dtype=np.float32) / sr
@@ -443,11 +440,7 @@ def test_cli_speech_align_exports_ctm_textgrid_and_json(tmp_path, capsys) -> Non
         w.setframerate(sr)
         w.writeframes(pcm.tobytes())
 
-    ctm_out = tmp_path / "words.ctm"
-    tg_out = tmp_path / "words.TextGrid"
-    json_out = tmp_path / "summary.json"
-
-    assert (
+    with pytest.raises(SystemExit):
         cli_main(
             [
                 "speech-align",
@@ -457,22 +450,8 @@ def test_cli_speech_align_exports_ctm_textgrid_and_json(tmp_path, capsys) -> Non
                 "none",
                 "--execution-mode",
                 "fallback",
-                "--ctm-out",
-                str(ctm_out),
-                "--textgrid-out",
-                str(tg_out),
-                "--out-json",
-                str(json_out),
-                "--json",
             ]
         )
-        == 0
-    )
-    payload = capsys.readouterr().out
-    assert "\"n_words\"" in payload
-    assert ctm_out.exists()
-    assert tg_out.exists()
-    assert json_out.exists()
 
 
 def test_cli_speech_validate_backends_json(capsys, monkeypatch, tmp_path) -> None:
@@ -579,7 +558,7 @@ def test_cli_speech_align_forwards_mfa_args(monkeypatch, tmp_path, capsys) -> No
                 "--align-backend",
                 "mfa",
                 "--execution-mode",
-                "fallback",
+                "strict",
                 "--mfa-dictionary",
                 "/tmp/dict.dict",
                 "--mfa-acoustic-model",

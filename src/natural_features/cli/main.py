@@ -99,7 +99,7 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Alignment backend: auto|whisperx|mfa|none",
     )
     vt.add_argument(
-        "--execution-mode", default="strict", choices=["fallback", "strict"]
+        "--execution-mode", default="strict", choices=["strict"]
     )
     vt.add_argument(
         "--strict-dependency",
@@ -187,7 +187,7 @@ def _build_parser() -> argparse.ArgumentParser:
     sa.add_argument("--audio-wav", required=True, help="Input mono/stereo WAV file")
     sa.add_argument("--model", default="small", help="ASR model id")
     sa.add_argument("--language", default="auto", help="ASR language code or auto")
-    sa.add_argument("--execution-mode", default="strict", choices=["fallback", "strict"])
+    sa.add_argument("--execution-mode", default="strict", choices=["strict"])
     sa.add_argument("--strict-dependency", action="store_true", help="Treat missing deps as hard failures")
     sa.add_argument("--chunked", action="store_true", help="Use chunked ASR path for long audio")
     sa.add_argument("--chunk-window-s", type=float, default=30.0, help="Chunk window (s)")
@@ -213,7 +213,7 @@ def _build_parser() -> argparse.ArgumentParser:
     sv.add_argument("--words-ctm", default=None, help="Optional CTM words for whisperx runtime check")
     sv.add_argument("--transcript", default=None, help="Optional transcript text for generated check words")
     sv.add_argument("--language", default="en", help="Language code for alignment check")
-    sv.add_argument("--execution-mode", default="fallback", choices=["fallback", "strict"])
+    sv.add_argument("--execution-mode", default="strict", choices=["strict"])
     sv.add_argument("--timeout-s", type=float, default=10.0, help="Timeout for backend subprocess checks")
     sv.add_argument("--out-json", default=None, help="Optional JSON report output path")
     sv.add_argument("--json", action="store_true", help="Emit JSON output")
@@ -223,7 +223,7 @@ def _build_parser() -> argparse.ArgumentParser:
     sd.add_argument("--words-ctm", default=None, help="Optional CTM words for whisperx runtime check")
     sd.add_argument("--transcript", default=None, help="Optional transcript text for generated check words")
     sd.add_argument("--language", default="en", help="Language code for alignment check")
-    sd.add_argument("--execution-mode", default="fallback", choices=["fallback", "strict"])
+    sd.add_argument("--execution-mode", default="strict", choices=["strict"])
     sd.add_argument("--timeout-s", type=float, default=10.0, help="Timeout for backend subprocess checks")
     sd.add_argument("--out-json", default=None, help="Optional JSON doctor output path")
     sd.add_argument("--json", action="store_true", help="Emit JSON output")
@@ -234,7 +234,7 @@ def _build_parser() -> argparse.ArgumentParser:
     sb.add_argument("--backend", default="auto", help="Alignment backend: auto|whisperx|mfa|gentle|none")
     sb.add_argument("--asr-model", default="small", help="ASR model id")
     sb.add_argument("--language", default="en", help="Language code")
-    sb.add_argument("--execution-mode", default="strict", choices=["fallback", "strict"])
+    sb.add_argument("--execution-mode", default="strict", choices=["strict"])
     sb.add_argument("--strict-dependency", action="store_true", help="Fail on missing runtime deps")
     sb.add_argument("--fail-fast", action="store_true", help="Stop on first benchmark failure")
     sb.add_argument("--out-json", default=None, help="Optional benchmark JSON output path")
@@ -325,7 +325,15 @@ def _cmd_features(args: argparse.Namespace) -> int:
 
 def _cmd_describe(reg: Registry, name: str) -> int:
     spec = reg.get(name)
-    print(json.dumps(spec.__dict__, indent=2, sort_keys=True))
+    payload = dict(spec.__dict__)
+    payload["modalities"] = [str(value) for value in spec.modalities]
+    payload["dependency_class"] = (
+        None if spec.dependency_class is None else str(spec.dependency_class)
+    )
+    payload["cost_class"] = None if spec.cost_class is None else str(spec.cost_class)
+    payload["params"] = {key: dict(value) for key, value in spec.params.items()}
+    payload["outputs"] = {key: dict(value) for key, value in spec.outputs.items()}
+    print(json.dumps(payload, indent=2, sort_keys=True))
     return 0
 
 

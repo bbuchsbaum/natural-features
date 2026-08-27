@@ -8,8 +8,6 @@ from natural_features.core.registry import Registry
 from natural_features.core.stimulus import AudioStimulus
 from natural_features.core.feature_types import FeatureSeries
 from natural_features.core.timebase import TimebaseSpec
-from natural_features.features.language.embed import bert_word_embeddings
-from natural_features.features.language.predictability import surprisal
 from natural_features.features.common import extractor_metadata
 from natural_features.features.speech.align import alignment_qc, whisperx_align
 from natural_features.features.speech.asr import whisper_transcribe
@@ -20,6 +18,7 @@ from natural_features.features.speech.phonology import (
     ctc_phone_posteriors,
     phoneme_posteriorgrams,
 )
+from natural_features.features.language.embed import bert_word_embeddings
 from natural_features.features.speech.ssl import wavlm_hidden_states
 
 
@@ -30,30 +29,32 @@ def _audio() -> AudioStimulus:
     return AudioStimulus.from_array(x, sr_hz=sr)
 
 
-def test_asr_fallback_and_alignment_qc() -> None:
+def test_explicit_transcript_and_passthrough_alignment_qc() -> None:
     a = _audio()
-    asr = whisper_transcribe(a, strict_dependency=False, device="cpu")
+    asr = whisper_transcribe(
+        a,
+        transcript_text="hello explicit transcript",
+        device="cpu",
+    )
     assert "words" in asr and "segments" in asr and "qc" in asr
     qc = alignment_qc(asr["words"])
     assert "low_confidence_words" in qc
-    aligned = whisperx_align(a, asr["words"], strict_dependency=False)
+    aligned = whisperx_align(a, asr["words"], backend="none")
     assert "words" in aligned and "qc" in aligned
 
 
-def test_ssl_phonology_and_language_fallbacks() -> None:
+def test_named_neural_methods_reject_surrogate_execution() -> None:
     a = _audio()
-    asr = whisper_transcribe(a, strict_dependency=False)
+    asr = whisper_transcribe(a, transcript_text="hello world")
     words = asr["words"]
-    ssl = wavlm_hidden_states(a, strict_dependency=False)
     post = phoneme_posteriorgrams(a)
     art = articulatory_features(words)
-    emb = bert_word_embeddings(words, strict_dependency=False)
-    sup = surprisal(words)
-    assert ssl.values.ndim == 3
     assert post.values.shape[0] == len(post.times_s)
     assert art.values.shape[1] == 5
-    assert emb.values.ndim == 3
-    assert sup.values.shape[1] == 1
+    with pytest.raises(ValueError, match="proxy and surrogate"):
+        wavlm_hidden_states(a, execution_mode="fallback")
+    with pytest.raises(ValueError, match="proxy and surrogate"):
+        bert_word_embeddings(words, execution_mode="fallback")
 
 
 def test_option1_posterior_to_articulatory_pipeline() -> None:
@@ -70,14 +71,14 @@ def test_option1_posterior_to_articulatory_pipeline() -> None:
     assert np.all(np.isfinite(art.values))
 
 
-def test_ctc_posteriors_fallback_and_strict_mode() -> None:
+def test_ctc_posteriors_reject_fallback_and_fail_loudly() -> None:
     a = _audio()
-    # Should always succeed in non-strict mode, falling back when unavailable.
-    post = ctc_phone_posteriors(a, strict_dependency=False, local_files_only=True)
-    assert post.values.ndim == 2
-    assert post.values.shape[0] == len(post.times_s)
-    assert post.values.shape[1] > 0
-    assert "backend" in post.metadata
+    with pytest.raises(ValueError, match="proxy and surrogate"):
+        ctc_phone_posteriors(
+            a,
+            execution_mode="fallback",
+            local_files_only=True,
+        )
 
     # Force an error path in strict mode with an invalid model id.
     with pytest.raises(RuntimeError):
@@ -145,7 +146,11 @@ def test_recipe_refs_for_speech_language_chain() -> None:
     reg = Registry.with_builtin_specs()
     recipe = {
         "features": [
-            {"id": "asr", "use": "speech.asr.whisper", "params": {"strict_dependency": False}},
+            {
+                "id": "asr",
+                "use": "speech.asr.whisper",
+                "params": {"transcript_text": "hello world"},
+            },
             {
                 "id": "art",
                 "use": "speech.articulatory.features",
@@ -153,21 +158,14 @@ def test_recipe_refs_for_speech_language_chain() -> None:
             },
             {
                 "id": "post",
-                "use": "speech.phonology.ctc_posteriors",
-                "params": {"strict_dependency": False, "local_files_only": True},
+                "use": "speech.phonology.acoustic_posteriors",
             },
             {
                 "id": "art_post",
                 "use": "speech.articulatory.from_posteriors",
                 "inputs": {"posteriors": "ref: post.default"},
             },
-            {
-                "id": "emb",
-                "use": "language.embed.bert_words",
-                "inputs": {"words": "ref: asr.words"},
-                "params": {"strict_dependency": False},
-            },
         ]
     }
     out = execute_recipe(recipe, registry=reg, inputs={"audio": a})
-    assert "asr" in out.steps and "art" in out.steps and "art_post" in out.steps and "emb" in out.steps
+    assert "asr" in out.steps and "art" in out.steps and "art_post" in out.steps

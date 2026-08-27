@@ -75,26 +75,22 @@ def test_default_budget_rejects_opt_in_features() -> None:
         plan_features(image, features="vision.clip")
 
 
-def test_extract_features_executes_image_fallbacks_from_path(tmp_path) -> None:
+def test_extract_features_rejects_same_name_image_fallbacks(tmp_path) -> None:
     pil = pytest.importorskip("PIL.Image")
     path = tmp_path / "image.png"
     data = np.full((4, 5, 3), 128, dtype=np.uint8)
     pil.fromarray(data).save(path)
 
-    result = extract_features(
-        path,
-        features=["vision.clip", "vision.face"],
-        budget="allow_python",
-        feature_params={
-            "vision.clip": {"dim": 8, "execution_mode": "fallback"},
-            "vision.face": {"execution_mode": "fallback"},
-        },
-    )
-
-    assert isinstance(result, ExtractFeaturesResult)
-    assert result.features["vision.clip"].values.shape == (1, 8)
-    assert result.features["vision.face"].values.shape[0] == 1
-    assert result.plan.input_modalities == ["image"]
+    with pytest.raises(ValueError, match="must be one of"):
+        extract_features(
+            path,
+            features=["vision.clip", "vision.face"],
+            budget="allow_python",
+            feature_params={
+                "vision.clip": {"dim": 8, "execution_mode": "fallback"},
+                "vision.face": {"execution_mode": "fallback"},
+            },
+        )
 
 
 def test_extract_features_text_preprocessing_chain() -> None:

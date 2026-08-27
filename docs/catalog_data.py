@@ -92,15 +92,15 @@ REFERENCES: dict[str, tuple[str, str]] = {
 
 FEATURE_GUIDE: dict[str, FeatureGuide] = {
     "audio.ast": FeatureGuide(
-        "Window-level Audio Spectrogram Transformer embeddings. Explicit fallback mode instead emits a deterministic mel-spectral proxy and records that substitution.",
+        "One whole-clip Audio Spectrogram Transformer pooler representation from the configured model, with the clip interval retained as temporal support. The extractor fails if the model backend is unavailable.",
         ("ast",),
     ),
     "audio.clap": FeatureGuide(
-        "Window-level embeddings from a contrastive language-audio model. Explicit fallback mode instead emits a deterministic mel-spectral proxy, not CLAP representations.",
+        "One whole-clip audio projection from the configured CLAP model, with the clip interval retained as temporal support. The extractor fails if the model backend is unavailable.",
         ("clap",),
     ),
     "audio.egemaps": FeatureGuide(
-        "Frame-level eGeMAPS low-level descriptors through openSMILE. Explicit fallback mode returns RMS plus five spectral summaries, not the eGeMAPS descriptor set.",
+        "Frame-level eGeMAPS low-level descriptors through openSMILE. The extractor fails if openSMILE is unavailable.",
         ("egemaps",),
     ),
     "audio.gammatone": FeatureGuide(
@@ -146,48 +146,48 @@ FEATURE_GUIDE: dict[str, FeatureGuide] = {
         "A FeatureSeries placed on a regular time grid using bin means or linear interpolation.",
     ),
     "image.ocr": FeatureGuide(
-        "Tesseract word boxes, confidence values, and relative image coordinates as events. Explicit fallback mode returns an empty, provenance-marked EventSeries.",
+        "Tesseract word boxes, confidence values, and relative image coordinates as events. Backend errors are reported rather than converted to empty output.",
     ),
     "language.bert": FeatureGuide(
-        "BERT hidden-state vectors pooled over subwords for each word in isolation. The current extractor does not encode the full sentence jointly; explicit fallback vectors are deterministic hashes.",
+        "BERT hidden-state vectors pooled over each word's subwords after the complete lexical sequence is encoded jointly.",
         ("bert",),
     ),
     "language.discourse": FeatureGuide(
         "Five deterministic word-level controls: normalized position, repetition flag, recurrence distance, local type-token ratio, and a heuristic content-word flag.",
     ),
     "language.hidden_states": FeatureGuide(
-        "Selected causal-language-model hidden states pooled over subwords for each word in isolation. Explicit fallback vectors are deterministic hashes rather than model activations.",
+        "Selected causal-language-model hidden states pooled over each word's subwords after the complete lexical sequence is encoded jointly.",
     ),
     "language.surface": FeatureGuide(
         "Public alias of language.discourse with the same five deterministic surface and recurrence controls.",
     ),
     "language.surprisal": FeatureGuide(
-        "A deterministic token-length and character-diversity score named surprisal_proxy. It is not negative log probability from the configured language model.",
+        "Word surprisal in nats from a configured causal language model, computed as summed subword negative log probability in full preceding context.",
         ("hale",),
     ),
     "language.syntax": FeatureGuide(
-        "Eight word-level indicators for length, function-word status, capitalization, punctuation, coarse part of speech, and sentence boundary. spaCy supplies POS labels; explicit fallback mode uses suffix rules.",
+        "Eight word-level indicators for length, function-word status, capitalization, punctuation, coarse part of speech, and sentence boundary. spaCy supplies POS labels.",
     ),
     "speech.articulatory": FeatureGuide(
         "Five orthographic proxies computed from letters in each word label: vowel, labial, coronal, and dorsal ratios plus starts-with-vowel. This route does not infer articulatory features from aligned phones.",
     ),
     "speech.ctc": FeatureGuide(
-        "Framewise phone-class probabilities from a phoneme CTC model. Explicit fallback mode produces normalized mel-band acoustic phone proxies and records the substitution.",
+        "Framewise phone-class probabilities from a configured phoneme CTC model.",
         ("ctc",),
     ),
     "speech.diarization": FeatureGuide(
-        "Speaker-activity tracks from pyannote.audio. Explicit fallback mode returns one VAD-derived speaker track, not multi-speaker diarization.",
+        "Speaker-activity tracks from pyannote.audio.",
         ("pyannote",),
     ),
     "speech.emotion": FeatureGuide(
-        "Whole-clip class probabilities from an audio-classification model. Explicit fallback mode instead emits framewise arousal, valence, dominance, and voicing proxies derived from prosody.",
+        "Whole-clip class probabilities from a configured audio-classification model.",
     ),
     "speech.hubert": FeatureGuide(
-        "Selected framewise HuBERT hidden states. Explicit fallback mode returns deterministic acoustic projections with substitution provenance.",
+        "Selected framewise HuBERT hidden states from the configured model.",
         ("hubert",),
     ),
     "speech.neural_vad": FeatureGuide(
-        "Framewise speech probability from Silero VAD. Explicit fallback mode uses a deterministic energy-based probability proxy.",
+        "Framewise speech probability from Silero VAD.",
     ),
     "speech.phonemes": FeatureGuide(
         "Phoneme events made by splitting each word interval uniformly across whitespace-separated phone labels already stored in that word. It is not grapheme-to-phoneme conversion.",
@@ -196,11 +196,11 @@ FEATURE_GUIDE: dict[str, FeatureGuide] = {
         "Contiguous speech intervals obtained by thresholding a short-time energy probability series.",
     ),
     "speech.wavlm": FeatureGuide(
-        "Selected framewise WavLM hidden states. Explicit fallback mode returns deterministic acoustic projections with substitution provenance.",
+        "Selected framewise WavLM hidden states from the configured model.",
         ("wavlm",),
     ),
     "speech.words": FeatureGuide(
-        "Whisper segment and word events with timestamps, confidence, and alignment QC. Explicit fallback mode distributes a supplied transcript over the clip or returns another provenance-marked approximation.",
+        "Whisper segment and word events with timestamps, confidence, and alignment QC. A supplied transcript is an explicit transcript-timing input, not an ASR substitute.",
         ("whisper",),
     ),
     "text.tokenize": FeatureGuide(
@@ -219,7 +219,7 @@ FEATURE_GUIDE: dict[str, FeatureGuide] = {
         "Video frames whose absolute frame times fall inside a requested half-open interval.",
     ),
     "vision.clip": FeatureGuide(
-        "Per-frame CLIP image embeddings. Explicit fallback mode returns deterministic projected image summaries, not CLIP vectors.",
+        "Per-frame CLIP image embeddings at the model's native dimensionality.",
         ("clip",),
     ),
     "vision.dct": FeatureGuide(
@@ -227,32 +227,32 @@ FEATURE_GUIDE: dict[str, FeatureGuide] = {
         ("dct",),
     ),
     "vision.dino": FeatureGuide(
-        "Selected per-frame DINOv2 representations. Explicit fallback mode returns deterministic projected image summaries, not DINOv2 representations.",
+        "Selected per-frame DINOv2 representations at each layer's native dimensionality.",
         ("dinov2",),
     ),
     "vision.energy": FeatureGuide(
         "Framewise mean luminance, contrast, saturation, and gradient edge energy, with first differences by default.",
     ),
     "vision.face": FeatureGuide(
-        "Per-frame face presence, count, total box area, and mean box center from MediaPipe. Explicit fallback mode emits color/contrast proxies that must not be interpreted as detections.",
+        "Per-frame face presence, count, total box area, and mean box center from MediaPipe.",
         ("blazeface",),
     ),
     "vision.frame_diffs": FeatureGuide(
         "Mean and 95th-percentile absolute grayscale change between successive frames.",
     ),
     "vision.motion": FeatureGuide(
-        "Mean and 95th-percentile magnitude of a spatial-temporal gradient proxy. Despite the historical label, this route does not estimate optical flow.",
+        "Mean and 95th-percentile magnitude of spatial-temporal gradient change. This explicitly named statistic does not estimate optical flow.",
     ),
     "vision.motion_energy": FeatureGuide(
-        "Spatiotemporal motion-energy pyramid responses through pymoten. Explicit fallback mode returns the two-column gradient-motion proxy instead.",
+        "Spatiotemporal motion-energy pyramid responses through pymoten.",
         ("adelson1985",),
     ),
     "vision.optical_flow": FeatureGuide(
-        "Mean horizontal flow, vertical flow, magnitude, and 95th-percentile magnitude from dense Farnebäck flow. Explicit fallback mode uses spatial-temporal gradients.",
+        "Mean horizontal flow, vertical flow, magnitude, and 95th-percentile magnitude from dense Farnebäck flow.",
         ("farneback",),
     ),
     "vision.semantic_views": FeatureGuide(
-        "Frame-timed labels selected from a configurable scene vocabulary by CLIP zero-shot similarity. Explicit fallback mode uses luminance, saturation, and edge heuristics.",
+        "Frame-timed labels selected from a configurable scene vocabulary by CLIP zero-shot similarity.",
         ("clip",),
     ),
     "vision.social_proxies": FeatureGuide(

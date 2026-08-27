@@ -22,6 +22,11 @@ def test_multiscale_language_from_text_local_hash(tmp_path) -> None:
     res = extract_multiscale_language(
         text,
         scales_s=[2.0, 4.0, 16.0],
+        feature_families=[
+            "sentence_embeddings",
+            "paragraph_embeddings",
+            "lexical_controls",
+        ],
         provider_config={"provider": "local_hash", "dim": 64},
         cache_dir=tmp_path / "cache",
         as_dataframe=False,
@@ -39,6 +44,7 @@ def test_multiscale_language_cache_hits_on_repeat(tmp_path) -> None:
     text = "Short text for caching behavior check."
     kwargs = dict(
         scales_s=[2.0, 4.0],
+        feature_families=["sentence_embeddings", "lexical_controls"],
         provider_config={"provider": "local_hash", "dim": 32},
         cache_dir=tmp_path / "cache",
         as_dataframe=False,
@@ -50,14 +56,15 @@ def test_multiscale_language_cache_hits_on_repeat(tmp_path) -> None:
     assert second.qc["cache_hit_fraction"] > 0
 
 
-def test_multiscale_language_audio_asr_fallback() -> None:
+def test_multiscale_language_audio_with_explicit_transcript() -> None:
     a = _audio()
     res = extract_multiscale_language(
         a,
         scales_s=[2.0, 4.0],
         provider_config={"provider": "local_hash", "dim": 32},
-        feature_families=["sentence_embeddings", "surprisal", "lexical_controls"],
-        execution_mode="fallback",
+        feature_families=["sentence_embeddings", "lexical_controls"],
+        transcript_text="one two three four",
+        execution_mode="strict",
         as_dataframe=False,
     )
     assert sorted(res.by_scale.keys()) == [2.0, 4.0]

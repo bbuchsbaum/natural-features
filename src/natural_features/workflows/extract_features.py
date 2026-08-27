@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 import re
@@ -62,7 +63,7 @@ _PREFERRED_FEATURE_IDS = {
     "audio.lowlevel.spectral_stats": "audio.spectral_stats",
     "audio.opensmile.egemaps_lld": "audio.egemaps",
     "vision.dynamics.frame_diffs": "vision.frame_diffs",
-    "vision.motion.optical_flow_mag": "vision.motion",
+    "vision.motion.gradient_change": "vision.motion",
     "vision.motion.motion_energy": "vision.motion_energy",
     "affect.visual.social_proxies": "vision.social_proxies",
     "speech.asr.whisper": "speech.words",
@@ -251,7 +252,7 @@ def _title_from_id(feature_id: str) -> str:
 def _param_defaults(spec: ExtractorSpec) -> dict[str, Any]:
     defaults: dict[str, Any] = {}
     for name, param_spec in (spec.params or {}).items():
-        if isinstance(param_spec, dict) and "default" in param_spec:
+        if isinstance(param_spec, Mapping) and "default" in param_spec:
             defaults[name] = param_spec["default"]
     return defaults
 
@@ -259,7 +260,7 @@ def _param_defaults(spec: ExtractorSpec) -> dict[str, Any]:
 def _output_schema(spec: ExtractorSpec) -> str:
     schemas = []
     for out_spec in (spec.outputs or {}).values():
-        if isinstance(out_spec, dict) and out_spec.get("schema"):
+        if isinstance(out_spec, Mapping) and out_spec.get("schema"):
             schemas.append(str(out_spec["schema"]))
     return ",".join(schemas)
 
@@ -268,7 +269,7 @@ def _infer_dependency_class(spec: ExtractorSpec) -> str:
     if spec.dependency_class:
         return str(spec.dependency_class)
     requires = {str(x) for x in spec.requires}
-    if requires & _EXPENSIVE_REQUIRES or "fallback" in spec.tags:
+    if requires & _EXPENSIVE_REQUIRES:
         return "optional_python"
     return "base_python"
 
@@ -582,8 +583,8 @@ def _register_outputs(
 ) -> None:
     for out_key, out_spec in outputs.items():
         token = f"ref:{step_id}.{out_key}"
-        kind = out_spec.get("kind") if isinstance(out_spec, dict) else None
-        schema = out_spec.get("schema") if isinstance(out_spec, dict) else None
+        kind = out_spec.get("kind") if isinstance(out_spec, Mapping) else None
+        schema = out_spec.get("schema") if isinstance(out_spec, Mapping) else None
         if kind:
             available[str(kind)] = token
         if out_key != "default":
@@ -683,11 +684,8 @@ def plan_features(
         params = dict(entry.default_params)
         overrides = dict(feature_params.get(feature_id, {}))
         overrides.update(feature_params.get(spec.name, {}))
-        if "strict_dependency" in overrides and "execution_mode" not in overrides:
-            # Preserve the legacy flag as an explicit mode request instead of
-            # combining it with the registry's modern strict default.
-            params.pop("execution_mode", None)
         params.update(overrides)
+        registry.validated_params(spec.name, params)
         step_id = _unique_step_id(feature_id, used_ids)
         rows.append(
             FeaturePlanRow(

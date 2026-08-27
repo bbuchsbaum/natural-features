@@ -26,7 +26,7 @@ Breaking stable API changes require:
    - CI-only parity mode, when `~/code/natfeatures` is unavailable:
      - `uv run python scripts/release_check.py --no-r-compare`
    - Optional hard benchmark gate:
-     - `nf speech-benchmark --manifest tests/benchmarks/manifests/tier_a_alignment_manifest.json --json > /tmp/alignment_report.json`
+     - `nf speech-benchmark --manifest tests/benchmarks/manifests/tier_a_alignment_manifest.json --backend none --execution-mode strict --out-json /tmp/alignment_report.json --json`
      - `NF_ALIGNMENT_BENCHMARK_REPORT=/tmp/alignment_report.json make release-check`
    - For temporal-contract changes, run the native-grid acceptance fixture:
      - `uv run pytest -q tests/integration/test_native_temporal_handoff.py`

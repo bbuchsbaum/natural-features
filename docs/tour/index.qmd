@@ -170,11 +170,10 @@ result = nf.extract_features(
 )
 ```
 
-The default `execution_mode="strict"` is implicit above. A deterministic proxy
-can still be useful for tests or pipeline development, but it must be requested
-with `execution_mode="fallback"`; its metadata identifies the substituted
-backend. See [Execution modes](../concepts/execution-modes.qmd) for the full
-contract.
+The default `execution_mode="strict"` is implicit above. For tests or pipeline
+development, select an explicitly named lightweight feature rather than
+substituting a proxy under the requested model's ID. See
+[Execution modes](../concepts/execution-modes.qmd) for the full contract.
 
 ## Public feature inventory
 

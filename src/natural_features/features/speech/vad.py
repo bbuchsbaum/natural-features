@@ -7,6 +7,12 @@ from typing import Any
 
 import numpy as np
 
+from natural_features.core.backend_errors import (
+    BackendDependencyError,
+    BackendInferenceError,
+    BackendLoadError,
+    OptionalBackendError,
+)
 from natural_features.core.execution import add_execution_provenance, resolve_execution_mode
 from natural_features.core.feature_types import EventSeries, FeatureSeries
 from natural_features.core.stimulus import AudioStimulus
@@ -141,13 +147,13 @@ def _load_silero_backend(model: str, *, local_files_only: bool) -> tuple[Any, st
     if model in {"silero", "silero_vad", "package"}:
         try:
             from silero_vad import load_silero_vad  # type: ignore
-        except Exception as exc:
+        except ImportError as exc:
             if local_files_only:
-                raise RuntimeError("silero_vad package is not installed.") from exc
+                raise BackendDependencyError("Silero VAD", "silero_vad is not installed") from exc
         else:
             return load_silero_vad(), "silero_vad_package"
     if local_files_only:
-        raise RuntimeError(f"Silero VAD model '{model}' is not available locally.")
+        raise BackendLoadError("Silero VAD", f"model '{model}' is not available locally")
 
     import torch  # type: ignore
 
@@ -166,11 +172,17 @@ def _silero_probabilities(
     execution_mode: str,
     params: dict[str, object],
 ) -> FeatureSeries:
-    import torch  # type: ignore
+    try:
+        import torch  # type: ignore
+    except ImportError as exc:
+        raise BackendDependencyError("Silero VAD", "torch is required") from exc
 
-    backend_model, backend = _load_silero_backend(model, local_files_only=local_files_only)
-    if hasattr(backend_model, "reset_states"):
-        backend_model.reset_states()
+    try:
+        backend_model, backend = _load_silero_backend(model, local_files_only=local_files_only)
+    except OptionalBackendError:
+        raise
+    except Exception as exc:
+        raise BackendLoadError("Silero VAD", f"model '{model}' could not be loaded") from exc
 
     target_sr = 8000 if stimulus.sr_hz <= 8000 else 16000
     if target_sr not in _SILERO_SAMPLE_RATES:  # defensive; target_sr is intentionally constrained above.
@@ -180,14 +192,23 @@ def _silero_probabilities(
     window = 512 if target_sr == 16000 else 256
     n_chunks = max(1, int(np.ceil(len(wav) / float(window))))
     probs = np.empty(n_chunks, dtype=np.float32)
-    for i in range(n_chunks):
-        start = i * window
-        chunk = wav[start : start + window]
-        if len(chunk) < window:
-            chunk = np.pad(chunk, (0, window - len(chunk))).astype(np.float32)
-        probs[i] = np.clip(_as_float(backend_model(torch.from_numpy(chunk.astype(np.float32)), target_sr)), 0.0, 1.0)
-    if hasattr(backend_model, "reset_states"):
-        backend_model.reset_states()
+    try:
+        if hasattr(backend_model, "reset_states"):
+            backend_model.reset_states()
+        for i in range(n_chunks):
+            start = i * window
+            chunk = wav[start : start + window]
+            if len(chunk) < window:
+                chunk = np.pad(chunk, (0, window - len(chunk))).astype(np.float32)
+            probs[i] = np.clip(
+                _as_float(backend_model(torch.from_numpy(chunk.astype(np.float32)), target_sr)),
+                0.0,
+                1.0,
+            )
+        if hasattr(backend_model, "reset_states"):
+            backend_model.reset_states()
+    except Exception as exc:
+        raise BackendInferenceError("Silero VAD", "frame evaluation failed") from exc
 
     native_hop_s = window / float(target_sr)
     native_times = stimulus.start_offset_s + (np.arange(n_chunks, dtype=np.float64) + 0.5) * native_hop_s
@@ -217,39 +238,6 @@ def _silero_probabilities(
     )
 
 
-def _fallback_neural_vad(
-    stimulus: AudioStimulus,
-    *,
-    model: str,
-    hop_s: float,
-    win_s: float,
-    execution_mode: str,
-    params: dict[str, object],
-) -> FeatureSeries:
-    base = energy_vad(stimulus, hop_s=hop_s, win_s=win_s)
-    prob = base.values[:, 0]
-    smooth = np.convolve(prob, np.ones(3, dtype=np.float32) / 3.0, mode="same") if prob.size else prob
-    values = smooth[:, None].astype(np.float32)
-    md = add_execution_provenance(
-        extractor_metadata(
-            "speech.neural_vad",
-            params=params,
-            extra={"backend": "energy_proxy"},
-        ),
-        execution_mode=execution_mode,
-        fallback_used=True,
-        fallback_reason="neural VAD backend unavailable",
-    )
-    return FeatureSeries(
-        values=values,
-        times_s=base.times_s,
-        dims=("time", "feature"),
-        coords={"feature": ["speech_probability"]},
-        metadata=md,
-        timebase=TimebaseSpec(kind="audio_hop", hop_s=hop_s, sampling_rate_hz=1.0 / hop_s),
-    )
-
-
 def neural_vad(
     stimulus: AudioStimulus,
     *,
@@ -260,33 +248,21 @@ def neural_vad(
     execution_mode: str | None = None,
     strict_dependency: bool | None = None,
 ) -> FeatureSeries:
-    """Return neural-VAD speech probabilities with a deterministic fallback."""
+    """Return neural-VAD speech probabilities."""
 
-    mode, strict = resolve_execution_mode(execution_mode=execution_mode, strict_dependency=strict_dependency)
+    mode, _strict = resolve_execution_mode(execution_mode=execution_mode, strict_dependency=strict_dependency)
     params: dict[str, object] = {
         "model": model,
         "hop_s": hop_s,
         "win_s": win_s,
         "local_files_only": local_files_only,
     }
-    try:
-        return _silero_probabilities(
-            stimulus,
-            model=model,
-            hop_s=hop_s,
-            win_s=win_s,
-            local_files_only=local_files_only,
-            execution_mode=mode,
-            params=params,
-        )
-    except Exception as exc:
-        if strict:
-            raise RuntimeError("speech neural VAD extraction failed in strict mode.") from exc
-        return _fallback_neural_vad(
-            stimulus,
-            model=model,
-            hop_s=hop_s,
-            win_s=win_s,
-            execution_mode=mode,
-            params=params,
-        )
+    return _silero_probabilities(
+        stimulus,
+        model=model,
+        hop_s=hop_s,
+        win_s=win_s,
+        local_files_only=local_files_only,
+        execution_mode=mode,
+        params=params,
+    )

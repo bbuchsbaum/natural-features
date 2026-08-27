@@ -85,7 +85,7 @@ jobs:
             --audio-wav tests/stimuli/tier_a/audio_speechlike.wav \
             --words-ctm tests/stimuli/tier_a/reference_words.ctm \
             --language en \
-            --execution-mode fallback \
+            --execution-mode strict \
             --out-json artifacts/speech_backend_validation.json \
             --json
 
@@ -121,8 +121,8 @@ jobs:
           mkdir -p artifacts
           python -m natural_features.cli.main speech-benchmark \
             --manifest tests/benchmarks/manifests/tier_a_alignment_manifest.json \
-            --backend auto \
-            --execution-mode fallback \
+            --backend none \
+            --execution-mode strict \
             --out-json artifacts/alignment_benchmark.json \
             --json
 

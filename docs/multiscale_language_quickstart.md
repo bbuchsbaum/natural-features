@@ -1,7 +1,7 @@
 # Multiscale Language Quickstart
 
 `extract_multiscale_language` generates semantic language features at multiple
-time scales from transcript text, word events, or audio (via ASR fallback).
+time scales from transcript text, word events, or audio (via the configured ASR backend).
 
 ```python
 from natural_features.workflows import extract_multiscale_language
@@ -35,8 +35,8 @@ Notes:
 
 - For local deterministic testing without API keys:
   - `provider_config={"provider": "local_bow", "dim": 1024}`
-  - `provider_config={"provider": "local_hash", "dim": 256}` (legacy lightweight fallback)
-- API-key and provider enforcement is strict by default. Set
-  `execution_mode="fallback"` only to request the documented local substitute.
+  - `provider_config={"provider": "local_hash", "dim": 256}` (legacy explicitly named provider)
+- API-key and provider enforcement is strict. Select `local_bow` or
+  `local_hash` explicitly when that is the intended representation.
 - Outputs are `FeatureSeries` objects keyed by scale.
 - `result.qc` includes cache hit/miss metrics (`cache_unique_misses`) and unit counts.

@@ -35,8 +35,7 @@ Notes:
 
 - Resolution is implemented via shared resampling grid.
 - Feature names are prefixed by feature family (`rms.*`, `mfcc.*`, etc.).
-- Optional named methods such as openSMILE fail fast by default. Set
-  `execution_mode="fallback"` only when you deliberately want a documented
-  proxy during pipeline development.
+- Optional named methods such as openSMILE fail fast when unavailable. Select
+  an explicitly named lightweight feature for pipeline development.
 - Use `as_dataframe=False` for matrix-only workflows.
 - `collapse` aggregates each feature across time per file.

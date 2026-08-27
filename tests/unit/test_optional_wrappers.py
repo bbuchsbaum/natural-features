@@ -12,11 +12,11 @@ from natural_features.features.audio.opensmile import egemaps_lld
 from natural_features.features.vision.motion_energy import motion_energy_pymoten
 
 
-def test_motion_energy_wrapper_fallback_or_backend() -> None:
+def test_motion_energy_wrapper_rejects_proxy_substitution() -> None:
     frames = np.random.default_rng(0).integers(0, 255, size=(8, 16, 16, 3), dtype=np.uint8)
     v = VideoStimulus.from_array(frames, fps=5.0)
-    out = motion_energy_pymoten(v, strict_dependency=False)
-    assert out.values.shape[0] == len(out.times_s)
+    with pytest.raises(ValueError, match="proxy and surrogate"):
+        motion_energy_pymoten(v, strict_dependency=False)
 
 
 def test_motion_energy_wrapper_strict_dependency_error() -> None:
@@ -59,12 +59,12 @@ def test_motion_energy_wrapper_strict_backend_with_fake_moten(monkeypatch) -> No
     assert np.isfinite(out.values).all()
 
 
-def test_opensmile_wrapper_fallback_or_backend() -> None:
+def test_opensmile_wrapper_rejects_proxy_substitution() -> None:
     sr = 8000
     t = np.arange(sr, dtype=np.float32) / sr
     a = AudioStimulus.from_array((0.2 * np.sin(2 * np.pi * 220 * t)).astype(np.float32), sr_hz=sr)
-    out = egemaps_lld(a, frame_s=0.02, strict_dependency=False)
-    assert out.values.shape[0] == len(out.times_s)
+    with pytest.raises(ValueError, match="proxy and surrogate"):
+        egemaps_lld(a, frame_s=0.02, strict_dependency=False)
 
 
 def test_opensmile_wrapper_strict_dependency_error() -> None:
