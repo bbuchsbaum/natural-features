@@ -1,0 +1,1 @@
+{"actor":"codex-natural-features-ci-pin","entity":"bd-01M10EV4KY3FWGA5P1CSB952SZ","kind":"note","note_kind":"progress","op":"20260827T015512.981724Z-p11838-c0003-r2334-h1c4f96","text":"Hosted deterministic-unit installed Ruff 0.16.4 from ruff>=0.8; pinning the dev/release tool to the verified lockfile version 0.15.20.","ts":"2026-08-27T01:55:12.981724Z","v":1}
