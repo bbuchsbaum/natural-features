@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Music feature family: `audio.music.chroma`, `audio.music.tonnetz`,
+  `audio.music.onset_strength`, `audio.music.tempogram`, `audio.music.rhythm` and
+  `audio.music.tonality`, covering pitch-class content, tonal centroid, key/mode
+  (Krumhansl-Schmuckler, including the full 24-key correlation profile), and the
+  onset/tempo family. Pure numpy, no new runtime dependencies.
+- `audio.modulation.mps`: spectrotemporal modulation power spectrum on a
+  log-frequency cochleagram, with a signed spectral-modulation axis in cycles per
+  octave and a temporal axis in Hz. `modulation_power_spectrum()` is exposed as a
+  numeric kernel so it can be validated against synthetic ripples of known
+  `(Omega, omega)`.
+- Cookbook: "Build a music feature hierarchy", covering the frame-rate versus
+  window sampling conventions and a ladder of integration windows.
 - Cookbook and example for extracting `audio.rms` and sampling it onto a scan
   TR grid, including a 2 s TR with stimulus onset at 0.67 s.
 - Cookbook and example for convolving native `audio.rms` with fmrimod's SPMG1
