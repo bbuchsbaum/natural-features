@@ -1243,6 +1243,32 @@ extractors:
         schema: FeatureSeries/v1
         kind: features
 
+  - name: audio.periodicity
+    impl: natural_features.features.audio.periodicity:audio_periodicity
+    version: "1.0"
+    label: Periodicity and harmonicity
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: moderate
+    tags: [audio, pitch, harmonicity, periodicity]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      win_s: { type: float, default: 0.046 }
+      fmin: { type: float, default: 50.0 }
+      fmax: { type: float, default: 1000.0 }
+      voicing_threshold: { type: float, default: 0.2 }
+      silence_floor_db: { type: float, default: -60.0 }
+      stationarity_ratio: { type: float, default: 8.0 }
+      max_jitter: { type: float, default: 0.5 }
+      n_harmonics: { type: int, default: 8 }
+      harmonic_tol: { type: float, default: 0.03 }
+      peak_threshold_db: { type: float, default: -40.0 }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
   - name: audio.pitch
     impl: natural_features.features.audio.prosody:audio_pitch
     version: "1.0"

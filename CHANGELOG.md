@@ -17,6 +17,11 @@ All notable changes to this project will be documented in this file.
   `(Omega, omega)`.
 - Cookbook: "Build a music feature hierarchy", covering the frame-rate versus
   window sampling conventions and a ladder of integration windows.
+- `audio.periodicity`: framewise f0, confidence, harmonic-to-noise ratio, harmonic
+  energy fraction, inharmonicity, spectral peak rate and f0 jitter. Widens the
+  pitch family from the two columns `audio.pitch` provides, and computes its
+  autocorrelation by FFT over all frames at once rather than per-lag in Python
+  (~1.4x faster on minute-scale audio while returning 3.5x the columns).
 
 ### Fixed
 - `audio.clap` and `audio.ast` under transformers 5.x. `get_audio_features` now
