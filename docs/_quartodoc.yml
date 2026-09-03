@@ -21,6 +21,7 @@ quartodoc:
         - TimebaseSpec
         - FeatureBundle
         - TemporalPayload
+        - in_clock
         - temporal_object_in_clock
         - Timeline
         - FeatureAlignment

@@ -13,7 +13,7 @@ def _check_metric(name: str, value: float | None, rule: dict[str, Any]) -> tuple
     warns: list[str] = []
     fails: list[str] = []
     if value is None:
-        warns.append(f"{name}: missing value; skipping threshold check")
+        fails.append(f"{name}: missing value; cannot evaluate threshold")
         return warns, fails
 
     if "soft_max" in rule and value > float(rule["soft_max"]):
@@ -33,6 +33,17 @@ def evaluate_gate(report: dict[str, Any], thresholds: dict[str, Any]) -> dict[st
     rules = dict(thresholds.get("metrics", {}))
     warnings: list[str] = []
     failures: list[str] = []
+    n_items = int(summary.get("n_items", 0))
+    n_success = int(summary.get("n_success", 0))
+    n_failed = int(summary.get("n_failed", 0))
+    if n_items <= 0:
+        failures.append("benchmark summary contains no items")
+    if n_failed != 0:
+        failures.append(f"benchmark summary contains {n_failed} failed item(s)")
+    if n_success != n_items:
+        failures.append(
+            f"benchmark summary is incomplete: n_success={n_success}, n_items={n_items}"
+        )
     for metric, rule in rules.items():
         raw = summary.get(metric)
         value = float(raw) if raw is not None else None

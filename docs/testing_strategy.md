@@ -63,7 +63,9 @@ A longer local soundtrack (Down the Rabbit Hole) can be dropped at:
 The WAV is gitignored and is not required for CI. When it is present,
 `tests/external/test_rabbit_hole_rms_tr.py` extracts `audio.rms` and samples it
 onto a 2 s TR grid with stimulus onset at 0.67 s. The same workflow is covered
-on synthetic audio by `tests/unit/test_rms_tr_alignment.py`.
+on synthetic audio by `tests/unit/test_rms_tr_alignment.py`. When `fmrimod` is
+installed, `tests/unit/test_fmrimod_compat.py` convolves native RMS with the
+SPMG1 HRF; `examples/rms_spmg1_hrf.py` runs the same path on the local WAV.
 
 Run:
 
@@ -101,8 +103,15 @@ pytest -q tests/external/test_real_optional_backends.py
 Corpus benchmark (manifest-driven):
 
 ```bash
-nf speech-benchmark --manifest tests/benchmarks/manifests/tier_a_alignment_manifest.json --json
+nf speech-benchmark \
+  --manifest tests/benchmarks/manifests/tier_a_alignment_manifest.json \
+  --backend none \
+  --execution-mode strict \
+  --json
 ```
+
+That Tier A command is the dependency-free transcript-timing baseline. Backend
+quality runs must name and install the backend being evaluated.
 
 To import from Dropbox source into repo-local data:
 

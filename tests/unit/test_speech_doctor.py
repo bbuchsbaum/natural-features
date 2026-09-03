@@ -11,7 +11,7 @@ def _validation_payload(*, wx: dict, mfa: dict, gentle: dict) -> dict:
             "words_provided": False,
             "transcript_provided": False,
             "language": "en",
-            "execution_mode": "fallback",
+            "execution_mode": "strict",
         },
         "backends": {
             "whisperx": wx,

@@ -1,4 +1,4 @@
-"""ASR wrappers with transcript fallback behavior."""
+"""ASR and explicit transcript-timing wrappers."""
 
 from __future__ import annotations
 
@@ -7,6 +7,11 @@ from typing import Any
 
 import numpy as np
 
+from natural_features.core.backend_errors import (
+    BackendDependencyError,
+    BackendInferenceError,
+    BackendLoadError,
+)
 from natural_features.core.execution import add_execution_provenance, resolve_execution_mode
 from natural_features.core.feature_types import EventSeries
 from natural_features.core.stimulus import AudioStimulus
@@ -80,7 +85,7 @@ def _from_transcript_text(
     qc = normalize_alignment_qc(
         {
             "mode": "provided_transcript_uniform_alignment",
-            "execution_mode": metadata.get("execution_mode", "fallback"),
+            "execution_mode": metadata.get("execution_mode", "strict"),
             "fallback_used": False,
             "n_words": len(words),
             "dropped_words": 0,
@@ -89,57 +94,6 @@ def _from_transcript_text(
         }
     )
     return {"segments": segments, "words": word_events, "qc": qc}
-
-
-def _fallback_asr(
-    stimulus: AudioStimulus,
-    *,
-    metadata: dict[str, Any],
-    execution_mode: str,
-    reason: str,
-    asr_model_name: str,
-) -> dict[str, Any]:
-    start_s = stimulus.start_offset_s
-    end_s = stimulus.start_offset_s + (stimulus.samples.shape[0] / stimulus.sr_hz)
-    md = ensure_word_event_metadata(
-        add_execution_provenance(
-            metadata,
-            execution_mode=execution_mode,
-            fallback_used=True,
-            fallback_reason=reason,
-        ),
-        asr_model_name=asr_model_name,
-        aligner_backend="none",
-        aligner_version="none",
-    )
-    segment_text = "[ASR unavailable]"
-    segments = EventSeries(
-        onset_s=np.array([start_s], dtype=np.float64),
-        offset_s=np.array([end_s], dtype=np.float64),
-        label=np.array([segment_text], dtype=object),
-        confidence=np.array([0.0], dtype=np.float32),
-        metadata=md,
-    )
-    words = EventSeries(
-        onset_s=np.array([start_s], dtype=np.float64),
-        offset_s=np.array([end_s], dtype=np.float64),
-        label=np.array(["UNK"], dtype=object),
-        confidence=np.array([0.0], dtype=np.float32),
-        metadata=md,
-    )
-    qc = normalize_alignment_qc(
-        {
-            "mode": "fallback",
-            "execution_mode": execution_mode,
-            "fallback_used": True,
-            "n_words": 1,
-            "dropped_words": 0,
-            "low_confidence_words": 1,
-            "reason": reason,
-            "coverage_fraction": 1.0,
-        }
-    )
-    return {"segments": segments, "words": words, "qc": qc}
 
 
 def whisper_transcribe(
@@ -153,7 +107,7 @@ def whisper_transcribe(
     execution_mode: str | None = None,
     strict_dependency: bool | None = None,
 ) -> dict[str, Any]:
-    mode, strict_dependency = resolve_execution_mode(
+    mode, _strict = resolve_execution_mode(
         execution_mode=execution_mode,
         strict_dependency=strict_dependency,
     )
@@ -187,16 +141,8 @@ def whisper_transcribe(
 
     try:
         from faster_whisper import WhisperModel  # type: ignore
-    except ImportError:
-        if strict_dependency:
-            raise RuntimeError("faster-whisper is not installed. Install optional dependency and retry.")
-        return _fallback_asr(
-            stimulus,
-            metadata=metadata,
-            execution_mode=mode,
-            reason="faster-whisper unavailable",
-            asr_model_name=model,
-        )
+    except ImportError as exc:
+        raise BackendDependencyError("faster-whisper", "the faster-whisper package is required") from exc
 
     wav = stimulus.samples.astype(np.float32)
     if wav.ndim == 2:
@@ -206,27 +152,26 @@ def whisper_transcribe(
             import torch
 
             resolved_device = "cuda" if torch.cuda.is_available() else "cpu"
-        except Exception:
+        except ImportError:
             resolved_device = "cpu"
     else:
         resolved_device = device
     try:
         whisper_model = WhisperModel(model, device=resolved_device)
+    except Exception as exc:
+        raise BackendLoadError(
+            "faster-whisper",
+            f"model '{model}' could not be loaded on device '{resolved_device}'",
+        ) from exc
+    try:
         segments_iter, _info = whisper_model.transcribe(
             wav,
             language=None if language == "auto" else language,
             word_timestamps=word_timestamps,
         )
+        segments_iter = list(segments_iter)
     except Exception as exc:
-        if strict_dependency:
-            raise RuntimeError("faster-whisper inference failed in strict mode.") from exc
-        return _fallback_asr(
-            stimulus,
-            metadata=metadata,
-            execution_mode=mode,
-            reason=f"faster-whisper inference failed: {type(exc).__name__}",
-            asr_model_name=model,
-        )
+        raise BackendInferenceError("faster-whisper", "transcription failed") from exc
     seg_on = []
     seg_off = []
     seg_label = []
@@ -248,15 +193,7 @@ def whisper_transcribe(
             word_conf.append(prob)
     del whisper_model
     if not word_on:
-        if strict_dependency:
-            raise RuntimeError("ASR returned no word timestamps in strict mode.")
-        return _fallback_asr(
-            stimulus,
-            metadata=metadata,
-            execution_mode=mode,
-            reason="ASR returned no word timestamps",
-            asr_model_name=model,
-        )
+        raise BackendInferenceError("faster-whisper", "ASR returned no word timestamps")
     md = ensure_word_event_metadata(
         metadata,
         asr_model_name=model,

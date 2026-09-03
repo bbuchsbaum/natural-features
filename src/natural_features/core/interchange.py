@@ -8,7 +8,7 @@ from typing import Any
 import numpy as np
 
 from natural_features.core.feature_types import EventSeries, FeatureSeries, TrackSeries
-from natural_features.core.feature_bundle import temporal_object_in_clock
+from natural_features.core.feature_bundle import in_clock
 from natural_features.core.timebase import ClockRef, TemporalContext, TimebaseSpec
 from natural_features.features.common import extractor_metadata
 
@@ -433,7 +433,7 @@ def merge_feature_tables(
         feature_items = [
             (
                 name,
-                temporal_object_in_clock(obj, target_clock, context=temporal_context),
+                in_clock(obj, target_clock, context=temporal_context),
             )
             for name, obj in feature_items
         ]
@@ -444,7 +444,7 @@ def merge_feature_tables(
             feature_items = [
                 (
                     name,
-                    temporal_object_in_clock(obj, target_clock, context=temporal_context),
+                    in_clock(obj, target_clock, context=temporal_context),
                 )
                 for name, obj in feature_items
             ]

@@ -64,8 +64,8 @@ Alignment backend selection is explicit:
 - `backend=none`: explicitly select passthrough, reported as
   `fallback_used=false`
 
-Passthrough caused by an unavailable requested backend is a fallback and only
-runs under explicit `execution_mode="fallback"`.
+Passthrough runs only when `backend=none` is explicitly selected. If a
+requested alignment backend is unavailable, alignment fails.
 
 Use `probe_alignment_backends()` and `resolve_aligner_backend(...)` for diagnostics and
 explicit backend provenance.
@@ -79,7 +79,7 @@ Reports from backend validation and benchmarking include `runtime_pin_metadata`:
 ## Compatibility Notes
 
 - Existing ASR/alignment call signatures remain compatible.
-- `whisperx_align(...)` now accepts `backend=` and emits truthful fallback metadata/QC.
+- `whisperx_align(...)` accepts `backend=` and emits truthful backend metadata/QC.
 - WhisperX runtime path performs real boundary refinement when backend assets are available.
 - Use `validate_alignment_backends(...)` (or `nf speech-validate-backends`) to verify local runtime readiness.
 - Use `build_alignment_doctor_report(...)` (or `nf speech-doctor`) for actionable remediation guidance.

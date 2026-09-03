@@ -1,9 +1,14 @@
-"""Word-aligned syntactic proxy features."""
+"""Word-aligned syntactic indicator features."""
 
 from __future__ import annotations
 
 import numpy as np
 
+from natural_features.core.backend_errors import (
+    BackendDependencyError,
+    BackendInferenceError,
+    BackendLoadError,
+)
 from natural_features.core.execution import add_execution_provenance, resolve_execution_mode
 from natural_features.core.feature_types import EventSeries, FeatureSeries
 from natural_features.core.timebase import TimebaseSpec
@@ -69,11 +74,20 @@ def _heuristic_syntax(words: EventSeries) -> np.ndarray:
 
 
 def _spacy_syntax(words: EventSeries, *, model: str) -> tuple[np.ndarray, list[str]]:
-    import spacy  # type: ignore
+    try:
+        import spacy  # type: ignore
+    except ImportError as exc:
+        raise BackendDependencyError("spaCy syntax", "spaCy is required") from exc
 
-    nlp = spacy.load(model)
+    try:
+        nlp = spacy.load(model)
+    except Exception as exc:
+        raise BackendLoadError("spaCy syntax", f"model '{model}' is unavailable") from exc
     labels = _labels(words)
-    doc = nlp(" ".join(labels))
+    try:
+        doc = nlp(" ".join(labels))
+    except Exception as exc:
+        raise BackendInferenceError("spaCy syntax", "document analysis failed") from exc
     tokens = list(doc)
     values = _heuristic_syntax(words)
     for i, token in enumerate(tokens[: len(labels)]):
@@ -98,28 +112,17 @@ def syntactic_features(
 
     if not isinstance(words, EventSeries):
         raise TypeError("syntactic_features requires an EventSeries")
-    mode, strict = resolve_execution_mode(execution_mode=execution_mode, strict_dependency=strict_dependency)
+    mode, _strict = resolve_execution_mode(execution_mode=execution_mode, strict_dependency=strict_dependency)
     params = {"model": model}
-    backend = "heuristic"
-    fallback_used = True
-    fallback_reason: str | None = "spacy unavailable"
-    try:
-        values, pos_tags = _spacy_syntax(words, model=model)
-        backend = "spacy"
-        fallback_used = False
-        fallback_reason = None
-        extra = {"backend": backend, "pos_tags": pos_tags}
-    except Exception as exc:
-        if strict:
-            raise RuntimeError("spaCy syntax extraction failed in strict mode.") from exc
-        values = _heuristic_syntax(words)
-        extra = {"backend": backend}
-        fallback_reason = f"spaCy unavailable: {type(exc).__name__}"
+    values, pos_tags = _spacy_syntax(words, model=model)
     md = add_execution_provenance(
-        extractor_metadata("language.syntax", params=params, extra=extra),
+        extractor_metadata(
+            "language.syntax",
+            params=params,
+            extra={"backend": "spacy", "pos_tags": pos_tags},
+        ),
         execution_mode=mode,
-        fallback_used=fallback_used,
-        fallback_reason=fallback_reason,
+        fallback_used=False,
     )
     return FeatureSeries(
         values=values.astype(np.float32),

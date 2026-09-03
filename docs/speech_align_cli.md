@@ -9,7 +9,7 @@ nf speech-align \
   --chunk-window-s 30 \
   --chunk-overlap-s 1 \
   --align-backend auto \
-  --execution-mode fallback \
+  --execution-mode strict \
   --ctm-out aligned.ctm \
   --textgrid-out aligned.TextGrid \
   --out-json aligned_summary.json \
@@ -18,9 +18,8 @@ nf speech-align \
 
 ## Key Options
 
-- `--execution-mode fallback|strict`
-  - `fallback`: graceful degradations with explicit `fallback_used`.
-  - `strict`: dependency/runtime failures are raised.
+- `--execution-mode strict`: dependency/runtime failures are raised. This is
+  the only supported execution mode.
 - `--chunked`: enables long-audio chunk/stitch path.
 - `--align-backend auto|whisperx|mfa|gentle|none`
   - `auto` probes known backends and picks the first available.
@@ -44,9 +43,9 @@ nf speech-align \
 
 ## Troubleshooting
 
-- If `align_qc.fallback_used=true`, inspect:
-  - `align_qc.reason`
-  - `align_qc.backend_resolution`
+- New strict runs should report `align_qc.fallback_used=false`. A true value
+  identifies a legacy artifact; inspect `align_qc.reason` and
+  `align_qc.backend_resolution` before reuse.
 - For deterministic test runs, prefer transcript-provided ASR path.
 
 ## Backend Validation
@@ -69,7 +68,7 @@ Optional runtime check against real audio (and transcript-derived words):
 nf speech-validate-backends \
   --audio-wav input.wav \
   --transcript "this is a runtime backend check" \
-  --execution-mode fallback \
+  --execution-mode strict \
   --out-json backend_validation.json \
   --json
 ```
@@ -85,7 +84,7 @@ nf speech-benchmark \
   --manifest benchmarks/alignment_manifest.json \
   --backend auto \
   --asr-model small \
-  --execution-mode fallback \
+  --execution-mode strict \
   --out-json benchmark_report.json \
   --json
 ```

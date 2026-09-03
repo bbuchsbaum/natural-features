@@ -25,6 +25,22 @@ TIER_A_AUDIO = ROOT / "tests" / "stimuli" / "tier_a" / "audio_speechlike.wav"
 TIER_A_TRANSCRIPT = ROOT / "tests" / "stimuli" / "tier_a" / "transcript_reference.txt"
 EXAMPLE = ROOT / "examples" / "auditory_language_hierarchy.py"
 
+# Offline semantics: embeddings and lexical controls need no model weights.
+# Language-model surprisal is a strict backend and is exercised separately.
+OFFLINE_SEMANTIC_FAMILIES = [
+    "sentence_embeddings",
+    "paragraph_embeddings",
+    "lexical_controls",
+]
+
+
+def _require_lm_backend() -> None:
+    try:
+        import torch  # noqa: F401
+        from transformers import AutoModelForCausalLM  # noqa: F401
+    except ImportError:
+        pytest.skip("transformers+torch are not installed")
+
 
 @pytest.mark.media
 def test_hierarchy_levels_align_on_one_grid(tmp_path) -> None:  # noqa: ANN001
@@ -50,12 +66,7 @@ def test_hierarchy_levels_align_on_one_grid(tmp_path) -> None:  # noqa: ANN001
         audio,
         transcript_text=TIER_A_TRANSCRIPT.read_text(encoding="utf-8").strip(),
         scales_s=[tr_s],
-        feature_families=[
-            "sentence_embeddings",
-            "paragraph_embeddings",
-            "surprisal",
-            "lexical_controls",
-        ],
+        feature_families=OFFLINE_SEMANTIC_FAMILIES,
         provider_config={"provider": "local_bow", "dim": 64},
         standardize=False,
         add_intercept=False,
@@ -78,12 +89,30 @@ def test_hierarchy_levels_align_on_one_grid(tmp_path) -> None:  # noqa: ANN001
     assert any(n.startswith("art.") or "posterior_entropy" in n for n in names)
     assert any(n.startswith("sem.sent.") for n in names)
     assert any(n.startswith("sem.par.") for n in names)
-    assert any("surprisal" in n for n in names)
 
     # Semantics segmented into units above the word level.
     assert language.qc["n_words"] > 0
     assert language.qc["n_sentences"] >= 1
     assert language.qc["n_paragraphs"] >= 1
+
+
+@pytest.mark.media
+def test_surprisal_adds_a_predictability_column(tmp_path) -> None:  # noqa: ANN001
+    _require_lm_backend()
+    audio = AudioStimulus.from_wav(TIER_A_AUDIO)
+    tr_s = 1.0
+    language = extract_multiscale_language(
+        audio,
+        transcript_text=TIER_A_TRANSCRIPT.read_text(encoding="utf-8").strip(),
+        scales_s=[tr_s],
+        feature_families=[*OFFLINE_SEMANTIC_FAMILIES, "surprisal"],
+        provider_config={"provider": "local_bow", "dim": 64},
+        standardize=False,
+        add_intercept=False,
+        cache_dir=tmp_path / "emb_cache",
+    )
+    names = [str(n) for n in language.by_scale[tr_s].coords.get("feature", [])]
+    assert any("surprisal" in n for n in names)
 
 
 @pytest.mark.media

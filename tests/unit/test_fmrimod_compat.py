@@ -41,3 +41,47 @@ def test_event_variable_conversion_and_hrf_mapping() -> None:
     assert map_hrf_name("glover") == "spmg1"
     k = hrf_kernel(1.0, kind="glover", backend="fmrimod")
     assert k.ndim == 1
+
+
+@pytest.mark.skipif(not has_fmrimod(), reason="fmrimod not available")
+def test_hrf_regressor_spmg1_lags_energy() -> None:
+    from natural_features.core.stimulus import AudioStimulus
+    from natural_features.core.timebase import ClockMap, TemporalContext
+    from natural_features.core.feature_bundle import in_clock
+    from natural_features.fmri.compat import hrf_regressor
+    from natural_features.workflows.extract_features import extract_features
+
+    sr_hz = 8000
+    duration_s = 16.0
+    t = np.arange(int(duration_s * sr_hz), dtype=np.float32) / sr_hz
+    envelope = np.full(t.shape, 0.03, dtype=np.float32)
+    envelope[(t >= 4.0) & (t < 8.0)] = 0.4
+    samples = envelope * np.sin(2.0 * np.pi * 220.0 * t)
+    audio = AudioStimulus.from_array(samples, sr_hz=sr_hz)
+    rms = extract_features(audio, features=["audio.rms"]).features["audio.rms"]
+
+    stim_onset_s = 0.67
+    tr_s = 2.0
+    n_trs = int(np.ceil((stim_onset_s + duration_s) / tr_s))
+    rms_scan = in_clock(
+        rms,
+        "scan:run-01",
+        context=TemporalContext(
+            (ClockMap("stimulus", "scan:run-01", offset_s=stim_onset_s),)
+        ),
+    )
+    bold = hrf_regressor(
+        rms_scan,
+        tr_s=tr_s,
+        n_scans=n_trs,
+        hrf="spmg1",
+        start_time=0.0,
+    )
+    assert bold.values.shape == (n_trs, 1)
+    assert np.all(np.isfinite(bold.values))
+    np.testing.assert_allclose(bold.times_s, np.arange(n_trs) * tr_s)
+    # Loud RMS starts at scan 4.67 s; SPMG1 peaks several seconds later.
+    energy = bold.values[:, 0]
+    peak_s = float(bold.times_s[int(np.argmax(energy))])
+    assert peak_s > 4.67
+    assert float(np.max(energy)) > float(energy[0])

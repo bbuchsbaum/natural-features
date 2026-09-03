@@ -48,9 +48,9 @@ feature_params = {
 }
 ```
 
-For a test double or pipeline rehearsal, explicitly set
-`execution_mode="fallback"`. The result is a proxy with different semantics,
-not CLIP output.
+For a pipeline rehearsal, select a lightweight feature whose name describes
+what it computes, such as `vision.energy`. Same-name proxy execution is
+rejected.
 
 ## Read next
 

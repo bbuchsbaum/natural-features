@@ -27,6 +27,7 @@ A breaking change to these stable symbols requires incrementing:
 - `TimebaseSpec`
 - `FeatureBundle`
 - `TemporalPayload`
+- `in_clock`
 - `temporal_object_in_clock`
 - `FrameTimeline`
 - `Timeline`
@@ -67,6 +68,9 @@ For a fixed `API_COMPAT_VERSION`:
 
 - Stable symbol names remain available.
 - Stable symbols preserve their intended high-level behavior and return contracts.
+- A catalogue feature identifier names one scientific quantity. Missing
+  dependencies or failed backends raise errors; they do not select a proxy or
+  surrogate quantity under that identifier.
 - Any unavoidable behavior shift must be documented in release notes.
 
 When breaking stable contracts:

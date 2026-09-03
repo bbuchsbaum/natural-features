@@ -19,9 +19,7 @@ def test_extract_acoustic_phonetics_native_and_resampled() -> None:
     native = extract_acoustic_phonetics(
         a,
         hop_s=0.02,
-        posterior_backend="ctc",
-        ctc_local_files_only=True,
-        ctc_strict_dependency=False,
+        posterior_backend="acoustic",
     )
     assert native.posteriorgrams.values.ndim == 2
     assert native.articulatory.values.ndim == 2

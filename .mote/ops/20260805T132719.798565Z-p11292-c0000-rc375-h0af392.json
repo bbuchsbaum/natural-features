@@ -1,0 +1,1 @@
+{"actor":"bbuchsbaum","entity":"bd-01KYSZGFPCW0YTQMGC6GZSBZ3E","kind":"note","note_kind":"progress","op":"20260805T132719.798565Z-p11292-c0000-rc375-h0af392","text":"speech.emotion is explicitly one whole-clip class-probability row with interval support; unused hop_s removed from API and catalogue; probability oracle added.","ts":"2026-08-05T13:27:19.798565Z","v":1}

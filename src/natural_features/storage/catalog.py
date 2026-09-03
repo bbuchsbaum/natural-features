@@ -11,6 +11,8 @@ import sqlite3
 import shutil
 from typing import Any
 
+import numpy as np
+
 from natural_features.core.feature_types import EventSeries, FeatureSeries, TrackSeries
 from natural_features.storage.writers import write_event_series, write_feature_series, write_track_series
 from natural_features.util.hashing import stable_hash
@@ -100,6 +102,58 @@ class Catalog:
         return payload
 
     @staticmethod
+    def _array_content(array: Any) -> Any:
+        """Return stable, value-sensitive content for an array.
+
+        Object arrays cannot be hashed from their raw bytes because those bytes
+        contain process-local object pointers. Convert them to nested Python
+        values while retaining shape and dtype; numeric and string arrays can
+        use the stable ndarray hashing path directly.
+        """
+
+        value = np.asarray(array)
+        if value.dtype.hasobject:
+            return {
+                "dtype": str(value.dtype),
+                "shape": list(value.shape),
+                "values": value.tolist(),
+            }
+        return value
+
+    @classmethod
+    def _content_contract(
+        cls,
+        obj: FeatureSeries | EventSeries | TrackSeries,
+    ) -> dict[str, Any]:
+        """Canonical semantic payload used by content-addressed artifact IDs."""
+
+        if isinstance(obj, FeatureSeries):
+            return {
+                "values": cls._array_content(obj.values),
+                "dims": list(obj.dims),
+                "coords": obj.coords,
+            }
+        if isinstance(obj, EventSeries):
+            return {
+                "label": None if obj.label is None else cls._array_content(obj.label),
+                "confidence": (
+                    None
+                    if obj.confidence is None
+                    else cls._array_content(obj.confidence)
+                ),
+                "extra": {
+                    str(key): cls._array_content(value)
+                    for key, value in sorted(obj.extra.items())
+                },
+            }
+        return {
+            "values": cls._array_content(obj.values),
+            "track_id": cls._array_content(obj.track_id),
+            "dims": list(obj.dims),
+            "coords": obj.coords,
+        }
+
+    @staticmethod
     def _utc_now_iso() -> str:
         return datetime.now(timezone.utc).isoformat()
 
@@ -174,7 +228,9 @@ class Catalog:
             shape_hint = []
         temporal_contract = self._temporal_contract(obj)
         temporal_digest = stable_hash(temporal_contract, length=20)
+        content_digest = stable_hash(self._content_contract(obj), length=None)
         base_payload = {
+            "artifact_identity_version": 2,
             "run_id": run_id,
             "stage_id": stage_id,
             "schema": obj.schema,
@@ -186,6 +242,7 @@ class Catalog:
             "upstream_ids": upstream_ids,
             "shape": shape_hint,
             "temporal_digest": temporal_digest,
+            "content_digest": content_digest,
         }
         artifact_id = self.make_artifact_id(base_payload)
         artifact_dir = self.artifacts_dir / artifact_id
@@ -238,6 +295,7 @@ class Catalog:
             obj.metadata,
             payload_sha256=payload_sha256,
             payload_bytes=payload_bytes,
+            content_sha256=content_digest,
         )
         try:
             self._upsert(record, obj.metadata)
@@ -253,6 +311,7 @@ class Catalog:
         *,
         payload_sha256: str | None = None,
         payload_bytes: int | None = None,
+        content_sha256: str | None = None,
     ) -> None:
         meta_path = self.artifacts_dir / metadata.artifact_id / "metadata.json"
         payload = {
@@ -261,6 +320,7 @@ class Catalog:
             "payload": {
                 "sha256": payload_sha256,
                 "bytes": payload_bytes,
+                "content_sha256": content_sha256,
             },
         }
         atomic_write_json(meta_path, payload, sort_keys=True, indent=2)
@@ -401,6 +461,7 @@ class Catalog:
             payload_info = meta_payload.get("payload", {}) if isinstance(meta_payload.get("payload", {}), dict) else {}
             payload_sha256 = payload_info.get("sha256")
             payload_bytes = payload_info.get("bytes")
+            content_sha256 = payload_info.get("content_sha256")
             artifact_path = self.root / artifact.path
             if (not payload_sha256 or payload_bytes is None) and artifact_path.exists():
                 payload_sha256 = self._path_sha256(artifact_path)
@@ -411,6 +472,7 @@ class Catalog:
                     "object_metadata": object_metadata,
                     "payload_sha256": payload_sha256,
                     "payload_bytes": payload_bytes,
+                    "content_sha256": content_sha256,
                 }
             )
         manifest_core = [
@@ -453,11 +515,13 @@ class Catalog:
                 object_metadata = item.get("object_metadata", {})
                 expected_sha256 = item.get("payload_sha256")
                 expected_bytes = item.get("payload_bytes")
+                content_sha256 = item.get("content_sha256")
             else:
                 meta_payload = item
                 object_metadata = {}
                 expected_sha256 = None
                 expected_bytes = None
+                content_sha256 = None
             if not isinstance(meta_payload, dict):
                 raise ValueError("Manifest artifact entry is not a mapping")
             meta = ArtifactMetadata(**meta_payload)
@@ -488,6 +552,7 @@ class Catalog:
                 object_metadata,
                 payload_sha256=expected_sha256,
                 payload_bytes=expected_bytes,
+                content_sha256=content_sha256,
             )
             self._upsert(meta, object_metadata=object_metadata)
             inserted += 1

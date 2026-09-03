@@ -103,7 +103,7 @@
     },
     {
       "id": "FR-012",
-      "name": "Transcript Fallback and Alignment Contract",
+      "name": "Transcript Input and Alignment Contract",
       "description": "If a stimulus lacks transcript input, the system must generate transcript events from ASR and produce aligned word timestamps (best-effort), with confidence and QC metadata.",
       "priority": "P0"
     },
@@ -182,7 +182,7 @@
     "vision": [
       "vision.lowlevel.visual_energy",
       "vision.dynamics.frame_diffs",
-      "vision.motion.optical_flow_mag",
+      "vision.motion.gradient_change",
       "meta.scene_cuts",
       "vision.deep.resnet (extra)",
       "vision.deep.vit (extra, optional)",
@@ -302,7 +302,7 @@
       "name": "Speech and Language",
       "target": "v0.4",
       "scope": [
-        "Transcript fallback when transcript input is missing",
+        "Configured ASR when transcript input is missing",
         "ASR words/segments",
         "Word-level alignment + QC metadata",
         "Speech SSL layer features",
@@ -397,7 +397,7 @@
       "id": "AC-013",
       "requirement_ids": ["FR-012"],
       "statement": "When no transcript is provided, running speech-language preset auto-generates transcript events and aligned word timestamps with confidence + QC fields; when transcript is provided, alignment stage can refine timings without replacing source text by default.",
-      "verification": "Integration tests for (a) missing transcript fallback and (b) provided transcript refinement path"
+      "verification": "Integration tests for (a) configured ASR without transcript input and (b) provided transcript refinement path"
     },
     {
       "id": "AC-014",

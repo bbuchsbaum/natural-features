@@ -38,7 +38,7 @@ Optional:
 nf speech-benchmark \
   --manifest /path/to/manifest.json \
   --backend auto \
-  --execution-mode fallback \
+  --execution-mode strict \
   --out-json benchmark_report.json \
   --json
 ```
@@ -48,9 +48,14 @@ Built-in tiny benchmark manifest:
 ```bash
 nf speech-benchmark \
   --manifest tests/benchmarks/manifests/tier_a_alignment_manifest.json \
-  --backend auto \
+  --backend none \
+  --execution-mode strict \
   --json
 ```
+
+This dependency-free Tier A command measures the explicit transcript-timing
+baseline. Use `--backend whisperx` (or another installed, named backend) when
+the estimand is backend alignment quality.
 
 Generate a larger SNL subset manifest (local data required):
 

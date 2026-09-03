@@ -213,7 +213,7 @@ def run_alignment_doctor(
     words=None,
     transcript_text: str | None = None,
     language: str = "en",
-    execution_mode: str = "fallback",
+    execution_mode: str = "strict",
     timeout_s: float = 10.0,
 ) -> dict[str, Any]:
     """Run backend validation and attach remediation guidance."""

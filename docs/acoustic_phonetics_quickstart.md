@@ -16,7 +16,7 @@ res = extract_acoustic_phonetics(
     posterior_backend="ctc",   # preferred strict backend
     ctc_model="bobboyms/wav2vec2-base-en-phoneme-ctc-41h",
     ctc_local_files_only=True, # reproducible/offline
-    hop_s=0.02,        # used by acoustic fallback backend
+    hop_s=0.02,        # used by the explicit acoustic backend
     resolution_s=1.0,  # optional: aggregate to 1s bins
 )
 

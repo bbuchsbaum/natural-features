@@ -8,7 +8,7 @@ a hierarchical auditory-language analysis on one shared time grid:
 | 1 | `acoustic.*` | Envelope, spectrum, cepstrum | `rms`, `mel`, `mfcc`, `spectral_stats`, `gammatone` |
 | 2 | `prosody.*` | F0, voicing, energy dynamics | `audio_pitch`, `prosody_features` |
 | 3 | `phonology.*` | Phone-class posteriors, articulatory features | `extract_acoustic_phonetics` (CTC or acoustic backend) |
-| 4 | `semantic.*` | Sentence/paragraph embeddings, surprisal, lexical controls | `extract_multiscale_language` |
+| 4 | `semantic.*` | Sentence/paragraph embeddings, lexical controls, optional surprisal | `extract_multiscale_language` |
 
 Each level yields `FeatureSeries` objects on their native grids; rendering them
 onto one `build_tr_grid` grid makes them directly stackable into a single
@@ -110,7 +110,6 @@ language = extract_multiscale_language(
     feature_families=[
         "sentence_embeddings",
         "paragraph_embeddings",
-        "surprisal",
         "lexical_controls",
     ],
     provider_config={"provider": "openai", "model": "text-embedding-3-large"},
@@ -124,6 +123,12 @@ Words come from your transcript (uniform timing) or strict Whisper ASR;
 sentence and paragraph events are segmented from the word stream and embedded
 per unit, then rendered onto the same grid. For offline runs, use
 `provider_config={"provider": "local_bow", "dim": 1024}`.
+
+Adding `"surprisal"` to `feature_families` contributes word-level
+predictability from a causal language model. Unlike the three families above it
+is a strict neural backend: it requires `transformers` and `torch` plus local
+weights, and raises rather than substituting a proxy. The example script keeps
+it behind `--surprisal lm` so the default run stays offline.
 `language.words`, `language.sentences`, and `language.paragraphs` expose the
 underlying `EventSeries` if you need event-locked rather than gridded designs.
 

@@ -7,7 +7,7 @@ This project uses the following alignment policy:
   - primary: `whisperx`
   - optional strict backend: `mfa` (requires dictionary + acoustic model paths)
 - Legacy backend: `gentle` is supported only as an optional plugin path and is not a default dependency.
-- Preferred strict phonetic backend for audio-only posterior features: `speech.phonology.ctc_posteriors` (optional transformers/torch model path, with configurable fallback).
+- Preferred phonetic backend for audio-only posterior features: `speech.phonology.ctc_posteriors` (optional transformers/torch model path).
 
 Rationale:
 

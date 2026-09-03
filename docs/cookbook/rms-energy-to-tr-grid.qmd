@@ -175,10 +175,10 @@ If the WAV is already padded so file t = 0 equals scan t = 0, set
 ## When not to resample yet
 
 If the next step is hemodynamic convolution, keep `rms` on its native hop and
-hand it downstream as a `TemporalPayload`. TR sampling then happens after the
-HRF, in the modeling library. This page is for the case where the TR-sampled
-energy series is the object you want.
+hand it to [fmrimod](https://github.com/bbuchsbaum/fmrimod). See
+[Convolve RMS energy with an SPMG1 HRF](rms-hrf-spmg1.qmd). This page is for
+the case where the TR-sampled energy series is the object you want.
 
 ## See also
 
-[Query a run-aware fMRI window](fmri-window-query.qmd) · [Keep heterogeneous features on native grids](native-grid-handoff.qmd) · [fMRI windowing](../concepts/fmri-windowing.qmd) · [Extract audio features from WAV files](audio-batch-from-wav.qmd)
+[Convolve RMS energy with an SPMG1 HRF](rms-hrf-spmg1.qmd) · [Query a run-aware fMRI window](fmri-window-query.qmd) · [Keep heterogeneous features on native grids](native-grid-handoff.qmd) · [fMRI windowing](../concepts/fmri-windowing.qmd) · [Extract audio features from WAV files](audio-batch-from-wav.qmd)

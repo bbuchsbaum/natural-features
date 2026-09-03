@@ -6,7 +6,7 @@
   "truth_text": "MISTER QUILTER IS THE APOSTLE OF THE MIDDLE CLASSES AND WE ARE GLAD TO WELCOME HIS GOSPEL",
   "truth_word_count": 17,
   "posterior_extractor": "fmri.resample_to_tr",
-  "posterior_backend": "fallback_acoustic_posteriors",
+  "posterior_backend": "acoustic_posteriors",
   "posterior_shape": [
     12,
     13

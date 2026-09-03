@@ -24,7 +24,7 @@ def test_whisperx_runtime_validation_on_tier_a_audio() -> None:
         audio=audio,
         transcript_text=transcript,
         language="en",
-        execution_mode="fallback",
+        execution_mode="strict",
     )
     wx = report["backends"]["whisperx"]
     if not wx["runtime_checked"]:

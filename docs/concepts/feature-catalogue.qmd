@@ -12,7 +12,7 @@ measurement you want but need its exact feature ID, accepted input, return
 type, default settings, or dependency requirements.
 
 The [complete feature catalog](../tour/index.qmd) adds a short scientific
-meaning, extraction pattern, fallback warning, and method reference for every
+meaning, extraction pattern, backend warning, and method reference for every
 public feature ID. The executable gallery in [Inspect and plot feature
 types](../cookbook/feature-type-gallery.qmd) shows representative output
 shapes and plots.

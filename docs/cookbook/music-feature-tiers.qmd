@@ -1,0 +1,108 @@
+---
+title: "Build a music feature hierarchy"
+subtitle: "Chroma, key, tempo and spectrotemporal modulation over a ladder of integration windows."
+sidebar: cookbook
+---
+
+## Use when
+
+You want music features organised by *what* is computed and *over how long*, for
+example as the regressor sets of an encoding or RSA model. The music family covers
+tonal and rhythmic structure that the speech-oriented audio family does not.
+
+Two sampling conventions appear, and mixing them up is the easiest mistake to make:
+
+| kind | extractors | value is |
+|---|---|---|
+| frame-rate | `audio.music.chroma`, `audio.music.tonnetz`, `audio.music.onset_strength` | instantaneous, one row per `hop_s` |
+| window | `audio.music.tonality`, `audio.music.rhythm`, `audio.music.tempogram`, `audio.modulation.mps` | integrated over `window_s`, one row per window |
+
+A key or a tempo is not defined at a single STFT frame, so the window extractors take
+an explicit `window_s`. **Call them once per integration scale rather than resampling
+one output** — a tempo estimated over 5.5 s is a different quantity from one estimated
+over 16.5 s, and that difference is exactly what a timescale axis is meant to capture.
+
+```{python}
+import numpy as np
+from natural_features.core.stimulus import AudioStimulus
+from natural_features.features.audio.music import (
+    music_chroma, music_onset_strength, music_rhythm, music_tonality,
+)
+from natural_features.features.audio.modulation import audio_modulation_spectrum
+
+# A short synthetic passage: a I-IV-V-I progression over a 120 BPM click track.
+SR = 22050
+rng = np.random.default_rng(0)
+t = np.arange(SR * 12) / SR
+x = np.zeros_like(t)
+for i, chord in enumerate([[261.63, 329.63, 392.0], [349.23, 440.0, 523.25],
+                           [392.0, 493.88, 587.33], [261.63, 329.63, 392.0]]):
+    seg = (t >= i * 3) & (t < (i + 1) * 3)
+    for f in chord:
+        for h, a in ((1, 1.0), (2, 0.4), (3, 0.2)):
+            x[seg] += a * 0.15 * np.sin(2 * np.pi * f * h * t[seg])
+burst = np.exp(-np.linspace(0, 6, 220))
+for k in range(24):
+    i = int(k * 0.5 * SR)
+    x[i:i + 220] += rng.standard_normal(220) * burst * 0.5
+
+stim = AudioStimulus.from_array(x.astype(np.float32), sr_hz=SR)
+```
+
+## Frame-rate tiers
+
+```{python}
+chroma = music_chroma(stim)
+onsets = music_onset_strength(stim)
+print("chroma", chroma.values.shape, "at", 1 / 0.01, "Hz")
+print("strongest pitch classes:",
+      [list(chroma.coords["feature"])[i] for i in np.argsort(chroma.values.mean(0))[::-1][:4]])
+print("onset envelope", onsets.values.shape)
+```
+
+## A ladder of integration windows
+
+```{python}
+for window_s in (3.0, 6.0):
+    ton = music_tonality(stim, window_s=window_s, hop_s=1.0)
+    rhy = music_rhythm(stim, window_s=window_s, hop_s=1.0)
+    tc, rc = list(ton.coords["feature"]), list(rhy.coords["feature"])
+    print(f"window {window_s:>4.1f}s -> {ton.values.shape[0]:2d} rows | "
+          f"key_clarity {ton.values[:, tc.index('key_clarity')].mean():.2f} | "
+          f"tempo {np.median(rhy.values[:, rc.index('tempo_bpm')]):.0f} BPM")
+```
+
+`music_tonality` also emits the full 24-dimensional vector of correlations against every
+major and minor key profile. Prefer it over the winning key for modelling: it keeps the
+graded similarity between neighbouring keys that a hard `argmax` discards.
+
+```{python}
+ton = music_tonality(stim, window_s=6.0, hop_s=1.0)
+profile = [c for c in ton.coords["feature"] if c.startswith("key_r_")]
+print(len(profile), "key-profile columns, e.g.", profile[:4])
+```
+
+## Spectrotemporal modulation
+
+`audio.modulation.mps` is the 2-D Fourier transform of a log-frequency cochleagram
+patch: spectral modulation in cycles per octave against temporal modulation in Hz. Cells
+are labelled by the *sign* of the spectral modulation, because a ripple sweeping up in
+frequency and one sweeping down differ only in that sign.
+
+```{python}
+mps = audio_modulation_spectrum(stim, window_s=2.0, hop_s=1.0)
+names = list(mps.coords["feature"])
+print(mps.values.shape, "->", len(names), "modulation cells")
+top = np.argsort(np.nanmean(mps.values, axis=0))[::-1][:3]
+print("strongest:", [names[i] for i in top])
+```
+
+## Handing off to a modelling library
+
+Nothing above is convolved or resampled to a scan clock. Keep it that way: HRF
+convolution, TR sampling and design-matrix choices belong downstream — see
+[the native temporal contract](../spec/native-temporal-contract.qmd) and
+[Convolve RMS with an SPMG1 HRF](rms-hrf-spmg1.qmd). Because the window extractors
+already integrate over `window_s`, resample them by taking the window *nearest* each
+analysis timepoint rather than by averaging adjacent rows, which would widen the
+integration window past the value you asked for.

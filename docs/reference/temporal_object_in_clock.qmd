@@ -4,4 +4,4 @@
 temporal_object_in_clock(obj, target, *, context=None)
 ```
 
-Return a coordinate-transformed copy without resampling its values.
+Alias of [`in_clock`](in_clock.qmd#natural_features.in_clock).

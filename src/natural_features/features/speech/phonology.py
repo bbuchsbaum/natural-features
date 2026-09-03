@@ -7,6 +7,11 @@ from typing import Any
 
 import numpy as np
 
+from natural_features.core.backend_errors import (
+    BackendDependencyError,
+    BackendInferenceError,
+    BackendLoadError,
+)
 from natural_features.core.execution import (
     add_execution_provenance,
     resolve_execution_mode,
@@ -161,7 +166,23 @@ _IPA_VOWEL_FRONT = {"i", "y", "ɪ", "e", "ø", "ɛ", "œ", "æ"}
 _IPA_VOWEL_CENTRAL = {"ə", "ɜ", "ɐ", "a", "ɞ", "ɘ", "ɵ"}
 _IPA_VOWEL_BACK = {"u", "ʊ", "o", "ɔ", "ɑ", "ɒ", "ɯ"}
 _IPA_VOWEL_ALL = _IPA_VOWEL_FRONT | _IPA_VOWEL_CENTRAL | _IPA_VOWEL_BACK
-_IPA_CONSONANT_OBSTRUENT = {"p", "b", "t", "d", "k", "g", "f", "v", "θ", "ð", "s", "z", "ʃ", "ʒ", "h"}
+_IPA_CONSONANT_OBSTRUENT = {
+    "p",
+    "b",
+    "t",
+    "d",
+    "k",
+    "g",
+    "f",
+    "v",
+    "θ",
+    "ð",
+    "s",
+    "z",
+    "ʃ",
+    "ʒ",
+    "h",
+}
 _IPA_CONSONANT_SONORANT = {"m", "n", "ŋ", "l", "ɹ", "r", "j", "w"}
 
 _SPECIAL_TOKEN_VALUES = {
@@ -356,7 +377,9 @@ def phoneme_event_series(
         onset_s=np.asarray(onset_s, dtype=np.float64),
         offset_s=np.asarray(offset_s, dtype=np.float64),
         label=np.asarray(labels, dtype=object),
-        confidence=None if confidence is None else np.asarray(confidence, dtype=np.float32),
+        confidence=None
+        if confidence is None
+        else np.asarray(confidence, dtype=np.float32),
         extra=dict(extra or {}),
         metadata=md,
     )
@@ -384,11 +407,17 @@ def phoneme_events_from_words(
             label_namespace=label_namespace,
             namespace_version=namespace_version,
             source_word_alignment_id=str(words.metadata.get("extractor_id", "unknown")),
-            metadata=extractor_metadata("speech.phonology.events_from_words", params={}),
+            metadata=extractor_metadata(
+                "speech.phonology.events_from_words", params={}
+            ),
         )
 
     labels_in = words.label if words.label is not None else np.array([], dtype=object)
-    conf_in = words.confidence if words.confidence is not None else np.ones(len(words), dtype=np.float32)
+    conf_in = (
+        words.confidence
+        if words.confidence is not None
+        else np.ones(len(words), dtype=np.float32)
+    )
 
     out_on: list[float] = []
     out_off: list[float] = []
@@ -429,7 +458,11 @@ def phoneme_events_from_words(
 
 
 def articulatory_features(words: EventSeries) -> FeatureSeries:
-    labels = words.label if words.label is not None else np.array([""] * len(words), dtype=object)
+    labels = (
+        words.label
+        if words.label is not None
+        else np.array([""] * len(words), dtype=object)
+    )
     vals = np.zeros((len(words), 5), dtype=np.float32)
     for i, token in enumerate(labels):
         w = str(token).lower()
@@ -447,7 +480,15 @@ def articulatory_features(words: EventSeries) -> FeatureSeries:
         values=vals,
         times_s=words.onset_s,
         dims=("time", "feature"),
-        coords={"feature": ["vowel_ratio", "labial_ratio", "coronal_ratio", "dorsal_ratio", "starts_vowel"]},
+        coords={
+            "feature": [
+                "vowel_ratio",
+                "labial_ratio",
+                "coronal_ratio",
+                "dorsal_ratio",
+                "starts_vowel",
+            ]
+        },
         metadata=md,
         timebase=TimebaseSpec(kind="tokens"),
     )
@@ -466,13 +507,21 @@ def articulatory_from_phoneme_events(
     per phoneme event at event onset times.
     """
 
-    labels = phonemes.label if phonemes.label is not None else np.array([], dtype=object)
+    labels = (
+        phonemes.label if phonemes.label is not None else np.array([], dtype=object)
+    )
     feature_names = feature_names or list(DEFAULT_ARTICULATORY_FEATURES)
-    vals = _labels_to_feature_matrix([str(x) for x in labels], feature_names=feature_names).astype(np.float32)
+    vals = _labels_to_feature_matrix(
+        [str(x) for x in labels], feature_names=feature_names
+    ).astype(np.float32)
     out_names = list(feature_names)
     conf = phonemes.confidence if phonemes.confidence is not None else None
     if include_confidence:
-        c = np.ones((len(phonemes), 1), dtype=np.float32) if conf is None else np.asarray(conf, dtype=np.float32).reshape(-1, 1)
+        c = (
+            np.ones((len(phonemes), 1), dtype=np.float32)
+            if conf is None
+            else np.asarray(conf, dtype=np.float32).reshape(-1, 1)
+        )
         vals = np.concatenate([vals, c], axis=1)
         out_names.append("event_confidence")
     md = extractor_metadata(
@@ -482,8 +531,12 @@ def articulatory_from_phoneme_events(
             "include_confidence": include_confidence,
         },
         extra={
-            "source_label_namespace": phonemes.metadata.get("label_namespace", "unknown"),
-            "source_word_alignment_id": phonemes.metadata.get("source_word_alignment_id", "unknown"),
+            "source_label_namespace": phonemes.metadata.get(
+                "label_namespace", "unknown"
+            ),
+            "source_word_alignment_id": phonemes.metadata.get(
+                "source_word_alignment_id", "unknown"
+            ),
         },
     )
     return FeatureSeries(
@@ -503,7 +556,12 @@ def phoneme_posteriorgrams(
     n_classes: int = 8,
     class_labels: list[str] | None = None,
 ) -> FeatureSeries:
-    m = mel(stimulus, hop_s=hop_s, win_s=max(0.025, 2 * hop_s), n_mels=max(16, n_classes * 2))
+    m = mel(
+        stimulus,
+        hop_s=hop_s,
+        win_s=max(0.025, 2 * hop_s),
+        n_mels=max(16, n_classes * 2),
+    )
     x = m.values.astype(np.float32)
     bins = np.array_split(np.arange(x.shape[1]), n_classes)
     logits = np.stack([x[:, b].mean(axis=1) for b in bins], axis=1)
@@ -526,7 +584,9 @@ def phoneme_posteriorgrams(
         dims=("time", "feature"),
         coords={"feature": names},
         metadata=md,
-        timebase=TimebaseSpec(kind="audio_hop", hop_s=hop_s, sampling_rate_hz=1.0 / hop_s),
+        timebase=TimebaseSpec(
+            kind="audio_hop", hop_s=hop_s, sampling_rate_hz=1.0 / hop_s
+        ),
     )
 
 
@@ -585,7 +645,9 @@ def _resolve_torch_device(torch: Any, requested: str) -> str:
     if device == "mps":
         mps = getattr(torch.backends, "mps", None)
         if mps is None or not mps.is_available():
-            raise RuntimeError("MPS was requested for CTC extraction but is unavailable.")
+            raise RuntimeError(
+                "MPS was requested for CTC extraction but is unavailable."
+            )
     return device
 
 
@@ -607,18 +669,21 @@ def load_ctc_runtime(
     try:
         import torch
         from transformers import AutoModelForCTC, AutoProcessor  # type: ignore
-    except Exception as error:
-        raise RuntimeError(
-            "transformers+torch are required for CTC phoneme posterior extraction."
+    except ImportError as error:
+        raise BackendDependencyError(
+            "phoneme CTC",
+            "transformers and torch are required",
         ) from error
 
     selected_device = _resolve_torch_device(torch, device)
     try:
-        processor = AutoProcessor.from_pretrained(model, local_files_only=local_files_only)
+        processor = AutoProcessor.from_pretrained(
+            model, local_files_only=local_files_only
+        )
         net = AutoModelForCTC.from_pretrained(model, local_files_only=local_files_only)
     except Exception as error:
-        raise RuntimeError(
-            f"CTC model '{model}' unavailable. Install/download model and retry."
+        raise BackendLoadError(
+            "phoneme CTC", f"model '{model}' is unavailable"
         ) from error
     try:
         net = net.to(selected_device)
@@ -626,8 +691,9 @@ def load_ctc_runtime(
         if callable(eval_method):
             eval_method()
     except Exception as error:
-        raise RuntimeError(
-            f"Unable to initialize CTC model '{model}' on {selected_device}: {error}"
+        raise BackendLoadError(
+            "phoneme CTC",
+            f"model '{model}' is unavailable on {selected_device}",
         ) from error
     model_sr = int(
         getattr(getattr(processor, "feature_extractor", None), "sampling_rate", 16000)
@@ -658,9 +724,10 @@ def _get_ctc_runtime(
         return runtime
     try:
         import torch
-    except Exception as error:
-        raise RuntimeError(
-            "transformers+torch are required for CTC phoneme posterior extraction."
+    except ImportError as error:
+        raise BackendDependencyError(
+            "phoneme CTC",
+            "transformers and torch are required",
         ) from error
     selected_device = _resolve_torch_device(torch, device)
     key = (model, bool(local_files_only), selected_device)
@@ -687,7 +754,9 @@ def _ctc_forward_chunk(
         return_tensors="pt",
     )
     if hasattr(inputs, "items"):
-        model_inputs = {key: _move_to_device(value, runtime.device) for key, value in inputs.items()}
+        model_inputs = {
+            key: _move_to_device(value, runtime.device) for key, value in inputs.items()
+        }
     else:
         model_inputs = {"input_values": _move_to_device(inputs, runtime.device)}
     inference_context = getattr(torch, "inference_mode", torch.no_grad)
@@ -705,7 +774,9 @@ def _decode_ctc_labels(
     vocab_size = int(probs.shape[1])
     tokenizer = getattr(processor, "tokenizer", None)
     if tokenizer is not None and hasattr(tokenizer, "convert_ids_to_tokens"):
-        labels = [str(tokenizer.convert_ids_to_tokens(int(i))) for i in range(vocab_size)]
+        labels = [
+            str(tokenizer.convert_ids_to_tokens(int(i))) for i in range(vocab_size)
+        ]
     else:
         labels = [f"tok_{i}" for i in range(vocab_size)]
     normalized_labels = [_normalize_ctc_token(x) for x in labels]
@@ -718,7 +789,9 @@ def _decode_ctc_labels(
             probs = probs[:, :0]
             labels = []
     else:
-        labels = [norm if norm else str(raw) for norm, raw in zip(normalized_labels, labels)]
+        labels = [
+            norm if norm else str(raw) for norm, raw in zip(normalized_labels, labels)
+        ]
     probs = probs / np.maximum(probs.sum(axis=1, keepdims=True), 1e-8)
     return probs, labels
 
@@ -737,40 +810,17 @@ def _keep_chunk_frames(
     return (times >= lo) & (times < hi)
 
 
-def _wrap_ctc_inference_error(error: BaseException, device: str) -> RuntimeError:
+def _ctc_inference_error(error: BaseException, device: str) -> BackendInferenceError:
     hint = ""
     text = str(error).lower()
-    if any(token in text for token in ("out of memory", "cuda oom", "mps backend out of memory")):
+    if any(
+        token in text
+        for token in ("out of memory", "cuda oom", "mps backend out of memory")
+    ):
         hint = " Reduce chunk_window_s if this was an accelerator memory failure."
-    return RuntimeError(f"CTC inference failed on {device}: {error}.{hint}")
-
-
-def _ctc_acoustic_fallback(
-    stimulus: AudioStimulus,
-    *,
-    hop_s: float,
-    params: dict[str, Any],
-    mode: str,
-    reason: str,
-) -> FeatureSeries:
-    fallback = acoustic_phone_posteriors(stimulus, hop_s=hop_s)
-    md = add_execution_provenance(
-        extractor_metadata(
-            "speech.phonology.ctc_posteriors",
-            params=params,
-            extra={"backend": "fallback_acoustic_posteriors", "reason": reason},
-        ),
-        execution_mode=mode,
-        fallback_used=True,
-        fallback_reason=reason,
-    )
-    return FeatureSeries(
-        values=fallback.values,
-        times_s=fallback.times_s,
-        dims=fallback.dims,
-        coords=fallback.coords,
-        metadata=md,
-        timebase=fallback.timebase,
+    return BackendInferenceError(
+        "phoneme CTC",
+        f"posterior inference failed on {device}: {error}.{hint}",
     )
 
 
@@ -795,7 +845,7 @@ def ctc_phone_posteriors(
     before concatenation.
     """
 
-    mode, strict_dependency = resolve_execution_mode(
+    mode, _strict = resolve_execution_mode(
         execution_mode=execution_mode,
         strict_dependency=strict_dependency,
     )
@@ -821,28 +871,12 @@ def ctc_phone_posteriors(
         "chunk_window_s": float(chunk_window_s),
         "chunk_overlap_s": float(chunk_overlap_s),
     }
-    try:
-        active_runtime = _get_ctc_runtime(
-            model=model,
-            local_files_only=local_files_only,
-            device=requested_device,
-            runtime=runtime,
-        )
-    except Exception as error:
-        if strict_dependency:
-            raise
-        reason = str(error) if str(error) else "transformers/torch unavailable"
-        if "transformers+torch are required" in reason:
-            reason = "transformers/torch unavailable"
-        elif "unavailable" in reason.lower():
-            reason = "ctc model unavailable"
-        return _ctc_acoustic_fallback(
-            stimulus,
-            hop_s=stride_s,
-            params=params,
-            mode=mode,
-            reason=reason,
-        )
+    active_runtime = _get_ctc_runtime(
+        model=model,
+        local_files_only=local_files_only,
+        device=requested_device,
+        runtime=runtime,
+    )
 
     try:
         wav = stimulus.samples.astype(np.float32)
@@ -911,15 +945,7 @@ def ctc_phone_posteriors(
             drop_special_tokens=drop_special_tokens,
         )
     except Exception as error:
-        if strict_dependency:
-            raise _wrap_ctc_inference_error(error, active_runtime.device) from error
-        return _ctc_acoustic_fallback(
-            stimulus,
-            hop_s=stride_s,
-            params=params,
-            mode=mode,
-            reason=str(error) if str(error) else "ctc inference failed",
-        )
+        raise _ctc_inference_error(error, active_runtime.device) from error
 
     md = add_execution_provenance(
         extractor_metadata(
@@ -942,7 +968,9 @@ def ctc_phone_posteriors(
         dims=("time", "feature"),
         coords={"feature": labels},
         metadata=md,
-        timebase=TimebaseSpec(kind="audio_hop", hop_s=hop_s, sampling_rate_hz=1.0 / hop_s),
+        timebase=TimebaseSpec(
+            kind="audio_hop", hop_s=hop_s, sampling_rate_hz=1.0 / hop_s
+        ),
     )
 
 
@@ -954,8 +982,15 @@ def articulatory_from_posteriors(
     include_uncertainty: bool = True,
 ) -> FeatureSeries:
     if posteriors.values.ndim != 2:
-        raise ValueError("posteriors must be a 2D FeatureSeries with dims (time, feature)")
-    labels = [str(x) for x in posteriors.coords.get("feature", [f"phn_{i}" for i in range(posteriors.values.shape[1])])]
+        raise ValueError(
+            "posteriors must be a 2D FeatureSeries with dims (time, feature)"
+        )
+    labels = [
+        str(x)
+        for x in posteriors.coords.get(
+            "feature", [f"phn_{i}" for i in range(posteriors.values.shape[1])]
+        )
+    ]
     feature_names = feature_names or list(DEFAULT_ARTICULATORY_FEATURES)
     mat = _labels_to_feature_matrix(labels, feature_names=feature_names)
     p = np.asarray(posteriors.values, dtype=np.float32)
@@ -968,7 +1003,9 @@ def articulatory_from_posteriors(
     if include_uncertainty:
         entropy = -np.sum(p * np.log(np.maximum(p, 1e-8)), axis=1, keepdims=True)
         peak = np.max(p, axis=1, keepdims=True)
-        vals = np.concatenate([vals, entropy.astype(np.float32), peak.astype(np.float32)], axis=1)
+        vals = np.concatenate(
+            [vals, entropy.astype(np.float32), peak.astype(np.float32)], axis=1
+        )
         out_names.extend(["posterior_entropy", "posterior_peak"])
     md = extractor_metadata(
         "speech.articulatory.from_posteriors",
@@ -977,7 +1014,9 @@ def articulatory_from_posteriors(
             "renormalize_posteriors": renormalize_posteriors,
             "include_uncertainty": include_uncertainty,
         },
-        extra={"source_extractor": posteriors.metadata.get("extractor_name", "unknown")},
+        extra={
+            "source_extractor": posteriors.metadata.get("extractor_name", "unknown")
+        },
     )
     return FeatureSeries(
         values=vals.astype(np.float32),

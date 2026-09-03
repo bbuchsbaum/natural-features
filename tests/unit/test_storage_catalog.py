@@ -6,7 +6,7 @@ import json
 import numpy as np
 import pytest
 
-from natural_features.core.feature_types import EventSeries, FeatureSeries
+from natural_features.core.feature_types import EventSeries, FeatureSeries, TrackSeries
 from natural_features.storage.catalog import Catalog
 from natural_features.storage.readers import read_event_series, read_feature_series
 
@@ -57,6 +57,76 @@ def test_catalog_put_event_npz(tmp_path) -> None:
     )
     loaded = read_event_series(cat.root / rec.path)
     assert len(loaded) == 2
+
+
+@pytest.mark.parametrize(
+    ("left", "right"),
+    [
+        (
+            FeatureSeries(
+                values=np.array([[1.0], [2.0]], dtype=np.float32),
+                times_s=np.array([0.0, 0.5]),
+                metadata=_meta(),
+            ),
+            FeatureSeries(
+                values=np.array([[1.0], [3.0]], dtype=np.float32),
+                times_s=np.array([0.0, 0.5]),
+                metadata=_meta(),
+            ),
+        ),
+        (
+            EventSeries(
+                onset_s=np.array([0.0, 0.5]),
+                offset_s=np.array([0.2, 0.7]),
+                label=np.array(["alpha", "beta"], dtype=object),
+                confidence=np.array([0.9, 0.8], dtype=np.float32),
+                extra={"speaker": np.array(["a", "b"], dtype=object)},
+                metadata=_meta(),
+            ),
+            EventSeries(
+                onset_s=np.array([0.0, 0.5]),
+                offset_s=np.array([0.2, 0.7]),
+                label=np.array(["alpha", "gamma"], dtype=object),
+                confidence=np.array([0.9, 0.8], dtype=np.float32),
+                extra={"speaker": np.array(["a", "b"], dtype=object)},
+                metadata=_meta(),
+            ),
+        ),
+        (
+            TrackSeries(
+                times_s=np.array([0.0, 0.5]),
+                track_id=np.array(["face-1"], dtype=object),
+                values=np.array([[[1.0]], [[2.0]]], dtype=np.float32),
+                metadata=_meta(),
+            ),
+            TrackSeries(
+                times_s=np.array([0.0, 0.5]),
+                track_id=np.array(["face-1"], dtype=object),
+                values=np.array([[[1.0]], [[4.0]]], dtype=np.float32),
+                metadata=_meta(),
+            ),
+        ),
+    ],
+    ids=["feature-values", "event-labels", "track-values"],
+)
+def test_artifact_identity_includes_semantic_values(tmp_path, left, right) -> None:
+    cat = Catalog(tmp_path / "catalog")
+    kwargs = {
+        "run_id": "same-run",
+        "stage_id": "same-stage",
+        "code_version": "same-version",
+        "created_at": "2026-08-26T00:00:00+00:00",
+        "preferred_format": "npz",
+    }
+
+    left_record = cat.put(left, **kwargs)
+    right_record = cat.put(right, **kwargs)
+
+    assert left_record.artifact_id != right_record.artifact_id
+    assert len(cat.list_artifacts(stage_id="same-stage")) == 2
+    for record in (left_record, right_record):
+        metadata = cat._read_metadata_payload(record.artifact_id)
+        assert len(metadata["payload"]["content_sha256"]) == 64
 
 
 def test_manifest_exports_payload_and_object_provenance(tmp_path) -> None:

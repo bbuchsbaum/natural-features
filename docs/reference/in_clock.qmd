@@ -1,0 +1,9 @@
+# in_clock { #natural_features.in_clock }
+
+```python
+in_clock(obj, target, *, context=None)
+```
+
+Rewrite `obj` times into `target` without resampling values.
+
+This is the free-function form of `FeatureBundle.in_clock`.

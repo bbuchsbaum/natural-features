@@ -51,7 +51,7 @@ def extract_acoustic_phonetics(
     hop_s:
         Base posterior hop in seconds (used by ``acoustic`` backend).
     posterior_backend:
-        ``"ctc"`` (preferred strict backend) or ``"acoustic"`` (lightweight fallback).
+        ``"ctc"`` or the explicitly selected lightweight ``"acoustic"`` method.
     ctc_model:
         Hugging Face CTC model id for posterior extraction.
     ctc_local_files_only:

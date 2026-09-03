@@ -15,7 +15,7 @@
     "Emit both word-level and phoneme-level aligned outputs with stable schemas.",
     "Improve robustness on long audio via chunking, overlap, and stitching.",
     "Expose strong QC metrics and provenance for filtering and audit.",
-    "Keep heavy dependencies optional and preserve fallback behavior."
+    "Keep heavy dependencies optional while failing clearly when a selected backend is unavailable."
   ],
   "non_goals": [
     "Building a hosted ASR/alignment service.",
@@ -50,7 +50,7 @@
   "functional_requirements": [
     {
       "id": "FR-301",
-      "name": "Transcript Fallback Contract",
+      "name": "Explicit Transcript Input Contract",
       "description": "If transcript is not supplied, ASR must generate transcript segments and word events with timestamps, confidences, and provenance metadata.",
       "priority": "P0"
     },
@@ -93,7 +93,7 @@
     {
       "id": "FR-308",
       "name": "Alignment QC Report",
-      "description": "Generate structured QC report with dropped tokens, low-confidence spans, duration outliers, boundary jitter, transcript coverage, and backend/fallback info.",
+      "description": "Generate structured QC report with dropped tokens, low-confidence spans, duration outliers, boundary jitter, transcript coverage, and backend identity.",
       "priority": "P0"
     },
     {
@@ -105,13 +105,13 @@
     {
       "id": "FR-310",
       "name": "Recipe and CLI Ergonomics",
-      "description": "Expose robust ASR+alignment in recipes and CLI with clear flags for backend selection and strict/fallback behavior.",
+      "description": "Expose robust ASR+alignment in recipes and CLI with explicit backend selection and strict failure behavior.",
       "priority": "P0"
     },
     {
       "id": "FR-311",
       "name": "Reproducibility Metadata",
-      "description": "Record ASR model ID/revision, aligner backend/version, params hash, chunk policy, and fallback reasons in artifacts.",
+      "description": "Record ASR model ID/revision, aligner backend/version, params hash, chunk policy, and backend diagnostics in artifacts.",
       "priority": "P0"
     },
     {
@@ -131,7 +131,7 @@
     {
       "id": "NFR-302",
       "name": "Reliability",
-      "description": "Transient backend errors are retried with bounded backoff; permanent failures surface actionable errors or explicit fallback outputs.",
+      "description": "Transient backend errors are retried with bounded backoff; permanent failures surface actionable errors.",
       "priority": "P0"
     },
     {
@@ -274,7 +274,7 @@
       "requirement_ids": [
         "FR-310"
       ],
-      "statement": "CLI exposes one-pass robust ASR+alignment command path with backend selection, strict/fallback mode, and QC export.",
+      "statement": "CLI exposes one-pass robust ASR+alignment command path with backend selection, strict execution, and QC export.",
       "verification": "CLI integration tests."
     }
   ],
@@ -300,11 +300,11 @@
       "deliverables": [
         "Replace passthrough with real whisperx refinement path.",
         "Backend mode/QC truthfulness fixes.",
-        "Strict and fallback behavior parity with ASR subsystem."
+        "Strict failure behavior parity with the ASR subsystem."
       ],
       "exit_criteria": [
         "AC-302 passes on backend-enabled environment.",
-        "Fallback path remains deterministic."
+        "Explicit transcript-input path remains deterministic."
       ]
     },
     {
@@ -370,7 +370,7 @@
       "Chunk stitch edge-case tests (boundary collisions, empty chunks)."
     ],
     "integration_tests": [
-      "ASR-only fallback flow.",
+      "Explicit ASR-only flow.",
       "ASR + whisperx real refinement flow.",
       "End-to-end recipe with speech-language preset and TR rendering."
     ],

@@ -67,14 +67,13 @@ def test_real_ast_backend_local_model_contract() -> None:
     out = audio_ast_embeddings(
         _audio(),
         model=model,
-        dim=8,
         local_files_only=True,
         execution_mode="strict",
         strict_dependency=True,
     )
 
     _assert_real_feature_series(out, feature_id="audio.ast")
-    assert out.values.shape[1] == 8
+    assert out.values.shape[1] > 0
 
 
 def test_real_clap_backend_local_model_contract() -> None:
@@ -85,14 +84,13 @@ def test_real_clap_backend_local_model_contract() -> None:
     out = audio_clap_embeddings(
         _audio(),
         model=model,
-        dim=8,
         local_files_only=True,
         execution_mode="strict",
         strict_dependency=True,
     )
 
     _assert_real_feature_series(out, feature_id="audio.clap")
-    assert out.values.shape[1] == 8
+    assert out.values.shape[1] > 0
 
 
 def test_real_opensmile_egemaps_backend_contract() -> None:
@@ -212,14 +210,14 @@ def test_real_clip_backend_local_model_contract() -> None:
     out = vision_clip_embeddings(
         _image(),
         model=model,
-        dim=8,
         local_files_only=True,
         execution_mode="strict",
         strict_dependency=True,
     )
 
     _assert_real_feature_series(out, feature_id="vision.clip")
-    assert out.values.shape == (1, 8)
+    assert out.values.shape[0] == 1
+    assert out.values.shape[1] > 0
 
 
 def test_real_dino_backend_local_model_contract() -> None:
@@ -233,14 +231,14 @@ def test_real_dino_backend_local_model_contract() -> None:
         model=model,
         layers=[1],
         pooling="mean",
-        dim=8,
         local_files_only=True,
         execution_mode="strict",
         strict_dependency=True,
     )
 
     _assert_real_feature_series(out, feature_id="vision.dino")
-    assert out.values.shape == (2, 8)
+    assert out.values.shape[0] == 2
+    assert out.values.shape[1] > 0
 
 
 def test_real_semantic_views_backend_local_model_contract() -> None:

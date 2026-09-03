@@ -5,6 +5,7 @@ import types
 from types import SimpleNamespace
 
 import numpy as np
+import pytest
 
 from natural_features.core.stimulus import ImageStimulus, VideoStimulus
 from natural_features.features.vision.face import face_detection
@@ -108,11 +109,13 @@ def test_clip_backend_with_fake_transformers(monkeypatch) -> None:  # noqa: ANN0
     monkeypatch.setitem(sys.modules, "transformers", transformers)
 
     stim = ImageStimulus.from_array(np.ones((4, 4, 3), dtype=np.float32))
-    out = vision_clip_embeddings(stim, model="fake-clip", dim=3, execution_mode="strict", strict_dependency=True)
+    out = vision_clip_embeddings(stim, model="fake-clip", execution_mode="strict", strict_dependency=True)
 
-    assert out.values.shape == (1, 3)
-    np.testing.assert_allclose(out.values[0], np.array([1.0, 2.0, 3.0], dtype=np.float32))
+    assert out.values.shape == (1, 4)
+    np.testing.assert_allclose(out.values[0], np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float32))
     assert out.metadata["backend"] == "transformers_clip"
+    with pytest.raises(ValueError, match="native dimension 4"):
+        vision_clip_embeddings(stim, model="fake-clip", dim=3, execution_mode="strict")
 
 
 def test_semantic_views_backend_with_fake_clip(monkeypatch) -> None:  # noqa: ANN001
@@ -225,11 +228,13 @@ def test_dino_backend_with_fake_transformers(monkeypatch) -> None:  # noqa: ANN0
         stim,
         model="fake-dino",
         layers=[1, 2],
-        dim=2,
         execution_mode="strict",
         strict_dependency=True,
     )
 
-    assert out.values.shape == (2, 4)
-    np.testing.assert_allclose(out.values[0], np.array([1.0, 1.0, 2.0, 2.0], dtype=np.float32))
+    assert out.values.shape == (2, 8)
+    np.testing.assert_allclose(
+        out.values[0],
+        np.array([1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0], dtype=np.float32),
+    )
     assert out.metadata["backend"] == "transformers_dino"

@@ -13,6 +13,7 @@ Current recipes:
 - [Inspect and plot feature types](feature-type-gallery.qmd)
 - [Extract audio features from WAV files](audio-batch-from-wav.qmd)
 - [Sample RMS energy onto a TR grid](rms-energy-to-tr-grid.qmd)
+- [Convolve RMS energy with an SPMG1 HRF](rms-hrf-spmg1.qmd)
 - [Preview a recipe DAG](recipe-dag-preview.qmd)
 - [Export events to a table](event-table-export.qmd)
 - [Merge feature tables](feature-table-merge.qmd)

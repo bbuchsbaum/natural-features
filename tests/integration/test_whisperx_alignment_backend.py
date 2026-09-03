@@ -22,19 +22,19 @@ def test_whisperx_backend_refines_boundaries_when_available() -> None:
 
     audio = AudioStimulus.from_wav(TIER_A_AUDIO)
     transcript = TIER_A_TXT.read_text(encoding="utf-8").strip()
-    asr = whisper_transcribe(audio, transcript_text=transcript, strict_dependency=False)
+    asr = whisper_transcribe(audio, transcript_text=transcript)
     before = asr["words"]
-    aligned = whisperx_align(
-        audio,
-        before,
-        backend="whisperx",
-        strict_dependency=False,
-    )
+    try:
+        aligned = whisperx_align(
+            audio,
+            before,
+            backend="whisperx",
+            strict_dependency=True,
+        )
+    except RuntimeError as exc:
+        pytest.skip(f"whisperx runtime path unavailable: {exc}")
     after = aligned["words"]
     qc = aligned["qc"]
-
-    if qc["mode"] != "whisperx" or qc["fallback_used"]:
-        pytest.skip("whisperx runtime path unavailable (model/assets missing)")
 
     assert len(after) > 0
     assert qc["mode"] == "whisperx"

@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -37,10 +37,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -63,10 +63,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -85,12 +85,12 @@ jobs:
             --audio-wav tests/stimuli/tier_a/audio_speechlike.wav \
             --words-ctm tests/stimuli/tier_a/reference_words.ctm \
             --language en \
-            --execution-mode fallback \
+            --execution-mode strict \
             --out-json artifacts/speech_backend_validation.json \
             --json
 
       - name: Upload speech backend validation report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: speech-backend-validation-${{ github.run_id }}
           path: artifacts/speech_backend_validation.json
@@ -101,10 +101,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -121,8 +121,8 @@ jobs:
           mkdir -p artifacts
           python -m natural_features.cli.main speech-benchmark \
             --manifest tests/benchmarks/manifests/tier_a_alignment_manifest.json \
-            --backend auto \
-            --execution-mode fallback \
+            --backend none \
+            --execution-mode strict \
             --out-json artifacts/alignment_benchmark.json \
             --json
 
@@ -133,7 +133,7 @@ jobs:
             --json
 
       - name: Upload alignment benchmark report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: alignment-benchmark-${{ github.run_id }}
           path: artifacts/alignment_benchmark.json
@@ -145,10 +145,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -169,10 +169,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 

@@ -61,7 +61,8 @@ setup-mfa-conda:
 benchmark-tier-a:
 	$(PYTHON) -m natural_features.cli.main speech-benchmark \
 		--manifest tests/benchmarks/manifests/tier_a_alignment_manifest.json \
-		--backend auto \
+		--backend none \
+		--execution-mode strict \
 		--json
 
 benchmark-gate:

@@ -2786,7 +2786,7 @@ requires-dist = [
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "quartodoc", marker = "extra == 'docs'", specifier = ">=0.9" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = "==0.15.20" },
     { name = "torch", marker = "extra == 'speech'", specifier = ">=2.2" },
     { name = "transformers", marker = "extra == 'speech'", specifier = ">=4.40" },
     { name = "whisperx", marker = "extra == 'alignment'", specifier = ">=3.1.0" },
@@ -2801,7 +2801,7 @@ dev = [
     { name = "pillow", specifier = ">=10.0" },
     { name = "pyarrow", specifier = ">=14.0" },
     { name = "pytest", specifier = ">=8.0" },
-    { name = "ruff", specifier = ">=0.8" },
+    { name = "ruff", specifier = "==0.15.20" },
 ]
 docs = [
     { name = "griffe", specifier = "<2" },

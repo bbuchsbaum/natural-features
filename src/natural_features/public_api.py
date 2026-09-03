@@ -8,10 +8,21 @@ Only symbols exported from this module are covered by the compatibility policy.
 from __future__ import annotations
 
 from .core.feature_types import EventSeries, FeatureSeries, TrackSeries
-from .core.feature_bundle import FeatureBundle, TemporalPayload, temporal_object_in_clock
+from .core.feature_bundle import (
+    FeatureBundle,
+    TemporalPayload,
+    in_clock,
+    temporal_object_in_clock,
+)
 from .core.frame_timeline import FrameTimeline
 from .core.timeline import FeatureAlignment, Timeline
-from .core.timebase import ClockMap, ClockRef, SupportSpec, TemporalContext, TimebaseSpec
+from .core.timebase import (
+    ClockMap,
+    ClockRef,
+    SupportSpec,
+    TemporalContext,
+    TimebaseSpec,
+)
 from .fmri.query import (
     ExperimentGrid,
     RunGrid,
@@ -34,7 +45,7 @@ from .workflows.multiscale_language import extract_multiscale_language
 from .workflows.video_text import VideoTextResult, extract_video_text
 
 # Increment only when stable public API contracts change in a breaking way.
-API_COMPAT_VERSION = 2
+API_COMPAT_VERSION = 3
 
 STABLE_EXPORTS = [
     "FeatureSeries",
@@ -47,6 +58,7 @@ STABLE_EXPORTS = [
     "TimebaseSpec",
     "FeatureBundle",
     "TemporalPayload",
+    "in_clock",
     "temporal_object_in_clock",
     "FrameTimeline",
     "Timeline",
