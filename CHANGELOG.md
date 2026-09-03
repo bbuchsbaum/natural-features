@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Auditory-language hierarchy vignette (`docs/auditory_language_hierarchy.md`)
+  with a runnable example (`examples/auditory_language_hierarchy.py`) that
+  stacks acoustics, prosody, phonology, and semantics from one speech wav onto
+  one grid with per-level design-matrix blocks.
+- `extract_audio_files`/`extract_audio_dir` now offer `pitch` and `prosody`
+  feature families alongside the existing low-level acoustics.
 - CTC phone posteriors cache the loaded model across calls, place it on CUDA/MPS/CPU
   via `device="auto"`, and chunk audio longer than 30 s with 1 s overlap.
 - Cookbook and example for extracting `audio.rms` and sampling it onto a scan
