@@ -26,6 +26,15 @@ def _mono_waveform(stimulus: AudioStimulus) -> np.ndarray:
 
 
 def _numpy(value: Any) -> np.ndarray:
+    # transformers >= 5 returns a ModelOutput (e.g. BaseModelOutputWithPooling) where
+    # earlier versions returned the projection tensor directly. Unwrap it before
+    # casting, or np.asarray sees an object with no numeric interpretation.
+    if not hasattr(value, "detach") and not isinstance(value, np.ndarray):
+        for attr in ("audio_embeds", "pooler_output", "last_hidden_state"):
+            inner = getattr(value, attr, None)
+            if inner is not None:
+                value = inner
+                break
     if hasattr(value, "detach"):
         value = value.detach().cpu().numpy()
     return np.asarray(value, dtype=np.float32)
@@ -53,6 +62,27 @@ def _single_clip_embedding(value: Any, *, backend: str, dim: int | None) -> np.n
                 "an explicit downstream transform"
             )
     return values.astype(np.float32, copy=False)
+
+
+
+def _require_processor_sample_rate(processor: Any, stimulus: AudioStimulus, backend: str) -> None:
+    """Fail loudly on a sample-rate mismatch instead of resampling silently.
+
+    CLAP expects 48 kHz and AST expects 16 kHz. Resampling here would be a hidden
+    signal-processing decision, which the strict execution policy rules out, so point
+    the caller at ``audio.resample`` instead.
+    """
+
+    fe = getattr(processor, "feature_extractor", processor)
+    expected = getattr(fe, "sampling_rate", None)
+    if expected is None or int(expected) == int(stimulus.sr_hz):
+        return
+    raise BackendInferenceError(
+        backend,
+        f"model expects {int(expected)} Hz audio but the stimulus is "
+        f"{int(stimulus.sr_hz)} Hz; resample it first with audio.resample "
+        f"(target_sr_hz={int(expected)}) rather than relying on an implicit conversion",
+    )
 
 
 def _clip_result(
@@ -137,12 +167,23 @@ def audio_clap_embeddings(
     except Exception as exc:
         raise BackendLoadError(backend, f"model '{model}' is unavailable") from exc
 
+    _require_processor_sample_rate(processor, stimulus, backend)
     try:
-        inputs = processor(
-            audios=_mono_waveform(stimulus),
-            sampling_rate=stimulus.sr_hz,
-            return_tensors="pt",
-        )
+        # transformers renamed this keyword from `audios` to `audio` in v5; call the
+        # current name first and fall back so both generations keep working.
+        wave = _mono_waveform(stimulus)
+        try:
+            inputs = processor(
+                audio=wave,
+                sampling_rate=stimulus.sr_hz,
+                return_tensors="pt",
+            )
+        except (TypeError, ValueError):
+            inputs = processor(
+                audios=wave,
+                sampling_rate=stimulus.sr_hz,
+                return_tensors="pt",
+            )
         with torch.no_grad():
             embedding = net.get_audio_features(**inputs)
     except Exception as exc:
@@ -198,6 +239,7 @@ def audio_ast_embeddings(
     except Exception as exc:
         raise BackendLoadError(backend, f"model '{model}' is unavailable") from exc
 
+    _require_processor_sample_rate(feature_extractor, stimulus, backend)
     try:
         inputs = feature_extractor(
             _mono_waveform(stimulus),

@@ -17,6 +17,16 @@ All notable changes to this project will be documented in this file.
   `(Omega, omega)`.
 - Cookbook: "Build a music feature hierarchy", covering the frame-rate versus
   window sampling conventions and a ladder of integration windows.
+
+### Fixed
+- `audio.clap` and `audio.ast` under transformers 5.x. `get_audio_features` now
+  returns a `ModelOutput` rather than a tensor, so `_numpy` unwraps
+  `audio_embeds`/`pooler_output`/`last_hidden_state` before casting, and the
+  processor keyword renamed from `audios` to `audio`.
+- A sample-rate mismatch on a whole-clip audio model now raises a message naming
+  the required rate and pointing at `audio.resample`, instead of surfacing as
+  "audio projection failed". CLAP requires 48 kHz and AST 16 kHz; nothing is
+  resampled implicitly.
 - Cookbook and example for extracting `audio.rms` and sampling it onto a scan
   TR grid, including a 2 s TR with stimulus onset at 0.67 s.
 - Cookbook and example for convolving native `audio.rms` with fmrimod's SPMG1
