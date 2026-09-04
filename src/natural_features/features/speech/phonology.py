@@ -55,11 +55,18 @@ DEFAULT_DISTINCTIVE_FEATURES: list[str] = list(DEFAULT_ARTICULATORY_FEATURES) + 
     "continuant",
     "strident",
     "lateral",
-    "aspirated",
     "rounded",
     "high",
     "low",
 ]
+
+# Aspiration is allophonic in English: it depends on phone context, not on the
+# phone label alone. It is therefore excluded from the context-free label map
+# above and computed from the phone sequence in
+# ``distinctive_from_phoneme_events``. Framewise posterior mixtures carry no
+# sequence, so the posterior path cannot emit it.
+_ASPIRATABLE_STOPS = {"P", "T", "K"}
+_ASPIRATION_BLOCKERS = {"S"}
 
 _DISTINCTIVE_EXTRAS: dict[str, set[str]] = {
     "S": {"continuant", "strident"},
@@ -388,6 +395,28 @@ def _features_for_label(raw: str) -> set[str]:
             classes.add("continuant")
         return classes
     return set()
+
+
+def _contextual_aspiration(labels: list[str]) -> np.ndarray:
+    """Allophonic English aspiration from phone sequence.
+
+    A voiceless stop (P, T, K) is marked aspirated when it is released into a
+    vowel or approximant and is not preceded by /s/ ("pin" vs "spin").
+    """
+
+    norm = [_normalize_phone_label(str(x)) for x in labels]
+    out = np.zeros(len(norm), dtype=np.float32)
+    for i, lab in enumerate(norm):
+        if lab not in _ASPIRATABLE_STOPS:
+            continue
+        if i > 0 and norm[i - 1] in _ASPIRATION_BLOCKERS:
+            continue
+        if i + 1 >= len(norm):
+            continue
+        following = _features_for_label(norm[i + 1])
+        if "vowel" in following or "approximant" in following:
+            out[i] = 1.0
+    return out
 
 
 def _labels_to_feature_matrix(
@@ -855,11 +884,49 @@ def distinctive_from_phoneme_events(
     *,
     include_confidence: bool = True,
 ) -> FeatureSeries:
-    """English distinctive-feature vectors from phone events."""
+    """English distinctive-feature vectors from phone events.
 
-    return articulatory_from_phoneme_events(
-        phonemes,
-        feature_names=list(DEFAULT_DISTINCTIVE_FEATURES),
-        include_confidence=include_confidence,
-        extractor_name="speech.phonology.distinctive_from_phoneme_events",
+    Unlike the posterior path, phone events carry sequence, so this adds a
+    context-dependent ``aspirated`` column (voiceless stop released into a
+    vowel or approximant, not preceded by /s/).
+    """
+
+    labels = [str(x) for x in (phonemes.label if phonemes.label is not None else [])]
+    feature_names = list(DEFAULT_DISTINCTIVE_FEATURES)
+    mat = _labels_to_feature_matrix(labels, feature_names=feature_names)
+    aspirated = _contextual_aspiration(labels).reshape(-1, 1)
+    vals = np.concatenate([mat, aspirated], axis=1).astype(np.float32)
+    out_names = feature_names + ["aspirated"]
+    if include_confidence:
+        conf = phonemes.confidence
+        c = (
+            np.ones((len(phonemes), 1), dtype=np.float32)
+            if conf is None
+            else np.asarray(conf, dtype=np.float32).reshape(-1, 1)
+        )
+        vals = np.concatenate([vals, c], axis=1)
+        out_names.append("event_confidence")
+    md = extractor_metadata(
+        "speech.phonology.distinctive_from_phoneme_events",
+        params={
+            "feature_names": out_names,
+            "include_confidence": include_confidence,
+        },
+        extra={
+            "source_label_namespace": phonemes.metadata.get(
+                "label_namespace", "unknown"
+            ),
+            "source_word_alignment_id": phonemes.metadata.get(
+                "source_word_alignment_id", "unknown"
+            ),
+            "aspiration": "contextual_voiceless_stop_release",
+        },
+    )
+    return FeatureSeries(
+        values=vals.astype(np.float32),
+        times_s=phonemes.onset_s.astype(np.float64),
+        dims=("time", "feature"),
+        coords={"feature": out_names},
+        metadata=md,
+        timebase=TimebaseSpec(kind="tokens"),
     )

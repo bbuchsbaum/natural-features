@@ -25,14 +25,20 @@ interchangeable with paper names.
 | `speech.phones.mfa` | MFA `phones` TextGrid tier |
 | `speech.articulatory` | Orthographic letter-ratio proxy |
 | `speech.articulatory.from_posteriors` | Static 22-D place/manner map from posteriors |
-| `speech.phonology.distinctive_from_posteriors` | Broader English distinctive-feature occupancy |
+| `speech.phonology.distinctive_from_posteriors` | Broader English distinctive-feature occupancy; no `aspirated` (context-free) |
+| `speech.phonology.distinctive_from_phoneme_events` | Same set plus contextual `aspirated` (voiceless stop released into vowel/approximant, not after /s/) |
 | `speech.articulatory.sparc` | SPARC template EMA (12 channels, no velum/larynx) |
-| `speech.articulatory.gestures` | Canonical overlapping activations from phone labels |
-| `speech.articulatory.dynamics` | Finite-difference velocity/acceleration of a G series |
+| `speech.articulatory.gestures` | Canonical overlapping activations from phone labels; with `stimulus` they are gain-modulated by measured intensity and voicing |
+| `speech.articulatory.dynamics` | Finite-difference velocity/acceleration plus kinematic `effort` and co-activation `overlap` of a G series |
+| `speech.syllables.onc` | Maximal-onset heuristic syllable onset/nucleus/coda occupancy, not lexicon syllabification |
 
-Canonical gestures derived from phones are almost a function of P. Unique
-variance of G over P requires waveform-conditioned inversion (`sparc`), not
-the gesture control layer.
+Canonical gestures derived from phones alone are a function of P. Passing the
+stimulus multiplies canonical targets by measured intensity and voicing gains,
+which makes G a P-by-acoustics interaction (token-level reduction and
+hyperarticulation) rather than a relabeling of P. Full unique variance of G
+still requires waveform-conditioned inversion (`sparc`). `overlap` in the
+dynamics band is meaningful only for activation-like G series, not signed EMA
+positions. Predicted sensory consequence remains out of scope for band M.
 
 SPARC is a speaker-agnostic template space trained for inversion/synthesis.
 It is not measured EMA and it does not represent velum or larynx. Those
@@ -54,4 +60,6 @@ HRF convolution and TR grids stay downstream.
 
 `extract_speech_ladder` and preset `fmri_speech_ladder` emit raw bands and
 optional residual keys such as `a2|a1` and `g_ema|a+p`. Default phone
-posteriors are PPGs when the `ppgs` extra is installed, otherwise CTC.
+posteriors are PPGs when the `ppgs` extra is installed, otherwise CTC. When
+phone events are supplied, gestures are acoustically gain-modulated and an
+`m_syllables` onset/nucleus/coda band is emitted.

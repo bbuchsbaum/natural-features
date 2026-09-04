@@ -38,6 +38,7 @@ from .phonology import (
 )
 from .ppgs import ppg_phone_posteriors
 from .sparc import sparc_articulatory
+from .syllables import syllable_onc
 from .ssl import hubert_hidden_states, wavlm_hidden_states
 from .vad import energy_vad, neural_vad, speech_vad
 from .validation import validate_alignment_backends
@@ -85,6 +86,7 @@ __all__ = [
     "speech_emotion",
     "speech_vad",
     "stitch_word_events",
+    "syllable_onc",
     "validate_alignment_qc",
     "validate_alignment_backends",
     "wavlm_hidden_states",
