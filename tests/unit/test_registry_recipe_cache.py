@@ -12,7 +12,12 @@ import pytest
 
 from natural_features.cli.main import main as cli_main
 from natural_features.core.feature_types import EventSeries
-from natural_features.core.recipe import as_mermaid, execute_recipe, plan_dag, validate_recipe
+from natural_features.core.recipe import (
+    as_mermaid,
+    execute_recipe,
+    plan_dag,
+    validate_recipe,
+)
 from natural_features.core.registry import Registry
 from natural_features.core.stimulus import AudioStimulus, VideoStimulus
 from natural_features.flow.cache import cache_fingerprint, invalidation_reasons
@@ -27,7 +32,14 @@ def test_builtin_registry_loads_specs() -> None:
     assert "vision.clip" in names
     assert "audio.lowlevel.rms" in names
     assert "speech.phonology.ctc_posteriors" in names
+    assert "speech.phonology.ppg_posteriors" in names
     assert "speech.articulatory.from_phoneme_events" in names
+    assert "audio.envelope" in names
+    assert "audio.modulation.spectrotemporal" in names
+    assert "audio.formants" in names
+    assert "features.residualize" in names
+    assert "speech.articulatory.sparc" in names
+    assert "speech.phonology.distinctive_from_posteriors" in names
 
 
 def test_registry_rejects_invalid_param_spec_default_type() -> None:
@@ -77,19 +89,35 @@ def test_recipe_ref_wiring_with_custom_registry() -> None:
     recipe = {
         "features": [
             {"id": "a", "use": "test.step1"},
-            {"id": "b", "use": "test.step2", "inputs": {"x": "ref: a.default"}, "params": {"scale": 2.0}},
+            {
+                "id": "b",
+                "use": "test.step2",
+                "inputs": {"x": "ref: a.default"},
+                "params": {"scale": 2.0},
+            },
         ]
     }
-    out = execute_recipe(recipe, registry=reg, inputs={"video": VideoStimulus.from_array(frames, fps=5.0)})
+    out = execute_recipe(
+        recipe,
+        registry=reg,
+        inputs={"video": VideoStimulus.from_array(frames, fps=5.0)},
+    )
     assert "a" in out.steps and "b" in out.steps
-    assert out.steps["b"]["default"].values.shape[1] == out.steps["a"]["default"].values.shape[1]
+    assert (
+        out.steps["b"]["default"].values.shape[1]
+        == out.steps["a"]["default"].values.shape[1]
+    )
 
 
 def test_builtin_registry_rejects_image_vision_fallback_recipes() -> None:
     reg = Registry.with_builtin_specs()
     recipe = {
         "features": [
-            {"id": "energy", "use": "vision.energy", "inputs": {"image": "input:image"}},
+            {
+                "id": "energy",
+                "use": "vision.energy",
+                "inputs": {"image": "input:image"},
+            },
             {
                 "id": "face",
                 "use": "vision.face",
@@ -113,11 +141,19 @@ def test_recipe_rejects_unknown_params() -> None:
     frames = np.zeros((6, 8, 8, 3), dtype=np.uint8)
     recipe = {
         "features": [
-            {"id": "a", "use": "vision.lowlevel.visual_energy", "params": {"unknown_param": 1}},
+            {
+                "id": "a",
+                "use": "vision.lowlevel.visual_energy",
+                "params": {"unknown_param": 1},
+            },
         ]
     }
     with pytest.raises(ValueError):
-        execute_recipe(recipe, registry=reg, inputs={"video": VideoStimulus.from_array(frames, fps=5.0)})
+        execute_recipe(
+            recipe,
+            registry=reg,
+            inputs={"video": VideoStimulus.from_array(frames, fps=5.0)},
+        )
 
 
 def test_recipe_rejects_param_type_mismatch() -> None:
@@ -125,11 +161,19 @@ def test_recipe_rejects_param_type_mismatch() -> None:
     frames = np.zeros((6, 8, 8, 3), dtype=np.uint8)
     recipe = {
         "features": [
-            {"id": "a", "use": "vision.lowlevel.visual_energy", "params": {"include_deltas": "yes"}},
+            {
+                "id": "a",
+                "use": "vision.lowlevel.visual_energy",
+                "params": {"include_deltas": "yes"},
+            },
         ]
     }
     with pytest.raises(ValueError):
-        execute_recipe(recipe, registry=reg, inputs={"video": VideoStimulus.from_array(frames, fps=5.0)})
+        execute_recipe(
+            recipe,
+            registry=reg,
+            inputs={"video": VideoStimulus.from_array(frames, fps=5.0)},
+        )
 
 
 def test_recipe_rejects_duplicate_step_ids() -> None:
@@ -142,7 +186,11 @@ def test_recipe_rejects_duplicate_step_ids() -> None:
         ]
     }
     with pytest.raises(ValueError):
-        execute_recipe(recipe, registry=reg, inputs={"video": VideoStimulus.from_array(frames, fps=5.0)})
+        execute_recipe(
+            recipe,
+            registry=reg,
+            inputs={"video": VideoStimulus.from_array(frames, fps=5.0)},
+        )
 
 
 def test_recipe_rejects_unknown_step_keys() -> None:
@@ -154,7 +202,11 @@ def test_recipe_rejects_unknown_step_keys() -> None:
         ]
     }
     with pytest.raises(ValueError):
-        execute_recipe(recipe, registry=reg, inputs={"video": VideoStimulus.from_array(frames, fps=5.0)})
+        execute_recipe(
+            recipe,
+            registry=reg,
+            inputs={"video": VideoStimulus.from_array(frames, fps=5.0)},
+        )
 
 
 def test_recipe_enforces_declared_output_schema() -> None:
@@ -182,7 +234,11 @@ def test_recipe_enforces_declared_output_schema() -> None:
         ]
     }
     with pytest.raises(TypeError):
-        execute_recipe(recipe, registry=reg, inputs={"video": VideoStimulus.from_array(frames, fps=5.0)})
+        execute_recipe(
+            recipe,
+            registry=reg,
+            inputs={"video": VideoStimulus.from_array(frames, fps=5.0)},
+        )
 
 
 def test_validate_recipe_static_contracts() -> None:
@@ -190,7 +246,11 @@ def test_validate_recipe_static_contracts() -> None:
     recipe = {
         "features": [
             {"id": "asr", "use": "speech.asr.whisper"},
-            {"id": "art", "use": "speech.articulatory.features", "inputs": {"words": "ref: asr.words"}},
+            {
+                "id": "art",
+                "use": "speech.articulatory.features",
+                "inputs": {"words": "ref: asr.words"},
+            },
         ]
     }
     val = validate_recipe(recipe, registry=reg, input_keys={"audio"})
@@ -206,7 +266,9 @@ def test_recipe_dag_outputs_depends_on_input_tokens_and_mermaid() -> None:
                 "id": "rms",
                 "use": "audio.lowlevel.rms",
                 "inputs": {"audio": "input:audio"},
-                "outputs": {"default": {"schema": "FeatureSeries/v1", "kind": "features"}},
+                "outputs": {
+                    "default": {"schema": "FeatureSeries/v1", "kind": "features"}
+                },
             },
             {
                 "id": "mel",
@@ -229,7 +291,9 @@ def test_recipe_dag_outputs_depends_on_input_tokens_and_mermaid() -> None:
 
 def test_execute_recipe_honors_depends_on_execution_order() -> None:
     reg = Registry.with_builtin_specs()
-    audio = AudioStimulus.from_array(np.linspace(-1.0, 1.0, 1000, dtype=np.float32), sr_hz=1000)
+    audio = AudioStimulus.from_array(
+        np.linspace(-1.0, 1.0, 1000, dtype=np.float32), sr_hz=1000
+    )
     recipe = {
         "features": [
             {
@@ -289,7 +353,7 @@ def test_cli_list_describe_and_extract(tmp_path, capsys) -> None:
     # describe
     assert cli_main(["describe", "audio.lowlevel.rms"]) == 0
     desc = capsys.readouterr().out
-    assert "\"name\": \"audio.lowlevel.rms\"" in desc
+    assert '"name": "audio.lowlevel.rms"' in desc
 
     # extract
     recipe_path = Path("tests/fixtures/recipe_baseline.yaml")
@@ -328,7 +392,7 @@ def test_cli_list_describe_and_extract(tmp_path, capsys) -> None:
         == 0
     )
     payload = capsys.readouterr().out
-    assert "\"artifacts\"" in payload
+    assert '"artifacts"' in payload
     assert (out_dir / "catalog.sqlite3").exists()
 
 
@@ -339,13 +403,31 @@ def test_cli_features_exports_public_catalog_text_json_and_csv(capsys) -> None:
     assert "audio.rms" in listed
     assert "audio.lowlevel.rms" not in listed
 
-    assert cli_main(["features", "--modality", "audio", "--budget", "all", "--include-internal", "--csv"]) == 0
+    assert (
+        cli_main(
+            [
+                "features",
+                "--modality",
+                "audio",
+                "--budget",
+                "all",
+                "--include-internal",
+                "--csv",
+            ]
+        )
+        == 0
+    )
     csv_text = capsys.readouterr().out
     rows = list(csv.DictReader(StringIO(csv_text)))
     ids = {row["feature_id"] for row in rows}
     assert "audio.rms" in ids
     assert "audio.lowlevel.rms" in ids
-    assert next(row for row in rows if row["feature_id"] == "audio.lowlevel.rms")["is_public"] == "false"
+    assert (
+        next(row for row in rows if row["feature_id"] == "audio.lowlevel.rms")[
+            "is_public"
+        ]
+        == "false"
+    )
 
     assert cli_main(["features", "--modality", "text", "--json"]) == 0
     payload = json.loads(capsys.readouterr().out)
@@ -355,13 +437,27 @@ def test_cli_features_exports_public_catalog_text_json_and_csv(capsys) -> None:
 
 def test_cli_validate_and_presets(capsys) -> None:
     recipe_path = Path("tests/fixtures/recipe_baseline.yaml")
-    assert cli_main(["validate", str(recipe_path), "--have", "video", "--have", "audio", "--json"]) == 0
+    assert (
+        cli_main(
+            [
+                "validate",
+                str(recipe_path),
+                "--have",
+                "video",
+                "--have",
+                "audio",
+                "--json",
+            ]
+        )
+        == 0
+    )
     validated = capsys.readouterr().out
-    assert "\"valid\": true" in validated
+    assert '"valid": true' in validated
 
     assert cli_main(["preset-list"]) == 0
     listed = capsys.readouterr().out
     assert "fmri_speech_language" in listed
+    assert "fmri_speech_ladder" in listed
 
     assert cli_main(["preset-show", "fmri_speech_language"]) == 0
     shown = capsys.readouterr().out
@@ -374,7 +470,9 @@ def test_cli_prep_video_with_mocked_ffmpeg(tmp_path, capsys, monkeypatch) -> Non
     video_out = tmp_path / "clip.npy"
     audio_out = tmp_path / "clip.wav"
 
-    monkeypatch.setattr("shutil.which", lambda name: "/usr/bin/ffmpeg" if name == "ffmpeg" else None)
+    monkeypatch.setattr(
+        "shutil.which", lambda name: "/usr/bin/ffmpeg" if name == "ffmpeg" else None
+    )
 
     def _fake_check_output(cmd):
         assert cmd[0] == "ffmpeg"
@@ -421,8 +519,8 @@ def test_cli_prep_video_with_mocked_ffmpeg(tmp_path, capsys, monkeypatch) -> Non
         == 0
     )
     payload = capsys.readouterr().out
-    assert "\"video_prepared\": true" in payload
-    assert "\"audio_prepared\": true" in payload
+    assert '"video_prepared": true' in payload
+    assert '"audio_prepared": true' in payload
     arr = np.load(video_out, allow_pickle=False)
     assert arr.shape == (2, 2, 2, 3)
     assert audio_out.exists()
@@ -458,16 +556,29 @@ def test_cli_speech_validate_backends_json(capsys, monkeypatch, tmp_path) -> Non
     report = {
         "validated_at": "2026-01-01T00:00:00+00:00",
         "backends": {
-            "whisperx": {"available": True, "runtime_checked": True, "runtime_ok": True},
+            "whisperx": {
+                "available": True,
+                "runtime_checked": True,
+                "runtime_ok": True,
+            },
             "mfa": {"available": False, "runtime_checked": False, "runtime_ok": None},
-            "gentle": {"available": False, "runtime_checked": False, "runtime_ok": None},
+            "gentle": {
+                "available": False,
+                "runtime_checked": False,
+                "runtime_ok": None,
+            },
         },
     }
-    monkeypatch.setattr("natural_features.cli.main.validate_alignment_backends", lambda **_: report)
+    monkeypatch.setattr(
+        "natural_features.cli.main.validate_alignment_backends", lambda **_: report
+    )
     out_json = tmp_path / "backend_report.json"
-    assert cli_main(["speech-validate-backends", "--out-json", str(out_json), "--json"]) == 0
+    assert (
+        cli_main(["speech-validate-backends", "--out-json", str(out_json), "--json"])
+        == 0
+    )
     payload = capsys.readouterr().out
-    assert "\"whisperx\"" in payload
+    assert '"whisperx"' in payload
     assert out_json.exists()
 
 
@@ -477,13 +588,28 @@ def test_cli_speech_benchmark_json(capsys, monkeypatch, tmp_path) -> None:
         "summary": {"n_items": 1, "n_success": 1, "n_failed": 0, "fallback_rate": 0.0},
         "results": [{"clip_id": "x"}],
     }
-    monkeypatch.setattr("natural_features.cli.main.run_alignment_benchmark", lambda *args, **kwargs: report)
+    monkeypatch.setattr(
+        "natural_features.cli.main.run_alignment_benchmark",
+        lambda *args, **kwargs: report,
+    )
     manifest = tmp_path / "manifest.json"
-    manifest.write_text("{\"items\":[]}", encoding="utf-8")
+    manifest.write_text('{"items":[]}', encoding="utf-8")
     out_json = tmp_path / "benchmark_report.json"
-    assert cli_main(["speech-benchmark", "--manifest", str(manifest), "--out-json", str(out_json), "--json"]) == 0
+    assert (
+        cli_main(
+            [
+                "speech-benchmark",
+                "--manifest",
+                str(manifest),
+                "--out-json",
+                str(out_json),
+                "--json",
+            ]
+        )
+        == 0
+    )
     payload = capsys.readouterr().out
-    assert "\"summary\"" in payload
+    assert '"summary"' in payload
     assert out_json.exists()
 
 
@@ -491,18 +617,32 @@ def test_cli_speech_doctor_json(capsys, monkeypatch, tmp_path) -> None:
     validation = {
         "validated_at": "2026-01-01T00:00:00+00:00",
         "backends": {
-            "whisperx": {"available": False, "reason": "ModuleNotFoundError: No module named 'whisperx'"},
+            "whisperx": {
+                "available": False,
+                "reason": "ModuleNotFoundError: No module named 'whisperx'",
+            },
             "mfa": {"available": False, "reason": "mfa executable not found"},
-            "gentle": {"available": False, "reason": "ModuleNotFoundError: No module named 'gentle'"},
+            "gentle": {
+                "available": False,
+                "reason": "ModuleNotFoundError: No module named 'gentle'",
+            },
         },
     }
-    doctor = {"health": "unavailable", "blockers": ["whisperx", "mfa"], "recommendations": []}
-    monkeypatch.setattr("natural_features.cli.main.validate_alignment_backends", lambda **_: validation)
-    monkeypatch.setattr("natural_features.cli.main.build_alignment_doctor_report", lambda _v: doctor)
+    doctor = {
+        "health": "unavailable",
+        "blockers": ["whisperx", "mfa"],
+        "recommendations": [],
+    }
+    monkeypatch.setattr(
+        "natural_features.cli.main.validate_alignment_backends", lambda **_: validation
+    )
+    monkeypatch.setattr(
+        "natural_features.cli.main.build_alignment_doctor_report", lambda _v: doctor
+    )
     out_json = tmp_path / "doctor_report.json"
     assert cli_main(["speech-doctor", "--out-json", str(out_json), "--json"]) == 0
     payload = capsys.readouterr().out
-    assert "\"health\": \"unavailable\"" in payload
+    assert '"health": "unavailable"' in payload
     assert out_json.exists()
 
 
@@ -526,7 +666,11 @@ def test_cli_speech_align_forwards_mfa_args(monkeypatch, tmp_path, capsys) -> No
                 offset_s=np.array([0.5], dtype=np.float64),
                 label=np.array(["hello"], dtype=object),
                 confidence=np.array([1.0], dtype=np.float32),
-                metadata={"extractor_id": "x", "params_hash": "y", "asr_model_name": "small"},
+                metadata={
+                    "extractor_id": "x",
+                    "params_hash": "y",
+                    "asr_model_name": "small",
+                },
             ),
             "qc": {},
         },
@@ -542,7 +686,11 @@ def test_cli_speech_align_forwards_mfa_args(monkeypatch, tmp_path, capsys) -> No
                 offset_s=np.array([0.5], dtype=np.float64),
                 label=np.array(["hello"], dtype=object),
                 confidence=np.array([1.0], dtype=np.float32),
-                metadata={"extractor_id": "x", "params_hash": "y", "asr_model_name": "small"},
+                metadata={
+                    "extractor_id": "x",
+                    "params_hash": "y",
+                    "asr_model_name": "small",
+                },
             ),
             "qc": {"mode": "mfa"},
         }

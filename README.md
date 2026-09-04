@@ -21,7 +21,7 @@ and re-exported at package root.
 - A queryable feature catalogue with planning before execution
 - One-call extraction through `extract_features(...)`
 - Explicit alignment to event, frame, regular, or custom timelines
-- Audio-batch, acoustic-phonetics, multiscale-language, and video-text workflows
+- Audio-batch, acoustic-phonetics, speech-ladder, multiscale-language, and video-text workflows
 - Dependency-light native-time payloads for downstream `fmrimod`/fMRI modeling
 - Compatibility-only run-aware fMRI query and rendering helpers
 - Storage and interchange through NPZ, Zarr, Parquet, and tabular exports
@@ -46,7 +46,7 @@ uv run nf --help
 
 Optional dependency groups are defined in `pyproject.toml`, including
 `storage`, `vision`, `speech`, `alignment`, `alignment_mfa`,
-`alignment_legacy`, `llm`, `dev`, and `docs`.
+`alignment_legacy`, `ppgs`, `formants`, `sparc`, `llm`, `dev`, and `docs`.
 
 ## Quick start
 

@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Speech representational ladder extractors and `extract_speech_ladder`:
+  envelope/onset (A1), STFT rate/scale modulation (A2), LPC formants and HNR
+  (A3), MFA phone-tier events, English distinctive features, SPARC template
+  EMA, canonical gestures, articulatory dynamics, and `features.residualize`.
+  See `docs/speech_ladder.md`. Optional extras: `formants`, `sparc`.
+- Optional `ppgs` posterior backend (`speech.phonology.ppg_posteriors` and
+  `extract_acoustic_phonetics(..., posterior_backend="ppgs")`) wrapping
+  Churchwell et al. 2024 phonetic posteriorgrams, with edge-silence trim/pad
+  to keep padded clips on the original 10 ms hop grid.
 - Music feature family: `audio.music.chroma`, `audio.music.tonnetz`,
   `audio.music.onset_strength`, `audio.music.tempogram`, `audio.music.rhythm` and
   `audio.music.tonality`, covering pitch-class content, tonal centroid, key/mode
@@ -22,16 +31,6 @@ All notable changes to this project will be documented in this file.
   pitch family from the two columns `audio.pitch` provides, and computes its
   autocorrelation by FFT over all frames at once rather than per-lag in Python
   (~1.4x faster on minute-scale audio while returning 3.5x the columns).
-
-### Fixed
-- `audio.clap` and `audio.ast` under transformers 5.x. `get_audio_features` now
-  returns a `ModelOutput` rather than a tensor, so `_numpy` unwraps
-  `audio_embeds`/`pooler_output`/`last_hidden_state` before casting, and the
-  processor keyword renamed from `audios` to `audio`.
-- A sample-rate mismatch on a whole-clip audio model now raises a message naming
-  the required rate and pointing at `audio.resample`, instead of surfacing as
-  "audio projection failed". CLAP requires 48 kHz and AST 16 kHz; nothing is
-  resampled implicitly.
 - Cookbook and example for extracting `audio.rms` and sampling it onto a scan
   TR grid, including a 2 s TR with stimulus onset at 0.67 s.
 - Cookbook and example for convolving native `audio.rms` with fmrimod's SPMG1
@@ -52,6 +51,16 @@ All notable changes to this project will be documented in this file.
 - CLI ergonomics: `nf validate`, `nf preset-list`, `nf preset-show`.
 - Onboarding and docs index.
 - Release discipline docs and release-check script.
+
+### Fixed
+- `audio.clap` and `audio.ast` under transformers 5.x. `get_audio_features` now
+  returns a `ModelOutput` rather than a tensor, so `_numpy` unwraps
+  `audio_embeds`/`pooler_output`/`last_hidden_state` before casting, and the
+  processor keyword renamed from `audios` to `audio`.
+- A sample-rate mismatch on a whole-clip audio model now raises a message naming
+  the required rate and pointing at `audio.resample`, instead of surfacing as
+  "audio projection failed". CLAP requires 48 kHz and AST 16 kHz; nothing is
+  resampled implicitly.
 
 ### Changed
 - Stimuli, feature objects, extraction workflows, and NPZ/Zarr/Parquet storage
