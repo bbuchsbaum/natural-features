@@ -1101,6 +1101,193 @@ extractors:
         schema: FeatureSeries/v1
         kind: features
 
+  - name: audio.music.chroma
+    impl: natural_features.features.audio.music:music_chroma
+    version: "1.0"
+    label: Chroma (pitch-class energy)
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: moderate
+    tags: [audio, music, tonal, chroma]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      win_s: { type: float, default: 0.186 }
+      n_chroma: { type: int, default: 12 }
+      tuning_hz: { type: float, default: 440.0 }
+      fmin: { type: float, default: 55.0 }
+      fmax: { type: float, default: 5000.0 }
+      sigma: { type: float, default: 0.5 }
+      octwidth: { type: float, default: null, nullable: true }
+      norm: { type: str, default: l2, nullable: true }
+      power_exp: { type: float, default: 2.0 }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: audio.music.tonnetz
+    impl: natural_features.features.audio.music:music_tonnetz
+    version: "1.0"
+    label: Tonal centroid (Tonnetz)
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: moderate
+    tags: [audio, music, tonal, harmony]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      win_s: { type: float, default: 0.186 }
+      tuning_hz: { type: float, default: 440.0 }
+      fmin: { type: float, default: 55.0 }
+      fmax: { type: float, default: 5000.0 }
+      sigma: { type: float, default: 0.5 }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: audio.music.onset_strength
+    impl: natural_features.features.audio.music:music_onset_strength
+    version: "1.0"
+    label: Onset-strength envelope
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: cheap
+    tags: [audio, music, rhythm, onsets]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      win_s: { type: float, default: 0.025 }
+      n_mels: { type: int, default: 64 }
+      fmin: { type: float, default: 50.0 }
+      fmax: { type: float, default: null, nullable: true }
+      lag: { type: int, default: 1 }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: audio.music.tempogram
+    impl: natural_features.features.audio.music:music_tempogram
+    version: "1.0"
+    label: Tempogram (log-BPM autocorrelation)
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: moderate
+    tags: [audio, music, rhythm, tempo, window]
+    params:
+      window_s: { type: float, default: 8.0 }
+      hop_s: { type: float, default: 1.0 }
+      env_hop_s: { type: float, default: 0.01 }
+      env_win_s: { type: float, default: 0.025 }
+      n_mels: { type: int, default: 64 }
+      bpm_min: { type: float, default: 30.0 }
+      bpm_max: { type: float, default: 300.0 }
+      n_bins: { type: int, default: 48 }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: audio.music.rhythm
+    impl: natural_features.features.audio.music:music_rhythm
+    version: "1.0"
+    label: Rhythm descriptors (tempo, pulse, syncopation)
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: moderate
+    tags: [audio, music, rhythm, tempo, window]
+    params:
+      window_s: { type: float, default: 8.0 }
+      hop_s: { type: float, default: 1.0 }
+      env_hop_s: { type: float, default: 0.01 }
+      env_win_s: { type: float, default: 0.025 }
+      n_mels: { type: int, default: 64 }
+      bpm_min: { type: float, default: 30.0 }
+      bpm_max: { type: float, default: 300.0 }
+      prior_bpm: { type: float, default: 120.0 }
+      prior_octaves: { type: float, default: 1.0 }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: audio.music.tonality
+    impl: natural_features.features.audio.music:music_tonality
+    version: "1.0"
+    label: Key, mode and tonal stability
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: moderate
+    tags: [audio, music, tonal, key, window]
+    params:
+      window_s: { type: float, default: 8.0 }
+      hop_s: { type: float, default: 1.0 }
+      chroma_hop_s: { type: float, default: 0.01 }
+      chroma_win_s: { type: float, default: 0.186 }
+      tuning_hz: { type: float, default: 440.0 }
+      fmin: { type: float, default: 55.0 }
+      fmax: { type: float, default: 5000.0 }
+      sigma: { type: float, default: 0.5 }
+      include_profile: { type: bool, default: true }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: audio.modulation.mps
+    impl: natural_features.features.audio.modulation:audio_modulation_spectrum
+    version: "1.0"
+    label: Spectrotemporal modulation power spectrum
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: expensive
+    tags: [audio, auditory, modulation, window]
+    params:
+      window_s: { type: float, default: 2.0 }
+      hop_s: { type: float, default: 0.5 }
+      coch_hop_s: { type: float, default: 0.005 }
+      coch_win_s: { type: float, default: 0.025 }
+      n_channels: { type: int, default: 64 }
+      n_log_bins: { type: int, default: 64 }
+      fmin: { type: float, default: 50.0 }
+      fmax: { type: float, default: null, nullable: true }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
+  - name: audio.periodicity
+    impl: natural_features.features.audio.periodicity:audio_periodicity
+    version: "1.0"
+    label: Periodicity and harmonicity
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: moderate
+    tags: [audio, pitch, harmonicity, periodicity]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      win_s: { type: float, default: 0.046 }
+      fmin: { type: float, default: 50.0 }
+      fmax: { type: float, default: 1000.0 }
+      voicing_threshold: { type: float, default: 0.2 }
+      silence_floor_db: { type: float, default: -60.0 }
+      stationarity_ratio: { type: float, default: 8.0 }
+      max_jitter: { type: float, default: 0.5 }
+      n_harmonics: { type: int, default: 8 }
+      harmonic_tol: { type: float, default: 0.03 }
+      peak_threshold_db: { type: float, default: -40.0 }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
   - name: audio.pitch
     impl: natural_features.features.audio.prosody:audio_pitch
     version: "1.0"

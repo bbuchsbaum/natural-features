@@ -17,7 +17,9 @@ interchangeable with paper names.
 | `audio.gammatone` | ERB triangular filterbank on STFT power, not a cochleagram |
 | `audio.envelope` | Hilbert/RMS envelope plus derivative and onset |
 | `audio.modulation.spectrotemporal` | STFT rate/scale energy (`backend=stft_rate_scale`), not NSL `aud2cor` |
+| `audio.modulation.mps` | Windowed 2-D FFT of a log-frequency cochleagram; not the ladder A2 band |
 | `audio.formants` | Default `lpc_autocorr` poles; optional Praat via `backend=parselmouth` |
+| `audio.harmonicity` | Autocorr HNR for the A3 ladder band; not `audio.periodicity` |
 | `audio.egemaps` | Vendor LLD dump, not the designed A3 band |
 | `speech.phonemes` | Uniform split of word intervals, not acoustic phone alignment |
 | `speech.phones.mfa` | MFA `phones` TextGrid tier |

@@ -49,7 +49,9 @@ def _install_audio_models(monkeypatch) -> dict[str, int]:  # noqa: ANN001
             return cls()
 
         def __call__(self, *args: object, **kwargs: object) -> dict[str, _Tensor]:
-            waveform = kwargs.get("audios", args[0] if args else None)
+            # transformers renamed this keyword from `audios` to `audio` in v5 and the
+            # extractor now tries the new name first, so accept either.
+            waveform = kwargs.get("audio", kwargs.get("audios", args[0] if args else None))
             assert np.asarray(waveform).shape == (8,)
             assert kwargs["sampling_rate"] == 8
             return {"input_values": _Tensor([[1.0]])}
