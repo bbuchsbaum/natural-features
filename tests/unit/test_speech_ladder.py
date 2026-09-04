@@ -121,15 +121,38 @@ def test_distinctive_features_do_not_widen_old_articulatory_set() -> None:
         dist.metadata["extractor_name"]
         == "speech.phonology.distinctive_from_posteriors"
     )
+    # The context-free posterior path must not advertise aspiration.
+    assert "aspirated" not in DEFAULT_DISTINCTIVE_FEATURES
+    assert "aspirated" not in dist.coords["feature"]
     phones = _phones()
     ev = distinctive_from_phoneme_events(phones, include_confidence=False)
     names = list(ev.coords["feature"])
-    assert names == list(DEFAULT_DISTINCTIVE_FEATURES)
+    assert names == list(DEFAULT_DISTINCTIVE_FEATURES) + ["aspirated"]
     ix = {name: i for i, name in enumerate(names)}
     assert ev.values[0, ix["stop"]] == 1.0
     assert ev.values[0, ix["voiced"]] == 0.0
     assert ev.values[1, ix["continuant"]] == 1.0
     assert ev.values[1, ix["low"]] == 1.0
+
+
+def test_contextual_aspiration_is_allophonic() -> None:
+    # "pat": initial P released into a vowel is aspirated; final T is not.
+    pat = distinctive_from_phoneme_events(_phones(), include_confidence=False)
+    ix = {name: i for i, name in enumerate(pat.coords["feature"])}
+    assert pat.values[0, ix["aspirated"]] == 1.0
+    assert pat.values[2, ix["aspirated"]] == 0.0
+    # "spin": S blocks aspiration of P.
+    spin = phoneme_event_series(
+        onset_s=np.array([0.1, 0.2, 0.3, 0.4], dtype=np.float64),
+        offset_s=np.array([0.2, 0.3, 0.4, 0.5], dtype=np.float64),
+        labels=np.array(["S", "P", "IH", "N"], dtype=object),
+        label_namespace="arpabet",
+        namespace_version="test",
+        source_word_alignment_id="test",
+    )
+    vals = distinctive_from_phoneme_events(spin, include_confidence=False)
+    jx = {name: i for i, name in enumerate(vals.coords["feature"])}
+    assert vals.values[1, jx["aspirated"]] == 0.0
 
 
 def test_textgrid_tier_split(tmp_path) -> None:
@@ -193,9 +216,15 @@ def test_gestures_dynamics_and_cues() -> None:
         "glottis",
     ]
     assert gestures.values[:, 0].max() > 0.5
+    assert gestures.metadata["backend"] == "canonical_raised_cosine"
     dyn = articulatory_dynamics(gestures)
     assert "speed" in dyn.coords["feature"]
     assert "vel_lips" in dyn.coords["feature"]
+    assert "effort" in dyn.coords["feature"]
+    assert "overlap" in dyn.coords["feature"]
+    names = list(dyn.coords["feature"])
+    overlap = dyn.values[:, names.index("overlap")]
+    assert float(overlap.max()) >= 1.0
     cues = phonetic_cues(audio, phones, hop_s=0.01)
     assert list(cues.coords["feature"]) == [
         "vot",
@@ -204,6 +233,47 @@ def test_gestures_dynamics_and_cues() -> None:
         "closure_duration",
     ]
     assert float(cues.values[:, 3].max()) > 0.0
+
+
+def test_gestures_acoustic_gain_departs_from_canonical() -> None:
+    audio = _tone(seconds=0.7)
+    phones = _phones()
+    canonical = articulatory_gestures(phones, hop_s=0.01)
+    gained = articulatory_gestures(phones, hop_s=0.01, stimulus=audio)
+    assert gained.metadata["backend"] == "canonical_acoustic_gain"
+    assert gained.values.shape == canonical.values.shape
+    # Gains only attenuate, and the gained series is not a rescaled copy.
+    assert np.all(gained.values <= canonical.values + 1e-6)
+    assert float(np.abs(gained.values - canonical.values).max()) > 0.0
+
+
+def test_syllable_onc_roles_and_boundaries() -> None:
+    from natural_features.features.speech.syllables import syllable_onc
+
+    phones = _phones()  # P AE T -> onset nucleus coda
+    onc = syllable_onc(phones, hop_s=0.01)
+    assert list(onc.coords["feature"]) == ["syll_onset", "syll_nucleus", "syll_coda"]
+    times = onc.times_s
+    ons, nuc, cod = onc.values[:, 0], onc.values[:, 1], onc.values[:, 2]
+    mid_p = (times >= 0.10) & (times < 0.20)
+    mid_ae = (times >= 0.20) & (times < 0.35)
+    mid_t = (times >= 0.35) & (times < 0.50)
+    assert ons[mid_p].max() == 1.0 and nuc[mid_p].max() == 0.0
+    assert nuc[mid_ae].max() == 1.0
+    assert cod[mid_t].max() == 1.0 and ons[mid_t].max() == 0.0
+    # Intervocalic consonant resyllabifies as onset of the next syllable: "AE T AA".
+    vcv = phoneme_event_series(
+        onset_s=np.array([0.1, 0.2, 0.3], dtype=np.float64),
+        offset_s=np.array([0.2, 0.3, 0.4], dtype=np.float64),
+        labels=np.array(["AE", "T", "AA"], dtype=object),
+        label_namespace="arpabet",
+        namespace_version="test",
+        source_word_alignment_id="test",
+    )
+    onc2 = syllable_onc(vcv, hop_s=0.01)
+    mid_t2 = (onc2.times_s >= 0.2) & (onc2.times_s < 0.3)
+    assert onc2.values[mid_t2, 0].max() == 1.0
+    assert onc2.values[mid_t2, 2].max() == 0.0
 
 
 def test_sparc_monkeypatch_and_missing_dependency(monkeypatch) -> None:
@@ -253,7 +323,11 @@ def test_extract_speech_ladder_cheap_backends() -> None:
         "p_features",
         "g_gestures",
         "m_dynamics",
+        "m_syllables",
     } <= set(bundle.features)
+    assert bundle.features["g_gestures"].metadata["backend"] == (
+        "canonical_acoustic_gain"
+    )
     assert "a2|a1" in bundle.features
     assert "p|a" in bundle.features
     assert "g_ema" not in bundle.features
@@ -267,3 +341,4 @@ def test_ladder_extractors_are_registered() -> None:
     assert "audio.envelope" in names
     assert "speech.articulatory.dynamics" in names
     assert "speech.phones.mfa" in names
+    assert "speech.syllables.onc" in names

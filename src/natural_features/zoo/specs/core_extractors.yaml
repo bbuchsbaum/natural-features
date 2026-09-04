@@ -1583,5 +1583,20 @@ extractors:
     tags: [speech, articulatory, dynamics, ladder]
     params:
       speed_onset_quantile: { type: float, default: 0.7 }
+      activation_threshold: { type: float, default: 0.1 }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: speech.syllables.onc
+    impl: natural_features.features.speech.syllables:syllable_onc
+    version: "1.0"
+    modalities: [tokens]
+    requires: [speech]
+    infer_bundles: false
+    tags: [speech, syllables, ladder]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      max_onset: { type: int, default: 3 }
+      boundary_gap_s: { type: float, default: 0.15 }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }

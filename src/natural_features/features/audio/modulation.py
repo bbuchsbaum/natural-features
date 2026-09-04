@@ -34,7 +34,11 @@ import numpy as np
 from natural_features.core.feature_types import FeatureSeries
 from natural_features.core.stimulus import AudioStimulus
 from natural_features.core.timebase import TimebaseSpec, times_from_hop
-from natural_features.features.audio.cochlear import _erb_to_hz, _hz_to_erb
+from natural_features.features.audio.cochlear import (
+    _erb_filterbank,
+    _erb_to_hz,
+    _hz_to_erb,
+)
 from natural_features.features.audio.lowlevel import _mono, _stft_power
 from natural_features.features.common import extractor_metadata
 
@@ -53,30 +57,6 @@ def _erb_centers(n_channels: int, fmin: float, fmax: float) -> np.ndarray:
         _hz_to_erb(np.array([fmin]))[0], _hz_to_erb(np.array([fmax]))[0], n_channels + 2
     )
     return _erb_to_hz(erb_edges)[1:-1]
-
-
-def _erb_filters(
-    sr_hz: int, n_fft: int, n_channels: int, fmin: float, fmax: float
-) -> np.ndarray:
-    """Triangular ERB filterbank on the rFFT grid, matching ``audio.gammatone``."""
-
-    erb_edges = np.linspace(
-        _hz_to_erb(np.array([fmin]))[0], _hz_to_erb(np.array([fmax]))[0], n_channels + 2
-    )
-    hz_edges = _erb_to_hz(erb_edges)
-    bin_edges = np.floor((n_fft + 1) * hz_edges / sr_hz).astype(int)
-    filters = np.zeros((n_channels, (n_fft // 2) + 1), dtype=np.float32)
-    for i in range(1, n_channels + 1):
-        left, center, right = bin_edges[i - 1], bin_edges[i], bin_edges[i + 1]
-        center = max(center, left + 1)
-        right = max(right, center + 1)
-        for k in range(left, center):
-            if 0 <= k < filters.shape[1]:
-                filters[i - 1, k] = (k - left) / max(1, center - left)
-        for k in range(center, right):
-            if 0 <= k < filters.shape[1]:
-                filters[i - 1, k] = (right - k) / max(1, right - center)
-    return filters
 
 
 def log_cochleagram(
@@ -103,7 +83,7 @@ def log_cochleagram(
         _mono(stimulus.samples), stimulus.sr_hz, hop_s, win_s
     )
     n_fft = int(2 * (power.shape[1] - 1))
-    fb = _erb_filters(stimulus.sr_hz, n_fft, n_channels, fmin, top)
+    fb = _erb_filterbank(stimulus.sr_hz, n_fft, n_channels, fmin, top)
     erb_power = power @ fb.T
     coch = np.log10(np.maximum(erb_power, 1e-10))
 

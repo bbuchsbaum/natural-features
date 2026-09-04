@@ -32,6 +32,7 @@ from natural_features.features.speech.phonology import (
 )
 from natural_features.features.speech.ppgs import ppg_phone_posteriors
 from natural_features.features.speech.sparc import sparc_articulatory
+from natural_features.features.speech.syllables import syllable_onc
 from natural_features.features.stats.residualize import residualize_feature_series
 from natural_features.fmri.resample import resample_feature_series
 
@@ -139,8 +140,11 @@ def extract_speech_ladder(
             features["a3_cues"] = inherit_temporal_contract(
                 phonetic_cues(stim, phones, hop_s=hop_s), [stim]
             )
-        gestures = articulatory_gestures(phones, hop_s=hop_s)
+        gestures = articulatory_gestures(phones, hop_s=hop_s, stimulus=stim)
         features["g_gestures"] = inherit_temporal_contract(gestures, [stim])
+        features["m_syllables"] = inherit_temporal_contract(
+            syllable_onc(phones, hop_s=hop_s), [stim]
+        )
 
     g_source: FeatureSeries | None = None
     if include_sparc:

@@ -5,6 +5,7 @@ from __future__ import annotations
 import numpy as np
 
 from natural_features.core.feature_types import EventSeries, FeatureSeries
+from natural_features.core.stimulus import AudioStimulus
 from natural_features.core.timebase import TimebaseSpec
 from natural_features.features.common import extractor_metadata
 from natural_features.features.speech.phonology import (
@@ -71,10 +72,17 @@ def articulatory_gestures(
     hop_s: float = 0.01,
     overlap_s: float = 0.03,
     duration_s: float | None = None,
+    stimulus: AudioStimulus | None = None,
 ) -> FeatureSeries:
     """Overlapping raised-cosine activations from phone labels.
 
-    This is an interpretable control layer, not waveform-conditioned inversion.
+    Without ``stimulus`` this is an interpretable control layer that is a
+    deterministic function of the phone sequence (band P). With ``stimulus``
+    the canonical activations are modulated by measured acoustics: every
+    channel is scaled by the token's realized intensity (hypo/hyperarticulation
+    gain) and the glottis channel by measured voicing strength. The gained
+    series is a P-by-acoustics interaction, so it is no longer a linear
+    function of phone indicators alone.
     """
 
     if len(phones) == 0:
@@ -111,10 +119,28 @@ def articulatory_gestures(
             values[mask, col] = np.maximum(
                 values[mask, col], window * np.float32(strength)
             )
+    backend = "canonical_raised_cosine"
+    if stimulus is not None:
+        from natural_features.features.audio.envelope import audio_envelope
+        from natural_features.features.audio.prosody import audio_pitch
+
+        env = audio_envelope(stimulus, hop_s=hop_s)
+        intensity = np.interp(times, env.times_s, env.values[:, 0].astype(np.float64))
+        top = float(np.quantile(intensity, 0.95)) if intensity.size else 1.0
+        gain = np.clip(intensity / max(top, 1e-8), 0.0, 1.0).astype(np.float32)
+        values *= gain[:, None]
+        pitch = audio_pitch(stimulus, hop_s=hop_s)
+        voicing = np.interp(times, pitch.times_s, pitch.values[:, 1].astype(np.float64))
+        values[:, ix["glottis"]] *= np.clip(voicing, 0.0, 1.0).astype(np.float32)
+        backend = "canonical_acoustic_gain"
     md = extractor_metadata(
         "speech.articulatory.gestures",
-        params={"hop_s": hop_s, "overlap_s": overlap_s},
-        extra={"backend": "canonical_raised_cosine"},
+        params={
+            "hop_s": hop_s,
+            "overlap_s": overlap_s,
+            "acoustic_gain": stimulus is not None,
+        },
+        extra={"backend": backend},
     )
     return FeatureSeries(
         values=values,
@@ -132,8 +158,16 @@ def articulatory_dynamics(
     articulatory: FeatureSeries,
     *,
     speed_onset_quantile: float = 0.7,
+    activation_threshold: float = 0.1,
 ) -> FeatureSeries:
-    """Velocity, acceleration, speed, and speed onset/offset of a G series."""
+    """Velocity, acceleration, speed, onsets/offsets, effort, and overlap.
+
+    ``effort`` is the L2 norm of framewise acceleration (a kinematic effort
+    proxy, not muscular work). ``overlap`` counts channels whose activation
+    exceeds ``activation_threshold``; it measures coarticulatory co-activation
+    and is only meaningful for activation-like G series (gesture scores), not
+    for signed positional series such as SPARC EMA.
+    """
 
     if articulatory.values.ndim != 2:
         raise ValueError("articulatory must be a 2-D FeatureSeries")
@@ -158,6 +192,8 @@ def articulatory_dynamics(
             "feature", [f"g{i}" for i in range(g.shape[1])]
         )
     ]
+    effort = np.linalg.norm(acc, axis=1, keepdims=True)
+    overlap = np.sum(g > activation_threshold, axis=1, keepdims=True).astype(np.float64)
     names = (
         [f"vel_{n}" for n in base_names]
         + [f"acc_{n}" for n in base_names]
@@ -165,6 +201,8 @@ def articulatory_dynamics(
             "speed",
             "gesture_onset",
             "gesture_offset",
+            "effort",
+            "overlap",
         ]
     )
     values = np.concatenate(
@@ -174,6 +212,8 @@ def articulatory_dynamics(
             speed.astype(np.float32),
             onset,
             offset,
+            effort.astype(np.float32),
+            overlap.astype(np.float32),
         ],
         axis=1,
     )
@@ -182,7 +222,10 @@ def articulatory_dynamics(
         hop = float(np.median(np.diff(times)))
     md = extractor_metadata(
         "speech.articulatory.dynamics",
-        params={"speed_onset_quantile": speed_onset_quantile},
+        params={
+            "speed_onset_quantile": speed_onset_quantile,
+            "activation_threshold": activation_threshold,
+        },
         extra={
             "backend": "finite_difference",
             "source_extractor": articulatory.metadata.get("extractor_name", "unknown"),

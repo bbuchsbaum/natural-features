@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- `speech.syllables.onc`: syllable onset/nucleus/coda occupancy from phone
+  events via a maximal-onset heuristic with pause-gap boundaries. Emitted as
+  `m_syllables` by `extract_speech_ladder` when phones are supplied.
+- `articulatory_gestures(..., stimulus=...)`: canonical gesture activations
+  gain-modulated by measured intensity and voicing strength
+  (`backend=canonical_acoustic_gain`), making G a P-by-acoustics interaction
+  rather than a deterministic function of phone labels. The ladder workflow
+  passes the stimulus automatically.
+- `speech.articulatory.dynamics` gains kinematic `effort` (L2 norm of
+  acceleration) and coarticulatory `overlap` (channels above an activation
+  threshold) columns.
+
+### Changed
+- `aspirated` moved out of `DEFAULT_DISTINCTIVE_FEATURES`: the context-free
+  label map could never assign it, so the posterior path emitted a dead
+  all-zero channel. `distinctive_from_phoneme_events` now computes aspiration
+  contextually (voiceless stop released into a vowel or approximant, not
+  preceded by /s/) and appends it as an extra column.
+- `audio.modulation` reuses the ERB filterbank from `audio.cochlear` instead
+  of a duplicated private copy; no behavior change.
 - Speech representational ladder extractors and `extract_speech_ladder`:
   envelope/onset (A1), STFT rate/scale modulation (A2), LPC formants and HNR
   (A3), MFA phone-tier events, English distinctive features, SPARC template
