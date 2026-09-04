@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Speech representational ladder extractors and `extract_speech_ladder`:
+  envelope/onset (A1), STFT rate/scale modulation (A2), LPC formants and HNR
+  (A3), MFA phone-tier events, English distinctive features, SPARC template
+  EMA, canonical gestures, articulatory dynamics, and `features.residualize`.
+  See `docs/speech_ladder.md`. Optional extras: `formants`, `sparc`.
+- Optional `ppgs` posterior backend (`speech.phonology.ppg_posteriors` and
+  `extract_acoustic_phonetics(..., posterior_backend="ppgs")`) wrapping
+  Churchwell et al. 2024 phonetic posteriorgrams, with edge-silence trim/pad
+  to keep padded clips on the original 10 ms hop grid.
 - Cookbook and example for extracting `audio.rms` and sampling it onto a scan
   TR grid, including a 2 s TR with stimulus onset at 0.67 s.
 - Cookbook and example for convolving native `audio.rms` with fmrimod's SPMG1

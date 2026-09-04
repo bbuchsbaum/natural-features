@@ -16,6 +16,7 @@ from natural_features.features.speech.phonology import (
 from natural_features.features.speech.vad import energy_vad
 from natural_features.features.vision.motion import optical_flow_mag
 from natural_features.features.vision.scene import scene_cuts
+from natural_features.workflows.speech_ladder import extract_speech_ladder
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -100,3 +101,33 @@ def test_tier_a_acoustic_posterior_articulatory_probabilities() -> None:
     assert "bilabial" in names
     assert "alveolar" in names
     assert "posterior_peak" in names
+
+
+def test_tier_a_speech_ladder_cheap_backends() -> None:
+    ea = _entry("tier_a_audio_speechlike")
+    audio = AudioStimulus.from_wav(ROOT / ea["path"])
+    bundle = extract_speech_ladder(
+        audio,
+        posterior_backend="acoustic",
+        include_sparc=False,
+        include_residuals=True,
+        include_cues=False,
+    )
+    required = {
+        "a1",
+        "a2",
+        "a3",
+        "p_posteriors",
+        "p_features",
+        "a2|a1",
+        "a3|a1+a2",
+        "p|a",
+    }
+    assert required <= set(bundle.features)
+    assert "g_ema" not in bundle.features
+    assert bundle.features["a1"].values.ndim == 2
+    assert (
+        bundle.features["p_features"].values.shape[0]
+        == bundle.features["p_posteriors"].values.shape[0]
+    )
+    assert np.all(np.isfinite(bundle.features["a2"].values))

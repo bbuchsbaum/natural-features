@@ -40,6 +40,15 @@ alignment_mfa = [
 alignment_legacy = [
   "gentle>=0.1",
 ]
+ppgs = [
+  "ppgs==0.0.9",
+]
+formants = [
+  "praat-parselmouth>=0.4",
+]
+sparc = [
+  "speech-articulatory-coding>=0.1.0",
+]
 llm = [
   "openai>=1.40.0",
 ]

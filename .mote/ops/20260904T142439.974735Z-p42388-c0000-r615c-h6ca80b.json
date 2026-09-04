@@ -1,0 +1,1 @@
+{"actor":"ppgs-backend","entity":"bd-01M1PCTS5M7RMF7NVWAVPQJE0Z","kind":"note","note_kind":"design","op":"20260904T142439.974735Z-p42388-c0000-r615c-h6ca80b","text":"Do not fork ppgs. Issue #18 is OOD silence (author-confirmed), not a code defect. Mitigate by trimming edge silence, inferring, then padding silence-class frames.","ts":"2026-09-04T14:24:39.974735Z","v":1}

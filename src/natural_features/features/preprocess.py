@@ -12,13 +12,25 @@ import warnings
 
 import numpy as np
 
-from natural_features.core.backend_errors import BackendDependencyError, BackendInferenceError
-from natural_features.core.execution import add_execution_provenance, resolve_execution_mode
+from natural_features.core.backend_errors import (
+    BackendDependencyError,
+    BackendInferenceError,
+)
+from natural_features.core.execution import (
+    add_execution_provenance,
+    resolve_execution_mode,
+)
 from natural_features.core.feature_bundle import inherit_temporal_contract
 from natural_features.core.feature_types import EventSeries, FeatureSeries
-from natural_features.core.stimulus import AudioStimulus, ImageStimulus, TextStimulus, VideoStimulus
+from natural_features.core.stimulus import (
+    AudioStimulus,
+    ImageStimulus,
+    TextStimulus,
+    VideoStimulus,
+)
 from natural_features.features.common import extractor_metadata
 from natural_features.features.vision.common import VisualStimulus
+from natural_features.features.stats.residualize import residualize_feature_series
 from natural_features.fmri.design import add_lags
 from natural_features.fmri.hrf import hrf_convolve
 from natural_features.fmri.resample import resample_feature_series
@@ -50,7 +62,9 @@ def video_sample_frames(
     )
 
 
-def video_trim(stimulus: VisualStimulus, *, start_s: float = 0.0, end_s: float | None = None) -> VisualStimulus:
+def video_trim(
+    stimulus: VisualStimulus, *, start_s: float = 0.0, end_s: float | None = None
+) -> VisualStimulus:
     if isinstance(stimulus, ImageStimulus):
         onset = np.nan if stimulus.onset_s is None else float(stimulus.onset_s)
         if np.isnan(onset):
@@ -83,7 +97,9 @@ def _video_source_path(stimulus: VideoStimulus | str | Path) -> Path:
     elif isinstance(stimulus, VideoStimulus) and stimulus.source:
         path = Path(stimulus.source)
     else:
-        raise RuntimeError("video.audio.extract requires a video file path or VideoStimulus.source")
+        raise RuntimeError(
+            "video.audio.extract requires a video file path or VideoStimulus.source"
+        )
     if not path.exists():
         raise FileNotFoundError(f"Video source not found: {path}")
     return path
@@ -99,7 +115,9 @@ def video_audio_extract(
     execution_mode: str | None = None,
     strict_dependency: bool | None = None,
 ) -> AudioStimulus:
-    _mode, strict = resolve_execution_mode(execution_mode=execution_mode, strict_dependency=strict_dependency)
+    _mode, strict = resolve_execution_mode(
+        execution_mode=execution_mode, strict_dependency=strict_dependency
+    )
     source = _video_source_path(stimulus)
     if sr_hz <= 0:
         raise ValueError("sr_hz must be > 0")
@@ -112,7 +130,9 @@ def video_audio_extract(
         msg = f"ffmpeg executable not found: {ffmpeg_path}"
         if strict:
             raise RuntimeError(msg)
-        raise RuntimeError(msg + ". Install ffmpeg or provide an AudioStimulus explicitly.")
+        raise RuntimeError(
+            msg + ". Install ffmpeg or provide an AudioStimulus explicitly."
+        )
 
     with tempfile.TemporaryDirectory(prefix="nf-audio-") as tmp:
         wav_path = Path(tmp) / "audio.wav"
@@ -121,10 +141,25 @@ def video_audio_extract(
             cmd.extend(["-ss", str(float(start_s))])
         if duration_s is not None:
             cmd.extend(["-t", str(float(duration_s))])
-        cmd.extend(["-i", str(source), "-vn", "-ac", "1", "-ar", str(int(sr_hz)), "-f", "wav", str(wav_path)])
+        cmd.extend(
+            [
+                "-i",
+                str(source),
+                "-vn",
+                "-ac",
+                "1",
+                "-ar",
+                str(int(sr_hz)),
+                "-f",
+                "wav",
+                str(wav_path),
+            ]
+        )
         proc = subprocess.run(cmd, capture_output=True, text=True)
         if proc.returncode != 0:
-            diagnostics = proc.stderr.strip() or proc.stdout.strip() or "no ffmpeg diagnostics"
+            diagnostics = (
+                proc.stderr.strip() or proc.stdout.strip() or "no ffmpeg diagnostics"
+            )
             raise RuntimeError(f"ffmpeg audio extraction failed: {diagnostics}")
         audio = AudioStimulus.from_wav(wav_path, start_offset_s=float(start_s))
     clock = stimulus.clock if isinstance(stimulus, VideoStimulus) else "stimulus"
@@ -143,7 +178,9 @@ def video_audio_extract(
     )
 
 
-def audio_trim(stimulus: AudioStimulus, *, start_s: float = 0.0, end_s: float | None = None) -> AudioStimulus:
+def audio_trim(
+    stimulus: AudioStimulus, *, start_s: float = 0.0, end_s: float | None = None
+) -> AudioStimulus:
     if not isinstance(stimulus, AudioStimulus):
         raise TypeError("audio_trim requires an AudioStimulus")
     n = stimulus.samples.shape[0]
@@ -166,7 +203,9 @@ def audio_trim(stimulus: AudioStimulus, *, start_s: float = 0.0, end_s: float | 
     )
 
 
-def audio_resample(stimulus: AudioStimulus, *, target_sr_hz: int = 16000) -> AudioStimulus:
+def audio_resample(
+    stimulus: AudioStimulus, *, target_sr_hz: int = 16000
+) -> AudioStimulus:
     if not isinstance(stimulus, AudioStimulus):
         raise TypeError("audio_resample requires an AudioStimulus")
     target = int(target_sr_hz)
@@ -199,17 +238,26 @@ def _tokens(text: str) -> list[str]:
     return re.findall(r"\b[\w']+\b", text)
 
 
-def text_tokenize(stimulus: TextStimulus | str, *, duration_s: float | None = None) -> EventSeries:
+def text_tokenize(
+    stimulus: TextStimulus | str, *, duration_s: float | None = None
+) -> EventSeries:
     text = stimulus.text if isinstance(stimulus, TextStimulus) else str(stimulus)
     words = _tokens(text)
     n = len(words)
-    if n and isinstance(stimulus, TextStimulus) and stimulus.onset_s is not None and stimulus.offset_s is not None:
+    if (
+        n
+        and isinstance(stimulus, TextStimulus)
+        and stimulus.onset_s is not None
+        and stimulus.offset_s is not None
+    ):
         onset = np.asarray(stimulus.onset_s, dtype=np.float64)
         offset = np.asarray(stimulus.offset_s, dtype=np.float64)
         if len(onset) != n or len(offset) != n:
             raise ValueError("TextStimulus word timing must match token count")
     elif n:
-        stop = float(duration_s) if duration_s is not None and duration_s > 0 else float(n)
+        stop = (
+            float(duration_s) if duration_s is not None and duration_s > 0 else float(n)
+        )
         edges = np.linspace(0.0, stop, n + 1, dtype=np.float64)
         onset, offset = edges[:-1], edges[1:]
     else:
@@ -314,10 +362,16 @@ def _image_ocr_backend(
         height.append(bh / max(float(h), 1.0))
 
     onset = 0.0 if stimulus.onset_s is None else float(stimulus.onset_s)
-    duration = float(duration_s if duration_s is not None else (stimulus.duration_s or 0.0))
+    duration = float(
+        duration_s if duration_s is not None else (stimulus.duration_s or 0.0)
+    )
     count = len(labels)
     md = add_execution_provenance(
-        extractor_metadata(extractor_name, params={"min_confidence": min_confidence}, extra={"backend": "pytesseract"}),
+        extractor_metadata(
+            extractor_name,
+            params={"min_confidence": min_confidence},
+            extra={"backend": "pytesseract"},
+        ),
         execution_mode=execution_mode,
         fallback_used=False,
     )
@@ -346,7 +400,9 @@ def image_ocr(
     execution_mode: str | None = None,
     strict_dependency: bool | None = None,
 ) -> EventSeries:
-    mode, _strict = resolve_execution_mode(execution_mode=execution_mode, strict_dependency=strict_dependency)
+    mode, _strict = resolve_execution_mode(
+        execution_mode=execution_mode, strict_dependency=strict_dependency
+    )
     if not isinstance(stimulus, ImageStimulus):
         raise TypeError("image_ocr requires an ImageStimulus")
     result = _image_ocr_backend(
@@ -359,14 +415,26 @@ def image_ocr(
     return inherit_temporal_contract(result, [stimulus])
 
 
-def _concat_event_series(events: list[EventSeries], *, extractor_name: str, execution_mode: str) -> EventSeries:
+def _concat_event_series(
+    events: list[EventSeries], *, extractor_name: str, execution_mode: str
+) -> EventSeries:
     if not events:
         return _empty_ocr_events(extractor_name, execution_mode=execution_mode)
     onset = np.concatenate([ev.onset_s for ev in events])
     offset = np.concatenate([ev.offset_s for ev in events])
-    labels = np.concatenate([ev.label if ev.label is not None else np.array([], dtype=object) for ev in events])
+    labels = np.concatenate(
+        [
+            ev.label if ev.label is not None else np.array([], dtype=object)
+            for ev in events
+        ]
+    )
     confidence = np.concatenate(
-        [ev.confidence if ev.confidence is not None else np.full(len(ev), np.nan, dtype=np.float32) for ev in events]
+        [
+            ev.confidence
+            if ev.confidence is not None
+            else np.full(len(ev), np.nan, dtype=np.float32)
+            for ev in events
+        ]
     )
     extra: dict[str, Any] = {}
     keys = sorted({key for ev in events for key in ev.extra.keys()})
@@ -384,7 +452,14 @@ def _concat_event_series(events: list[EventSeries], *, extractor_name: str, exec
         execution_mode=execution_mode,
         fallback_used=False,
     )
-    return EventSeries(onset_s=onset, offset_s=offset, label=labels, confidence=confidence, extra=extra, metadata=md)
+    return EventSeries(
+        onset_s=onset,
+        offset_s=offset,
+        label=labels,
+        confidence=confidence,
+        extra=extra,
+        metadata=md,
+    )
 
 
 def video_ocr(
@@ -395,7 +470,9 @@ def video_ocr(
     execution_mode: str | None = None,
     strict_dependency: bool | None = None,
 ) -> EventSeries:
-    mode, _strict = resolve_execution_mode(execution_mode=execution_mode, strict_dependency=strict_dependency)
+    mode, _strict = resolve_execution_mode(
+        execution_mode=execution_mode, strict_dependency=strict_dependency
+    )
     if not isinstance(stimulus, VideoStimulus):
         raise TypeError("video_ocr requires a VideoStimulus")
     stride = max(1, int(stride_frames))
@@ -439,7 +516,9 @@ def video_ocr(
     return inherit_temporal_contract(result, [stimulus])
 
 
-def events_align(events: EventSeries, *, mode: str = "passthrough", **_: object) -> EventSeries:
+def events_align(
+    events: EventSeries, *, mode: str = "passthrough", **_: object
+) -> EventSeries:
     if not isinstance(events, EventSeries):
         raise TypeError("events_align requires an EventSeries")
     metadata = dict(events.metadata)
@@ -465,10 +544,14 @@ def features_resample(
     duration_s: float | None = None,
     method: str = "mean",
 ) -> FeatureSeries:
-    return resample_feature_series(feature, tr_s=float(tr_s or step_s), duration_s=duration_s, method=method)
+    return resample_feature_series(
+        feature, tr_s=float(tr_s or step_s), duration_s=duration_s, method=method
+    )
 
 
-def features_hrf(feature: FeatureSeries, *, tr_s: float | None = None, kind: str = "glover") -> FeatureSeries:
+def features_hrf(
+    feature: FeatureSeries, *, tr_s: float | None = None, kind: str = "glover"
+) -> FeatureSeries:
     warnings.warn(
         "features.hrf is deprecated; keep native feature time in natural_features "
         "and perform HRF/TR/design operations in a downstream modeling library",
@@ -482,5 +565,26 @@ def features_hrf(feature: FeatureSeries, *, tr_s: float | None = None, kind: str
     return hrf_convolve(feature, tr_s=float(tr_s), kind=kind)
 
 
-def features_lag(feature: FeatureSeries, *, lags: list[int] | None = None) -> FeatureSeries:
+def features_lag(
+    feature: FeatureSeries, *, lags: list[int] | None = None
+) -> FeatureSeries:
     return add_lags(feature, list(lags or [0, 1]))
+
+
+def features_residualize(
+    target: FeatureSeries,
+    predictor: FeatureSeries,
+    *,
+    hop_s: float = 0.01,
+    method: str = "linear",
+    add_intercept: bool = True,
+) -> FeatureSeries:
+    """Catalogue wrapper: residualize ``target`` on a single predictor series."""
+
+    return residualize_feature_series(
+        target,
+        predictor,
+        hop_s=hop_s,
+        method=method,
+        add_intercept=add_intercept,
+    )

@@ -7,7 +7,8 @@ This project uses the following alignment policy:
   - primary: `whisperx`
   - optional strict backend: `mfa` (requires dictionary + acoustic model paths)
 - Legacy backend: `gentle` is supported only as an optional plugin path and is not a default dependency.
-- Preferred phonetic backend for audio-only posterior features: `speech.phonology.ctc_posteriors` (optional transformers/torch model path).
+- Preferred lightweight phonetic backend for audio-only posterior features: `speech.phonology.ctc_posteriors` (optional transformers/torch model path).
+- Optional high-fidelity phonetic posteriorgrams: `speech.phonology.ppg_posteriors` via the `ppgs` extra (`posterior_backend="ppgs"`). English CMU 40-phone inventory only.
 
 Rationale:
 
@@ -18,4 +19,9 @@ Rationale:
 Expected outputs:
 
 - `segments` and `words` as `EventSeries`.
+- When the MFA backend runs, `phones` is the MFA `phones` TextGrid tier as an
+  `EventSeries` (`speech.phones.mfa`). `speech.phonemes` remains the
+  uniform word-interval split and is not acoustic phone alignment.
 - Alignment QC summary containing `n_words`, `low_confidence_words`, and `dropped_words`.
+
+See `docs/speech_ladder.md` for the graded A1–M feature bands.

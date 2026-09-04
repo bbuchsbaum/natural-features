@@ -12,7 +12,10 @@ import wave
 
 import numpy as np
 
-from natural_features.core.execution import add_execution_provenance, resolve_execution_mode
+from natural_features.core.execution import (
+    add_execution_provenance,
+    resolve_execution_mode,
+)
 from natural_features.core.feature_types import EventSeries
 from natural_features.core.stimulus import AudioStimulus
 from natural_features.features.common import extractor_metadata
@@ -21,7 +24,12 @@ from natural_features.features.speech.contracts import (
     ensure_word_event_metadata,
     normalize_alignment_qc,
 )
-from natural_features.features.speech.formats import read_textgrid
+from natural_features.features.speech.formats import read_textgrid_tiers
+from natural_features.features.speech.phones import (
+    PHONE_TIER_NAMES,
+    WORD_TIER_NAMES,
+    _empty_phones,
+)
 
 
 def alignment_qc(
@@ -33,7 +41,11 @@ def alignment_qc(
     dropped_words: int = 0,
     extra: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    conf = words.confidence if words.confidence is not None else np.ones(len(words), dtype=np.float32)
+    conf = (
+        words.confidence
+        if words.confidence is not None
+        else np.ones(len(words), dtype=np.float32)
+    )
     low = int(np.sum(conf < confidence_threshold))
     qc = {
         "mode": mode,
@@ -50,7 +62,9 @@ def alignment_qc(
 
 def _coverage_fraction(words: EventSeries, *, start_s: float, end_s: float) -> float:
     duration = max(float(end_s - start_s), 1e-8)
-    covered = float(np.clip(np.sum(np.maximum(0.0, words.offset_s - words.onset_s)), 0.0, duration))
+    covered = float(
+        np.clip(np.sum(np.maximum(0.0, words.offset_s - words.onset_s)), 0.0, duration)
+    )
     return covered / duration
 
 
@@ -81,11 +95,23 @@ def _refine_words_with_whisperx(
     wav = stimulus.samples.astype(np.float32)
     if wav.ndim == 2:
         wav = wav.mean(axis=1)
-    labels = words.label if words.label is not None else np.array([""] * len(words), dtype=object)
-    conf = words.confidence if words.confidence is not None else np.ones(len(words), dtype=np.float32)
+    labels = (
+        words.label
+        if words.label is not None
+        else np.array([""] * len(words), dtype=object)
+    )
+    conf = (
+        words.confidence
+        if words.confidence is not None
+        else np.ones(len(words), dtype=np.float32)
+    )
     audio_start = float(stimulus.start_offset_s)
     local_start = max(0.0, float(words.onset_s[0] - audio_start)) if len(words) else 0.0
-    local_end = max(local_start, float(words.offset_s[-1] - audio_start)) if len(words) else float(len(wav) / stimulus.sr_hz)
+    local_end = (
+        max(local_start, float(words.offset_s[-1] - audio_start))
+        if len(words)
+        else float(len(wav) / stimulus.sr_hz)
+    )
     segment = {
         "start": local_start,
         "end": local_end,
@@ -101,7 +127,9 @@ def _refine_words_with_whisperx(
         "cpu",
         return_char_alignments=False,
     )
-    word_segments = aligned.get("word_segments", []) if isinstance(aligned, dict) else []
+    word_segments = (
+        aligned.get("word_segments", []) if isinstance(aligned, dict) else []
+    )
     if not word_segments:
         raise RuntimeError("whisperx returned no aligned word segments")
 
@@ -217,7 +245,11 @@ def _refine_words_with_mfa(
     mfa_exe = shutil.which("mfa")
     if not mfa_exe:
         raise RuntimeError("mfa executable not found on PATH")
-    root_ctx = tempfile.TemporaryDirectory(dir=tmp_dir) if tmp_dir else tempfile.TemporaryDirectory()
+    root_ctx = (
+        tempfile.TemporaryDirectory(dir=tmp_dir)
+        if tmp_dir
+        else tempfile.TemporaryDirectory()
+    )
     with root_ctx as td:
         root = Path(td)
         corpus = root / "corpus"
@@ -228,7 +260,11 @@ def _refine_words_with_mfa(
         wav_path = corpus / "clip.wav"
         txt_path = corpus / "clip.lab"
         _write_audio_wav(stimulus, wav_path)
-        labels = words.label if words.label is not None else np.array([""] * len(words), dtype=object)
+        labels = (
+            words.label
+            if words.label is not None
+            else np.array([""] * len(words), dtype=object)
+        )
         txt_path.write_text(" ".join(str(x) for x in labels), encoding="utf-8")
 
         cmd = [
@@ -260,14 +296,36 @@ def _refine_words_with_mfa(
         grids = sorted(output.rglob("*.TextGrid"))
         if not grids:
             raise RuntimeError("mfa align produced no TextGrid output")
-        aligned = read_textgrid(grids[0])
+        tiers = read_textgrid_tiers(grids[0])
+
+        def _pick(names: tuple[str, ...]) -> EventSeries | None:
+            wanted = {n.lower() for n in names}
+            for key, events in tiers.items():
+                if key.lower() in wanted:
+                    return events
+            return None
+
+        aligned = _pick(WORD_TIER_NAMES)
+        if aligned is None:
+            aligned = (
+                next(iter(tiers.values()))
+                if tiers
+                else _empty_phones(
+                    "speech.format.read_textgrid", {"path": grids[0].name}
+                )
+            )
+        phones = _pick(PHONE_TIER_NAMES)
+        if phones is None:
+            phones = _empty_phones("speech.phones.mfa", {"path": grids[0].name})
         if aligned.label is not None:
             keep = np.array([bool(str(x).strip()) for x in aligned.label], dtype=bool)
             aligned = EventSeries(
                 onset_s=aligned.onset_s[keep],
                 offset_s=aligned.offset_s[keep],
                 label=np.asarray(aligned.label, dtype=object)[keep],
-                confidence=(aligned.confidence[keep] if aligned.confidence is not None else None),
+                confidence=(
+                    aligned.confidence[keep] if aligned.confidence is not None else None
+                ),
                 extra=aligned.extra,
                 metadata=aligned.metadata,
             )
@@ -278,6 +336,7 @@ def _refine_words_with_mfa(
             "stdout": (proc.stdout or "").strip()[-500:],
             "stderr": (proc.stderr or "").strip()[-500:],
             "command": cmd,
+            "phones": phones,
         }
         return mapped, dropped, details
 
@@ -330,10 +389,10 @@ def whisperx_align(
     ) -> dict[str, Any]:
         md = ensure_word_event_metadata(
             add_execution_provenance(
-                    {**words.metadata, **base_md},
-                    execution_mode=mode,
-                    fallback_used=fallback_used,
-                    fallback_reason=reason if fallback_used else None,
+                {**words.metadata, **base_md},
+                execution_mode=mode,
+                fallback_used=fallback_used,
+                fallback_reason=reason if fallback_used else None,
                 backend=aligner_backend,
             ),
             asr_model_name=asr_model_name,
@@ -363,12 +422,20 @@ def whisperx_align(
             extra=words.extra,
             metadata=md,
         )
-        return {"words": passthrough_words, "qc": qc}
+        return {
+            "words": passthrough_words,
+            "qc": qc,
+            "phones": _empty_phones("speech.phones.mfa", {"backend": aligner_backend}),
+        }
 
     if selected not in {"whisperx", "mfa"}:
-        explicit_passthrough = selected == "passthrough" and not resolution.fallback_used
+        explicit_passthrough = (
+            selected == "passthrough" and not resolution.fallback_used
+        )
         if strict_dependency and not explicit_passthrough:
-            raise RuntimeError(resolution.reason or "No alignment backend is available in strict mode.")
+            raise RuntimeError(
+                resolution.reason or "No alignment backend is available in strict mode."
+            )
         reason = resolution.reason or (
             "explicit passthrough requested"
             if explicit_passthrough
@@ -387,7 +454,9 @@ def whisperx_align(
             import whisperx  # type: ignore  # noqa: F401
         except ImportError as exc:
             if strict_dependency:
-                raise RuntimeError("whisperx is required for strict alignment mode.") from exc
+                raise RuntimeError(
+                    "whisperx is required for strict alignment mode."
+                ) from exc
             return _passthrough("whisperx import failed", aligner_backend="whisperx")
         try:
             refined_words, dropped_words = _refine_words_with_whisperx(
@@ -397,15 +466,21 @@ def whisperx_align(
             )
         except Exception as exc:
             if strict_dependency:
-                raise RuntimeError("whisperx refinement failed in strict mode.") from exc
+                raise RuntimeError(
+                    "whisperx refinement failed in strict mode."
+                ) from exc
             reason = f"whisperx refinement failed: {type(exc).__name__}"
-            return _passthrough(reason, aligner_backend="whisperx", mode_name="whisperx_passthrough")
+            return _passthrough(
+                reason, aligner_backend="whisperx", mode_name="whisperx_passthrough"
+            )
     else:
         if not mfa_dictionary_path or not mfa_acoustic_model_path:
             reason = "mfa backend selected but mfa_dictionary_path/mfa_acoustic_model_path are not configured"
             if strict_dependency:
                 raise RuntimeError(reason)
-            return _passthrough(reason, aligner_backend="mfa", mode_name="mfa_passthrough")
+            return _passthrough(
+                reason, aligner_backend="mfa", mode_name="mfa_passthrough"
+            )
         try:
             refined_words, dropped_words, refine_details = _refine_words_with_mfa(
                 stimulus=stimulus,
@@ -420,7 +495,9 @@ def whisperx_align(
             if strict_dependency:
                 raise RuntimeError("mfa refinement failed in strict mode.") from exc
             reason = f"mfa refinement failed: {type(exc).__name__}: {exc}"
-            return _passthrough(reason, aligner_backend="mfa", mode_name="mfa_passthrough")
+            return _passthrough(
+                reason, aligner_backend="mfa", mode_name="mfa_passthrough"
+            )
 
     md = ensure_word_event_metadata(
         add_execution_provenance(
@@ -460,4 +537,7 @@ def whisperx_align(
             "alignment_details": refine_details,
         },
     )
-    return {"words": refined_words, "qc": qc}
+    phones = refine_details.get("phones")
+    if not isinstance(phones, EventSeries):
+        phones = _empty_phones("speech.phones.mfa", {"backend": selected})
+    return {"words": refined_words, "qc": qc, "phones": phones}

@@ -1,0 +1,51 @@
+api_version: 1
+preset:
+  name: fmri_speech_ladder
+  description: "Graded speech bands A1-A3, P, residualize-ready articulatory/dynamics."
+features:
+  - id: a1
+    use: audio.envelope
+    params:
+      hop_s: 0.01
+
+  - id: a2
+    use: audio.modulation.spectrotemporal
+    params:
+      hop_s: 0.01
+      compressed: true
+
+  - id: formants
+    use: audio.formants
+    params:
+      hop_s: 0.01
+      backend: lpc_autocorr
+      voicing_gate: true
+
+  - id: hnr
+    use: audio.harmonicity
+    params:
+      hop_s: 0.01
+
+  - id: post
+    use: speech.phonology.ppg_posteriors
+    params:
+      representation: mel
+      local_files_only: true
+      execution_mode: strict
+
+  - id: p_features
+    use: speech.phonology.distinctive_from_posteriors
+    inputs:
+      posteriors: "ref: post.default"
+    params:
+      renormalize_posteriors: true
+      include_uncertainty: true
+
+  - id: a2_resid
+    use: features.residualize
+    inputs:
+      target: "ref: a2.default"
+      predictor: "ref: a1.default"
+    params:
+      hop_s: 0.02
+      method: linear
