@@ -4,8 +4,8 @@
 - `audio_batch_quickstart.md`: short-audio batch extraction.
 - `acoustic_phonetics_quickstart.md`: posterior -> articulatory workflow.
 - `multiscale_language_quickstart.md`: multiscale semantic features.
-- `auditory_language_hierarchy.md`: one speech wav -> acoustics, prosody,
-  phonology, and semantics on one grid (hierarchical analysis vignette).
+- `cookbook/auditory-language-hierarchy.qmd`: one speech wav -> acoustics,
+  prosody, phonology, and semantics on one grid (hierarchical analysis recipe).
 - `public_api_policy.md`: stable API and compatibility guarantees.
 - `release_process.md`: release checklist and migration discipline.
 - `testing_strategy.md`: tiered test data and CI strategy.
