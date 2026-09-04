@@ -34,6 +34,8 @@ collapsed_df = result.collapsed_dataframe
 Notes:
 
 - Resolution is implemented via shared resampling grid.
+- Available features: `rms`, `mel`, `mfcc`, `spectral_stats`, `pitch`,
+  `prosody`, `vad`, `opensmile_egemaps`.
 - Feature names are prefixed by feature family (`rms.*`, `mfcc.*`, etc.).
 - Optional named methods such as openSMILE fail fast when unavailable. Select
   an explicitly named lightweight feature for pipeline development.

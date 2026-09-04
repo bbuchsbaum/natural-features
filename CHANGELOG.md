@@ -51,6 +51,14 @@ All notable changes to this project will be documented in this file.
   pitch family from the two columns `audio.pitch` provides, and computes its
   autocorrelation by FFT over all frames at once rather than per-lag in Python
   (~1.4x faster on minute-scale audio while returning 3.5x the columns).
+- Cookbook: "Stack an auditory-language hierarchy", with a runnable example
+  (`examples/auditory_language_hierarchy.py`) that stacks acoustics, prosody,
+  phonology, and semantics from one speech wav onto one grid with per-level
+  design-matrix blocks.
+- `extract_audio_files`/`extract_audio_dir` now offer `pitch` and `prosody`
+  feature families alongside the existing low-level acoustics.
+- CTC phone posteriors cache the loaded model across calls, place it on CUDA/MPS/CPU
+  via `device="auto"`, and chunk audio longer than 30 s with 1 s overlap.
 - Cookbook and example for extracting `audio.rms` and sampling it onto a scan
   TR grid, including a 2 s TR with stimulus onset at 0.67 s.
 - Cookbook and example for convolving native `audio.rms` with fmrimod's SPMG1

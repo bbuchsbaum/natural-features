@@ -60,6 +60,29 @@ def test_extract_audio_dir_resolution_and_pattern(tmp_path) -> None:
     assert out.long_dataframe is None
 
 
+def test_extract_audio_files_supports_pitch_and_prosody(tmp_path) -> None:
+    p = tmp_path / "voiced.wav"
+    _write_wav(p, _make_clip(2.0, 220))
+
+    out = extract_audio_files(
+        [p],
+        resolution_s=0.5,
+        selected_features=["pitch", "prosody"],
+        as_dataframe=False,
+    )
+    fr = out.files["voiced"]
+    assert "pitch.f0_hz" in fr.feature_names
+    assert "pitch.voicing_strength" in fr.feature_names
+    assert "prosody.f0_hz" in fr.feature_names
+    assert "prosody.log_rms" in fr.feature_names
+    assert fr.matrix.shape == (len(fr.times_s), len(fr.feature_names))
+    # A sustained 220 Hz tone should be tracked near 220 Hz in voiced frames.
+    f0 = fr.matrix[:, fr.feature_names.index("pitch.f0_hz")]
+    voiced = f0[f0 > 0]
+    assert voiced.size > 0
+    assert np.all(np.abs(voiced - 220.0) < 25.0)
+
+
 def test_extract_audio_files_with_collapse_stats(tmp_path) -> None:
     p1 = tmp_path / "e.wav"
     p2 = tmp_path / "f.wav"

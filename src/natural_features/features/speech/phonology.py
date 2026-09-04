@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+from typing import Any
+
 import numpy as np
 
 from natural_features.core.backend_errors import (
@@ -18,6 +21,7 @@ from natural_features.core.stimulus import AudioStimulus
 from natural_features.core.timebase import TimebaseSpec, times_from_hop
 from natural_features.features.audio.lowlevel import mel
 from natural_features.features.common import extractor_metadata
+from natural_features.features.speech.chunking import plan_audio_chunks
 from natural_features.features.speech.contracts import ensure_phoneme_event_metadata
 
 
@@ -698,6 +702,226 @@ def acoustic_phone_posteriors(
     )
 
 
+_VALID_CTC_DEVICES = {"auto", "cuda", "mps", "cpu"}
+
+
+@dataclass
+class CTCModelRuntime:
+    """A loaded CTC processor/model pair reusable across many stimuli."""
+
+    processor: Any
+    model: Any
+    torch: Any
+    device: str
+    model_id: str
+    sample_rate_hz: int
+    local_files_only: bool
+
+
+_CTC_RUNTIME_CACHE: dict[tuple[str, bool, str], CTCModelRuntime] = {}
+
+
+def clear_ctc_runtime() -> None:
+    """Drop any process-level cached CTC runtimes."""
+
+    _CTC_RUNTIME_CACHE.clear()
+
+
+def _resolve_torch_device(torch: Any, requested: str) -> str:
+    """Resolve ``auto`` to CUDA, MPS, or CPU and validate explicit devices."""
+
+    device = str(requested).strip().lower()
+    if device not in _VALID_CTC_DEVICES:
+        raise ValueError("device must be one of {'auto', 'cuda', 'mps', 'cpu'}")
+    if device == "auto":
+        if torch.cuda.is_available():
+            return "cuda"
+        mps = getattr(torch.backends, "mps", None)
+        return "mps" if mps is not None and mps.is_available() else "cpu"
+    if device == "cuda" and not torch.cuda.is_available():
+        raise RuntimeError("CUDA was requested for CTC extraction but is unavailable.")
+    if device == "mps":
+        mps = getattr(torch.backends, "mps", None)
+        if mps is None or not mps.is_available():
+            raise RuntimeError(
+                "MPS was requested for CTC extraction but is unavailable."
+            )
+    return device
+
+
+def _move_to_device(value: Any, device: str) -> Any:
+    to_method = getattr(value, "to", None)
+    if callable(to_method):
+        return to_method(device)
+    return value
+
+
+def load_ctc_runtime(
+    *,
+    model: str = "bobboyms/wav2vec2-base-en-phoneme-ctc-41h",
+    local_files_only: bool = True,
+    device: str = "auto",
+) -> CTCModelRuntime:
+    """Load one CTC processor/model pair onto the requested device."""
+
+    try:
+        import torch
+        from transformers import AutoModelForCTC, AutoProcessor  # type: ignore
+    except ImportError as error:
+        raise BackendDependencyError(
+            "phoneme CTC",
+            "transformers and torch are required",
+        ) from error
+
+    selected_device = _resolve_torch_device(torch, device)
+    try:
+        processor = AutoProcessor.from_pretrained(
+            model, local_files_only=local_files_only
+        )
+        net = AutoModelForCTC.from_pretrained(model, local_files_only=local_files_only)
+    except Exception as error:
+        raise BackendLoadError(
+            "phoneme CTC", f"model '{model}' is unavailable"
+        ) from error
+    try:
+        net = net.to(selected_device)
+        eval_method = getattr(net, "eval", None)
+        if callable(eval_method):
+            eval_method()
+    except Exception as error:
+        raise BackendLoadError(
+            "phoneme CTC",
+            f"model '{model}' is unavailable on {selected_device}",
+        ) from error
+    model_sr = int(
+        getattr(getattr(processor, "feature_extractor", None), "sampling_rate", 16000)
+    )
+    return CTCModelRuntime(
+        processor=processor,
+        model=net,
+        torch=torch,
+        device=selected_device,
+        model_id=model,
+        sample_rate_hz=model_sr,
+        local_files_only=bool(local_files_only),
+    )
+
+
+def _get_ctc_runtime(
+    *,
+    model: str,
+    local_files_only: bool,
+    device: str,
+    runtime: CTCModelRuntime | None,
+) -> CTCModelRuntime:
+    if runtime is not None:
+        if runtime.model_id != model:
+            raise ValueError(
+                f"Preloaded CTC runtime uses '{runtime.model_id}', not '{model}'."
+            )
+        return runtime
+    try:
+        import torch
+    except ImportError as error:
+        raise BackendDependencyError(
+            "phoneme CTC",
+            "transformers and torch are required",
+        ) from error
+    selected_device = _resolve_torch_device(torch, device)
+    key = (model, bool(local_files_only), selected_device)
+    cached = _CTC_RUNTIME_CACHE.get(key)
+    if cached is not None:
+        return cached
+    loaded = load_ctc_runtime(
+        model=model,
+        local_files_only=local_files_only,
+        device=selected_device,
+    )
+    _CTC_RUNTIME_CACHE[key] = loaded
+    return loaded
+
+
+def _ctc_forward_chunk(
+    runtime: CTCModelRuntime,
+    wav_chunk: np.ndarray,
+) -> np.ndarray:
+    torch = runtime.torch
+    inputs = runtime.processor(
+        wav_chunk,
+        sampling_rate=runtime.sample_rate_hz,
+        return_tensors="pt",
+    )
+    if hasattr(inputs, "items"):
+        model_inputs = {
+            key: _move_to_device(value, runtime.device) for key, value in inputs.items()
+        }
+    else:
+        model_inputs = {"input_values": _move_to_device(inputs, runtime.device)}
+    inference_context = getattr(torch, "inference_mode", torch.no_grad)
+    with inference_context():
+        logits = runtime.model(**model_inputs).logits[0]
+    return torch.softmax(logits, dim=-1).detach().cpu().numpy().astype(np.float32)
+
+
+def _decode_ctc_labels(
+    processor: Any,
+    probs: np.ndarray,
+    *,
+    drop_special_tokens: bool,
+) -> tuple[np.ndarray, list[str]]:
+    vocab_size = int(probs.shape[1])
+    tokenizer = getattr(processor, "tokenizer", None)
+    if tokenizer is not None and hasattr(tokenizer, "convert_ids_to_tokens"):
+        labels = [
+            str(tokenizer.convert_ids_to_tokens(int(i))) for i in range(vocab_size)
+        ]
+    else:
+        labels = [f"tok_{i}" for i in range(vocab_size)]
+    normalized_labels = [_normalize_ctc_token(x) for x in labels]
+    if drop_special_tokens:
+        keep_idx = [i for i, norm in enumerate(normalized_labels) if norm != ""]
+        if keep_idx:
+            probs = probs[:, keep_idx]
+            labels = [normalized_labels[i] for i in keep_idx]
+        else:
+            probs = probs[:, :0]
+            labels = []
+    else:
+        labels = [
+            norm if norm else str(raw) for norm, raw in zip(normalized_labels, labels)
+        ]
+    probs = probs / np.maximum(probs.sum(axis=1, keepdims=True), 1e-8)
+    return probs, labels
+
+
+def _keep_chunk_frames(
+    times: np.ndarray,
+    *,
+    chunk_index: int,
+    n_chunks: int,
+    chunk_start_s: float,
+    chunk_end_s: float,
+    overlap_s: float,
+) -> np.ndarray:
+    lo = chunk_start_s if chunk_index == 0 else chunk_start_s + overlap_s / 2.0
+    hi = chunk_end_s if chunk_index == n_chunks - 1 else chunk_end_s - overlap_s / 2.0
+    return (times >= lo) & (times < hi)
+
+
+def _ctc_inference_error(error: BaseException, device: str) -> BackendInferenceError:
+    hint = ""
+    text = str(error).lower()
+    if any(
+        token in text
+        for token in ("out of memory", "cuda oom", "mps backend out of memory")
+    ):
+        hint = " Reduce chunk_window_s if this was an accelerator memory failure."
+    return BackendInferenceError(
+        "phoneme CTC",
+        f"posterior inference failed on {device}: {error}.{hint}",
+    )
+
+
 def ctc_phone_posteriors(
     stimulus: AudioStimulus,
     *,
@@ -707,90 +931,131 @@ def ctc_phone_posteriors(
     execution_mode: str | None = None,
     strict_dependency: bool | None = None,
     drop_special_tokens: bool = True,
+    runtime: CTCModelRuntime | None = None,
+    device: str = "auto",
+    chunk_window_s: float = 30.0,
+    chunk_overlap_s: float = 1.0,
 ) -> FeatureSeries:
+    """Extract CTC phone posteriors with cached runtimes and long-audio chunking.
+
+    Audio shorter than ``chunk_window_s`` uses one forward pass. Longer stimuli
+    are split with ``plan_audio_chunks`` and interior overlap frames are dropped
+    before concatenation.
+    """
+
     mode, _strict = resolve_execution_mode(
         execution_mode=execution_mode,
         strict_dependency=strict_dependency,
     )
+    if chunk_window_s <= 0:
+        raise ValueError("chunk_window_s must be greater than zero")
+    if chunk_overlap_s < 0:
+        raise ValueError("chunk_overlap_s must be >= 0")
+    if chunk_overlap_s >= chunk_window_s:
+        raise ValueError("chunk_overlap_s must be < chunk_window_s")
+    requested_device = str(device).strip().lower()
+    if requested_device not in _VALID_CTC_DEVICES:
+        raise ValueError("device must be one of {'auto', 'cuda', 'mps', 'cpu'}")
+    if runtime is not None and runtime.model_id != model:
+        raise ValueError(
+            f"Preloaded CTC runtime uses '{runtime.model_id}', not '{model}'."
+        )
     params = {
         "model": model,
         "stride_s": stride_s,
         "local_files_only": local_files_only,
         "drop_special_tokens": drop_special_tokens,
+        "device": requested_device,
+        "chunk_window_s": float(chunk_window_s),
+        "chunk_overlap_s": float(chunk_overlap_s),
     }
-    try:
-        import torch
-        from transformers import AutoModelForCTC, AutoProcessor  # type: ignore
-    except ImportError as exc:
-        raise BackendDependencyError(
-            "phoneme CTC",
-            "transformers and torch are required",
-        ) from exc
-
-    try:
-        processor = AutoProcessor.from_pretrained(
-            model, local_files_only=local_files_only
-        )
-        net = AutoModelForCTC.from_pretrained(model, local_files_only=local_files_only)
-    except Exception as exc:
-        raise BackendLoadError(
-            "phoneme CTC", f"model '{model}' is unavailable"
-        ) from exc
+    active_runtime = _get_ctc_runtime(
+        model=model,
+        local_files_only=local_files_only,
+        device=requested_device,
+        runtime=runtime,
+    )
 
     try:
         wav = stimulus.samples.astype(np.float32)
         if wav.ndim == 2:
             wav = wav.mean(axis=1)
-        model_sr = int(
-            getattr(
-                getattr(processor, "feature_extractor", None),
-                "sampling_rate",
-                stimulus.sr_hz,
-            )
+        wav_model = _resample_audio_linear(
+            wav,
+            from_sr=stimulus.sr_hz,
+            to_sr=active_runtime.sample_rate_hz,
         )
-        wav_model = _resample_audio_linear(wav, from_sr=stimulus.sr_hz, to_sr=model_sr)
-        inputs = processor(wav_model, sampling_rate=model_sr, return_tensors="pt")
-        with torch.no_grad():
-            logits = net(**inputs).logits[0]  # T x V
-        probs = torch.softmax(logits, dim=-1).detach().cpu().numpy().astype(np.float32)
-        vocab_size = int(probs.shape[1])
-
-        tokenizer = getattr(processor, "tokenizer", None)
-        if tokenizer is not None and hasattr(tokenizer, "convert_ids_to_tokens"):
-            labels = [
-                str(tokenizer.convert_ids_to_tokens(int(i))) for i in range(vocab_size)
-            ]
+        duration_s = float(len(wav_model) / active_runtime.sample_rate_hz)
+        if duration_s <= float(chunk_window_s):
+            raw_probs = _ctc_forward_chunk(active_runtime, wav_model)
+            hop_s = max(duration_s / max(1, raw_probs.shape[0]), 1e-6)
+            times = times_from_hop(
+                raw_probs.shape[0],
+                hop_s,
+                start_offset_s=stimulus.start_offset_s,
+            )
+            chunk_count = 1
         else:
-            labels = [f"tok_{i}" for i in range(vocab_size)]
-        normalized_labels = [_normalize_ctc_token(x) for x in labels]
-        if drop_special_tokens:
-            keep_idx = [i for i, norm in enumerate(normalized_labels) if norm != ""]
-            if keep_idx:
-                probs = probs[:, keep_idx]
-                labels = [normalized_labels[i] for i in keep_idx]
-            else:
-                probs = probs[:, :0]
-                labels = []
-        else:
-            labels = [
-                norm if norm else str(raw)
-                for norm, raw in zip(normalized_labels, labels)
-            ]
-        probs = probs / np.maximum(probs.sum(axis=1, keepdims=True), 1e-8)
-    except Exception as exc:
-        raise BackendInferenceError(
-            "phoneme CTC", "posterior inference failed"
-        ) from exc
+            chunks = plan_audio_chunks(
+                n_samples=len(wav_model),
+                sr_hz=active_runtime.sample_rate_hz,
+                window_s=float(chunk_window_s),
+                overlap_s=float(chunk_overlap_s),
+                start_offset_s=stimulus.start_offset_s,
+            )
+            probability_parts: list[np.ndarray] = []
+            time_parts: list[np.ndarray] = []
+            for index, chunk in enumerate(chunks):
+                wav_slice = wav_model[chunk.sample_start : chunk.sample_end]
+                chunk_probs = _ctc_forward_chunk(active_runtime, wav_slice)
+                chunk_duration_s = float(len(wav_slice) / active_runtime.sample_rate_hz)
+                chunk_hop_s = max(chunk_duration_s / max(1, chunk_probs.shape[0]), 1e-6)
+                chunk_times = times_from_hop(
+                    chunk_probs.shape[0],
+                    chunk_hop_s,
+                    start_offset_s=chunk.start_s,
+                )
+                keep = _keep_chunk_frames(
+                    chunk_times,
+                    chunk_index=index,
+                    n_chunks=len(chunks),
+                    chunk_start_s=chunk.start_s,
+                    chunk_end_s=chunk.end_s,
+                    overlap_s=float(chunk_overlap_s),
+                )
+                if not np.any(keep):
+                    continue
+                probability_parts.append(chunk_probs[keep])
+                time_parts.append(chunk_times[keep])
+            if not probability_parts:
+                raise RuntimeError("CTC chunking produced no posterior frames")
+            raw_probs = np.concatenate(probability_parts, axis=0)
+            times = np.concatenate(time_parts)
+            if len(times) > 1 and np.any(np.diff(times) < 0):
+                order = np.argsort(times, kind="mergesort")
+                times = times[order]
+                raw_probs = raw_probs[order]
+            hop_s = max(duration_s / max(1, raw_probs.shape[0]), 1e-6)
+            chunk_count = len(chunks)
+        probs, labels = _decode_ctc_labels(
+            active_runtime.processor,
+            raw_probs,
+            drop_special_tokens=drop_special_tokens,
+        )
+    except Exception as error:
+        raise _ctc_inference_error(error, active_runtime.device) from error
 
-    n_t = probs.shape[0]
-    duration_s = float(stimulus.samples.shape[0] / stimulus.sr_hz)
-    hop_s = max(duration_s / max(1, n_t), 1e-6)
-    times = times_from_hop(n_t, hop_s, start_offset_s=stimulus.start_offset_s)
     md = add_execution_provenance(
         extractor_metadata(
             "speech.phonology.ctc_posteriors",
             params=params,
-            extra={"backend": "transformers_ctc"},
+            extra={
+                "backend": "transformers_ctc",
+                "device": active_runtime.device,
+                "chunk_count": chunk_count,
+                "chunk_window_s": float(chunk_window_s),
+                "chunk_overlap_s": float(chunk_overlap_s),
+            },
         ),
         execution_mode=mode,
         fallback_used=False,

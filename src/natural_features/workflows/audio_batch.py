@@ -12,6 +12,7 @@ from natural_features.core.feature_types import FeatureSeries
 from natural_features.core.stimulus import AudioStimulus
 from natural_features.features.audio.lowlevel import mel, mfcc, rms, spectral_stats
 from natural_features.features.audio.opensmile import egemaps_lld
+from natural_features.features.audio.prosody import audio_pitch, prosody_features
 from natural_features.features.speech.vad import energy_vad
 from natural_features.fmri.design import concat_feature_series
 from natural_features.fmri.resample import build_tr_grid, resample_feature_series
@@ -42,6 +43,8 @@ _FEATURES = {
     "mel": (mel, {"hop_s": 0.01, "win_s": 0.03, "n_mels": 64}),
     "mfcc": (mfcc, {"hop_s": 0.01, "win_s": 0.03, "n_mfcc": 13, "n_mels": 40, "include_deltas": True}),
     "spectral_stats": (spectral_stats, {"hop_s": 0.01, "win_s": 0.03}),
+    "pitch": (audio_pitch, {"hop_s": 0.01, "win_s": 0.04}),
+    "prosody": (prosody_features, {"hop_s": 0.01, "win_s": 0.03}),
     "vad": (energy_vad, {"hop_s": 0.02, "win_s": 0.03, "threshold": 0.5}),
     "opensmile_egemaps": (egemaps_lld, {"frame_s": 0.01}),
 }

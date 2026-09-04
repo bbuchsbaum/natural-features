@@ -131,7 +131,7 @@ features:
     expected_python_schema: "FeatureSeries/v1"
     bundles: []
     required_default_keys: ["execution_mode", "stride_s"]
-    allowed_python_default_extras: ["drop_special_tokens", "local_files_only", "model"]
+    allowed_python_default_extras: ["chunk_overlap_s", "chunk_window_s", "device", "drop_special_tokens", "local_files_only", "model"]
   speech.diarization:
     expected_python_schema: "TrackSeries/v1"
     bundles: []

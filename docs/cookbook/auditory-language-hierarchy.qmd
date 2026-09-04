@@ -1,0 +1,274 @@
+---
+title: "Stack an auditory-language hierarchy"
+subtitle: "One speech wav becomes acoustics, prosody, phonology, and semantics on a single shared grid."
+sidebar: cookbook
+---
+
+## Use when
+
+You want every level of a hierarchical auditory-language analysis rendered onto
+one time grid, so the levels stack into a single design matrix with per-level
+column blocks. That layout is what banded ridge regression, hierarchical
+regression, and variance partitioning across the speech hierarchy need.
+
+| Level | Block | What it captures | Extractors |
+|---|---|---|---|
+| 1 | `acoustic.*` | Envelope, spectrum, cepstrum | `rms`, `mel`, `mfcc`, `spectral_stats`, `gammatone` |
+| 2 | `prosody.*` | F0, voicing, energy dynamics | `audio_pitch`, `prosody_features` |
+| 3 | `phonology.*` | Phone-class posteriors, articulatory features | `extract_acoustic_phonetics` |
+| 4 | `semantic.*` | Sentence/paragraph embeddings, lexical controls | `extract_multiscale_language` |
+
+The executed cells use a short synthetic waveform and an inline transcript so
+this page renders with no model downloads. Every extractor shown here is the
+same one you would call on a real recording.
+
+## One canonical grid
+
+Each level produces `FeatureSeries` on its own native grid. Rendering all of
+them through a single `build_tr_grid` grid is what makes them stackable.
+
+```{python}
+import tempfile
+import wave
+from pathlib import Path
+
+import numpy as np
+
+from natural_features.core.feature_types import FeatureSeries
+from natural_features.core.stimulus import AudioStimulus
+from natural_features.fmri.resample import build_tr_grid, resample_feature_series
+
+sr_hz = 16000
+duration_s = 16.0
+tr_s = 1.0  # analysis resolution; use your scan TR for fMRI
+
+# A speech-like carrier: a syllable-rate amplitude envelope on a voiced buzz.
+t = np.arange(int(duration_s * sr_hz), dtype=np.float32) / sr_hz
+envelope = 0.2 + 0.18 * np.sin(2.0 * np.pi * 4.0 * t)
+carrier = np.sin(2.0 * np.pi * 130.0 * t) + 0.5 * np.sin(2.0 * np.pi * 260.0 * t)
+samples = (envelope * carrier).astype(np.float32)
+
+tmpdir = tempfile.TemporaryDirectory()
+wav_path = Path(tmpdir.name) / "speech_like.wav"
+pcm = np.asarray(np.clip(samples, -1.0, 1.0) * 32767.0, dtype="<i2")
+with wave.open(str(wav_path), "wb") as wav:
+    wav.setnchannels(1)
+    wav.setsampwidth(2)
+    wav.setframerate(sr_hz)
+    wav.writeframes(pcm.tobytes())
+
+audio = AudioStimulus.from_wav(wav_path)
+total_s = audio.start_offset_s + audio.samples.shape[0] / audio.sr_hz
+grid = build_tr_grid(duration_s=total_s, tr_s=tr_s, start_s=audio.start_offset_s)
+
+
+def on_grid(fs, method="mean"):
+    return resample_feature_series(fs, tr_s=tr_s, method=method, time_grid_s=grid)
+
+
+def prefixed(fs, prefix):
+    names = [str(n) for n in fs.coords.get("feature", [])]
+    return FeatureSeries(
+        values=fs.values,
+        times_s=fs.times_s,
+        dims=fs.dims,
+        coords={"feature": [f"{prefix}{n}" for n in names]},
+        metadata=fs.metadata,
+        timebase=fs.timebase,
+        time_bounds_s=fs.time_bounds_s,
+        temporal_context=fs.temporal_context,
+    )
+
+
+grid
+```
+
+## Level 1: low-level acoustics
+
+```{python}
+from natural_features.features.audio.lowlevel import mfcc, rms, spectral_stats
+
+acoustic = [
+    prefixed(on_grid(rms(audio)), "acoustic.rms."),
+    prefixed(
+        on_grid(mfcc(audio, n_mfcc=13, n_mels=40, include_deltas=True)),
+        "acoustic.mfcc.",
+    ),
+    prefixed(on_grid(spectral_stats(audio)), "acoustic.spectral."),
+]
+[fs.values.shape for fs in acoustic]
+```
+
+For batches of clips, `extract_audio_files` wraps the same extractors plus
+`mel`, `pitch`, `prosody`, `vad`, and openSMILE eGeMAPS; see
+[Extract audio features from WAV files](audio-batch-from-wav.qmd).
+
+## Level 2: prosody
+
+```{python}
+from natural_features.features.audio.prosody import prosody_features
+
+prosody = [prefixed(on_grid(prosody_features(audio)), "prosody.")]
+list(prosody[0].coords["feature"])
+```
+
+`audio_pitch` is available separately when only F0 and voicing are needed.
+
+## Level 3: phonetics and phonology
+
+`posterior_backend="acoustic"` is a deterministic coarse-class mapping that
+needs no model weights, which is what keeps this page renderable.
+
+```{python}
+from natural_features.workflows import extract_acoustic_phonetics
+
+phon = extract_acoustic_phonetics(audio, posterior_backend="acoustic")
+phonology = [
+    prefixed(on_grid(phon.posteriorgrams), "phonology.post."),
+    prefixed(on_grid(phon.articulatory), "phonology.artic."),
+]
+[fs.values.shape for fs in phonology]
+```
+
+On real speech you would usually want the strict neural backend instead. The
+CTC model loads once per process and is reused across files, and audio longer
+than `chunk_window_s` is chunked with overlap automatically:
+
+```python
+phon = extract_acoustic_phonetics(
+    audio,
+    posterior_backend="ctc",      # strict wav2vec2 phoneme-CTC model
+    ctc_device="auto",            # CUDA, then MPS, then CPU
+    ctc_local_files_only=True,    # reproducible/offline
+)
+```
+
+`posterior_backend="ppgs"` wraps phonetic posteriorgrams as a third option.
+Details for all three live in the
+[acoustic phonetics quickstart](../acoustic_phonetics_quickstart.md).
+
+## Level 4: sentence- and paragraph-level semantics
+
+Words come from your transcript with uniform timing, or from strict Whisper ASR
+when you omit `transcript_text`. Sentence and paragraph events are segmented
+from the word stream, embedded per unit, then rendered onto the same grid.
+
+```{python}
+from natural_features.workflows import extract_multiscale_language
+
+transcript = (
+    "The tide came in slowly that morning. Gulls argued over the wet stones. "
+    "A fishing boat idled past the breakwater.\n\n"
+    "By noon the wind had turned. Rain moved across the harbour in sheets. "
+    "Nobody stayed to watch it arrive."
+)
+
+language = extract_multiscale_language(
+    audio,
+    transcript_text=transcript,
+    scales_s=[tr_s],
+    feature_families=[
+        "sentence_embeddings",
+        "paragraph_embeddings",
+        "lexical_controls",
+    ],
+    provider_config={"provider": "local_bow", "dim": 64},
+    standardize=False,
+    add_intercept=False,
+)
+
+semantic_dm = language.by_scale[tr_s]
+if len(semantic_dm.times_s) != len(grid) or not np.allclose(semantic_dm.times_s, grid):
+    # ASR or transcript word onsets can start after t=0; re-render onto the grid.
+    semantic_dm = on_grid(semantic_dm, method="nearest")
+semantic = [prefixed(semantic_dm, "semantic.")]
+
+language.qc
+```
+
+`provider="local_bow"` is the offline bag-of-words provider used here. On real
+data you would swap in a contextual provider:
+
+```python
+provider_config={"provider": "openai", "model": "text-embedding-3-large"}
+```
+
+Adding `"surprisal"` to `feature_families` contributes word-level
+predictability from a causal language model. Unlike the three families above it
+is a strict neural backend: it needs `transformers`, `torch`, and local weights,
+and raises rather than substituting a proxy.
+
+`language.words`, `language.sentences`, and `language.paragraphs` expose the
+underlying `EventSeries` if you want event-locked rather than gridded designs.
+
+## Stack into one hierarchical design
+
+```{python}
+from natural_features.fmri.design import concat_feature_series
+
+blocks = {
+    "acoustic": acoustic,
+    "prosody": prosody,
+    "phonology": phonology,
+    "semantic": semantic,
+}
+design = concat_feature_series(
+    [fs for level in blocks.values() for fs in level],
+    standardize=True,
+    add_intercept=False,
+)
+
+block_slices = {}
+cursor = 0
+for level, feats in blocks.items():
+    width = sum(fs.values.shape[1] for fs in feats)
+    block_slices[level] = (cursor, cursor + width)
+    cursor += width
+
+{
+    "rows": int(design.values.shape[0]),
+    "columns": int(design.values.shape[1]),
+    "block_slices": block_slices,
+}
+```
+
+`concat_feature_series` refuses to stack blocks whose grids, clocks, or window
+supports disagree, so a misaligned level fails loudly instead of silently
+shifting time.
+
+```{python}
+#| echo: false
+tmpdir.cleanup()
+```
+
+## Run it end to end
+
+[`examples/auditory_language_hierarchy.py`](https://github.com/bbuchsbaum/natural-features/blob/main/examples/auditory_language_hierarchy.py)
+is the scripted version of this page. It records `block_slices` in a JSON
+sidecar so downstream banded models can address each level by name:
+
+```bash
+python examples/auditory_language_hierarchy.py \
+    --audio-wav tests/stimuli/tier_a/audio_speechlike.wav \
+    --transcript tests/stimuli/tier_a/transcript_reference.txt \
+    --resolution-s 1.0 \
+    --out-prefix hierarchy_demo
+```
+
+Neural backends are opt-in flags on the same script: `--posterior-backend ctc`
+for phone posteriors and `--surprisal lm` for language-model predictability.
+
+## Notes
+
+- **Determinism.** A transcript plus `posterior_backend="acoustic"` plus
+  `provider="local_bow"` runs with no model downloads, which is what the
+  integration test exercises.
+- **Strict by default.** Neural backends (CTC, PPGs, Whisper ASR, API embedding
+  providers, language-model surprisal) fail loudly when unavailable rather than
+  substituting a proxy. Substitutes are always an explicit choice.
+- **fMRI.** Set `tr_s` to your scan TR and map stimulus time onto scan time with
+  a `ClockMap`; see [Sample RMS energy onto a TR grid](rms-energy-to-tr-grid.qmd).
+  HRF convolution and lagging belong in your modeling layer.
+- **Finer phonetic timing.** For event-locked phoneme analyses, align words with
+  `whisperx_align`, expand to phones with `phoneme_events_from_words`, and map to
+  articulatory features with `articulatory_from_phoneme_events`.
