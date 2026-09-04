@@ -7,6 +7,7 @@ from .audio_batch import (
     extract_audio_files,
 )
 from .acoustic_phonetics import AcousticPhoneticsResult, extract_acoustic_phonetics
+from .speech_ladder import extract_speech_ladder
 from .extract_features import (
     AlignedFeatureSet,
     ExtractFeaturesResult,
@@ -34,6 +35,7 @@ __all__ = [
     "VideoTextResult",
     "available_features",
     "extract_acoustic_phonetics",
+    "extract_speech_ladder",
     "extract_audio_dir",
     "extract_audio_files",
     "extract_features",

@@ -20,7 +20,11 @@ from natural_features.core.stimulus import (
     TextStimulus,
     VideoStimulus,
 )
-from natural_features.core.timeline import FeatureAlignment, Timeline, align_feature_to_timeline
+from natural_features.core.timeline import (
+    FeatureAlignment,
+    Timeline,
+    align_feature_to_timeline,
+)
 from natural_features.core.timebase import TemporalContext
 from natural_features.workflows._public_contract import public_feature_ids
 
@@ -49,6 +53,9 @@ _EXPENSIVE_REQUIRES = {
     "whisperx",
     "ocr",
     "ffmpeg",
+    "ppgs",
+    "sparc",
+    "parselmouth",
 }
 _SOURCE_ALIASES = {
     "tokens": ["tokens", "words", "events"],
@@ -202,14 +209,20 @@ class ExtractFeaturesResult:
         policy: str = "overlap",
     ) -> AlignedFeatureSet:
         target_timeline = self.timeline(target)
-        names = _as_list(features) if features is not None else _temporal_feature_names(self.features)
+        names = (
+            _as_list(features)
+            if features is not None
+            else _temporal_feature_names(self.features)
+        )
         alignments: dict[str, FeatureAlignment] = {}
         for name in names:
             if name not in self.features:
                 raise KeyError(f"Unknown feature output: {name}")
             obj = self.features[name]
             if not _is_temporal_output(obj):
-                raise TypeError(f"Feature output '{name}' is not a temporal feature object")
+                raise TypeError(
+                    f"Feature output '{name}' is not a temporal feature object"
+                )
             alignments[name] = align_feature_to_timeline(
                 name,
                 obj,
@@ -311,7 +324,9 @@ def _infer_bundles(spec: ExtractorSpec) -> list[str]:
     return bundles
 
 
-def _requires_opt_in(spec: ExtractorSpec, dependency_class: str, cost_class: str) -> bool:
+def _requires_opt_in(
+    spec: ExtractorSpec, dependency_class: str, cost_class: str
+) -> bool:
     tags = set(spec.tags)
     requires = {str(x) for x in spec.requires}
     if "placeholder" in tags:
@@ -520,7 +535,9 @@ def _temporal_context_from_inputs(
     return contexts[0].merged(*contexts[1:])
 
 
-def _resolve_timeline(result: ExtractFeaturesResult, target: str | Timeline) -> Timeline:
+def _resolve_timeline(
+    result: ExtractFeaturesResult, target: str | Timeline
+) -> Timeline:
     if isinstance(target, Timeline):
         return target
     target_name = str(target)
@@ -529,7 +546,9 @@ def _resolve_timeline(result: ExtractFeaturesResult, target: str | Timeline) -> 
     if target_name in result.features:
         obj = result.features[target_name]
         if not _is_temporal_output(obj):
-            raise TypeError(f"Feature output '{target_name}' is not temporal and cannot define a timeline")
+            raise TypeError(
+                f"Feature output '{target_name}' is not temporal and cannot define a timeline"
+            )
         return Timeline.from_feature(target_name, obj)
     feature_prefix = "feature:"
     if target_name.startswith(feature_prefix):
@@ -538,10 +557,14 @@ def _resolve_timeline(result: ExtractFeaturesResult, target: str | Timeline) -> 
             raise KeyError(f"Unknown feature output: {feature_name}")
         obj = result.features[feature_name]
         if not _is_temporal_output(obj):
-            raise TypeError(f"Feature output '{feature_name}' is not temporal and cannot define a timeline")
+            raise TypeError(
+                f"Feature output '{feature_name}' is not temporal and cannot define a timeline"
+            )
         return Timeline.from_feature(feature_name, obj)
     known = sorted([*result.timelines.keys(), *result.features.keys()])
-    raise KeyError(f"Unknown timeline target: {target_name}. Known targets: {', '.join(known)}")
+    raise KeyError(
+        f"Unknown timeline target: {target_name}. Known targets: {', '.join(known)}"
+    )
 
 
 def _sanitize_step_id(feature_id: str) -> str:
@@ -666,7 +689,9 @@ def plan_features(
             raise KeyError(f"Unknown feature: {feature_id}")
         entry = catalog[feature_id]
         if not include_placeholders and "placeholder" in set(entry.tags):
-            raise ValueError(f"Feature '{feature_id}' is a placeholder and cannot be planned by default")
+            raise ValueError(
+                f"Feature '{feature_id}' is a placeholder and cannot be planned by default"
+            )
         if not _allowed_by_budget(entry, budget):
             raise PermissionError(
                 f"Feature '{feature_id}' requires opt-in. "
@@ -699,13 +724,17 @@ def plan_features(
                 requires_opt_in=entry.requires_opt_in,
             )
         )
-        _register_outputs(available_sources, step_id=step_id, outputs=spec.outputs or {})
+        _register_outputs(
+            available_sources, step_id=step_id, outputs=spec.outputs or {}
+        )
 
     plan = FeaturePlan(rows=rows, input_modalities=sorted(input_modalities))
     return plan.to_dataframe() if as_dataframe else plan
 
 
-def _collect_features(plan: FeaturePlan, steps: dict[str, dict[str, Any]]) -> dict[str, Any]:
+def _collect_features(
+    plan: FeaturePlan, steps: dict[str, dict[str, Any]]
+) -> dict[str, Any]:
     out: dict[str, Any] = {}
     for row in plan.rows:
         outputs = steps.get(row.step_id, {})

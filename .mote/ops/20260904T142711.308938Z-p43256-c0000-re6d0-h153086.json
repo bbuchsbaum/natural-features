@@ -1,0 +1,1 @@
+{"actor":"ppgs-backend","entity":"bd-01M1PCTS5M7RMF7NVWAVPQJE0Z","kind":"note","note_kind":"progress","op":"20260904T142711.308938Z-p43256-c0000-re6d0-h153086","text":"Added optional ppgs backend, articulatory diphthong/silence maps, and edge-silence trim/pad. No fork: #18 is OOD.","ts":"2026-09-04T14:27:11.308938Z","v":1}

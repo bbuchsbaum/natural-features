@@ -24,6 +24,7 @@ from natural_features.features.common import extractor_metadata
 from natural_features.features.speech.chunking import plan_audio_chunks
 from natural_features.features.speech.contracts import ensure_phoneme_event_metadata
 
+
 _VOWELS = set("aeiou")
 _LABIAL = set("pbmfwv")
 _CORONAL = set("tdnslzrchj")
@@ -53,6 +54,60 @@ DEFAULT_ARTICULATORY_FEATURES: list[str] = [
     "back",
     "silence",
 ]
+
+DEFAULT_DISTINCTIVE_FEATURES: list[str] = list(DEFAULT_ARTICULATORY_FEATURES) + [
+    "continuant",
+    "strident",
+    "lateral",
+    "aspirated",
+    "rounded",
+    "high",
+    "low",
+]
+
+_DISTINCTIVE_EXTRAS: dict[str, set[str]] = {
+    "S": {"continuant", "strident"},
+    "Z": {"continuant", "strident"},
+    "SH": {"continuant", "strident"},
+    "ZH": {"continuant", "strident"},
+    "F": {"continuant", "strident"},
+    "V": {"continuant", "strident"},
+    "TH": {"continuant"},
+    "DH": {"continuant"},
+    "HH": {"continuant"},
+    "L": {"continuant", "lateral"},
+    "R": {"continuant"},
+    "Y": {"continuant"},
+    "W": {"continuant", "rounded"},
+    "CH": {"strident"},
+    "JH": {"strident"},
+    "IY": {"continuant", "high"},
+    "IH": {"continuant", "high"},
+    "EH": {"continuant"},
+    "AE": {"continuant", "low"},
+    "EY": {"continuant"},
+    "AY": {"continuant"},
+    "AH": {"continuant"},
+    "ER": {"continuant"},
+    "AA": {"continuant", "low"},
+    "AO": {"continuant", "rounded"},
+    "OW": {"continuant", "rounded"},
+    "AW": {"continuant", "rounded"},
+    "OY": {"continuant", "rounded"},
+    "UH": {"continuant", "high", "rounded"},
+    "UW": {"continuant", "high", "rounded"},
+}
+
+_CLASS_DISTINCTIVE_EXTRAS: dict[str, set[str]] = {
+    "labiodental_fricative": {"continuant", "strident"},
+    "dental_fricative": {"continuant"},
+    "alveolar_fricative": {"continuant", "strident"},
+    "postalveolar_fricative": {"continuant", "strident"},
+    "approximant": {"continuant"},
+    "front_vowel": {"continuant"},
+    "central_vowel": {"continuant"},
+    "back_vowel": {"continuant"},
+}
 
 # Coarse phone-like classes for posteriorgrams when a strict phone recognizer
 # is unavailable. These classes are intentionally broad and easy to map to
@@ -118,11 +173,15 @@ _ARPABET_TO_FEATURES: dict[str, set[str]] = {
     "IH": {"vowel", "sonorant", "voiced", "front"},
     "EH": {"vowel", "sonorant", "voiced", "front"},
     "AE": {"vowel", "sonorant", "voiced", "front"},
+    "EY": {"vowel", "sonorant", "voiced", "front"},
+    "AY": {"vowel", "sonorant", "voiced", "front"},
     "AH": {"vowel", "sonorant", "voiced", "central"},
     "ER": {"vowel", "sonorant", "voiced", "central"},
     "AA": {"vowel", "sonorant", "voiced", "back"},
     "AO": {"vowel", "sonorant", "voiced", "back"},
     "OW": {"vowel", "sonorant", "voiced", "back"},
+    "AW": {"vowel", "sonorant", "voiced", "back"},
+    "OY": {"vowel", "sonorant", "voiced", "front", "back"},
     "UH": {"vowel", "sonorant", "voiced", "back"},
     "UW": {"vowel", "sonorant", "voiced", "back"},
 }
@@ -293,7 +352,7 @@ def _resample_audio_linear(wav: np.ndarray, *, from_sr: int, to_sr: int) -> np.n
         return wav.astype(np.float32, copy=False)
     n_in = wav.shape[0]
     duration_s = n_in / float(from_sr)
-    n_out = max(1, round(duration_s * float(to_sr)))
+    n_out = max(1, int(round(duration_s * float(to_sr))))
     x_in = np.linspace(0.0, duration_s, num=n_in, endpoint=False, dtype=np.float64)
     x_out = np.linspace(0.0, duration_s, num=n_out, endpoint=False, dtype=np.float64)
     out = np.interp(x_out, x_in, wav.astype(np.float64))
@@ -301,7 +360,11 @@ def _resample_audio_linear(wav: np.ndarray, *, from_sr: int, to_sr: int) -> np.n
 
 
 def _features_for_label(raw: str) -> set[str]:
-    raw_tok = str(raw).strip()
+    raw_tok = str(raw)
+    # pypar/ppgs encode silence as a single space; keep that mappable.
+    if raw_tok in {" ", "\t", "\n"} or raw_tok.lower() in {"<silent>", "<silence>"}:
+        return set(_CLASS_TO_FEATURES["silence"])
+    raw_tok = raw_tok.strip()
     if not raw_tok:
         return set()
 
@@ -309,20 +372,25 @@ def _features_for_label(raw: str) -> set[str]:
     if ctc_norm:
         from_ctc = _CLASS_TO_FEATURES.get(ctc_norm.lower())
         if from_ctc is not None:
-            return set(from_ctc)
+            extras = set(_CLASS_DISTINCTIVE_EXTRAS.get(ctc_norm.lower(), set()))
+            return set(from_ctc) | extras
 
     from_raw = _CLASS_TO_FEATURES.get(raw_tok.lower())
     if from_raw is not None:
-        return set(from_raw)
+        extras = set(_CLASS_DISTINCTIVE_EXTRAS.get(raw_tok.lower(), set()))
+        return set(from_raw) | extras
 
     arpabet = _normalize_phone_label(raw_tok)
     from_arpabet = _ARPABET_TO_FEATURES.get(arpabet)
     if from_arpabet is not None:
-        return set(from_arpabet)
+        return set(from_arpabet) | set(_DISTINCTIVE_EXTRAS.get(arpabet, set()))
 
     ipa_tok = ctc_norm if ctc_norm else raw_tok
     if _looks_like_ipa_token(ipa_tok):
-        return _ipa_features_from_token(ipa_tok)
+        classes = _ipa_features_from_token(ipa_tok)
+        if "fricative" in classes or "approximant" in classes or "vowel" in classes:
+            classes.add("continuant")
+        return classes
     return set()
 
 
@@ -499,6 +567,7 @@ def articulatory_from_phoneme_events(
     *,
     feature_names: list[str] | None = None,
     include_confidence: bool = True,
+    extractor_name: str = "speech.articulatory.from_phoneme_events",
 ) -> FeatureSeries:
     """Map phoneme-labeled events to articulatory feature vectors.
 
@@ -525,7 +594,7 @@ def articulatory_from_phoneme_events(
         vals = np.concatenate([vals, c], axis=1)
         out_names.append("event_confidence")
     md = extractor_metadata(
-        "speech.articulatory.from_phoneme_events",
+        extractor_name,
         params={
             "feature_names": out_names,
             "include_confidence": include_confidence,
@@ -980,6 +1049,7 @@ def articulatory_from_posteriors(
     feature_names: list[str] | None = None,
     renormalize_posteriors: bool = True,
     include_uncertainty: bool = True,
+    extractor_name: str = "speech.articulatory.from_posteriors",
 ) -> FeatureSeries:
     if posteriors.values.ndim != 2:
         raise ValueError(
@@ -1008,7 +1078,7 @@ def articulatory_from_posteriors(
         )
         out_names.extend(["posterior_entropy", "posterior_peak"])
     md = extractor_metadata(
-        "speech.articulatory.from_posteriors",
+        extractor_name,
         params={
             "feature_names": out_names,
             "renormalize_posteriors": renormalize_posteriors,
@@ -1025,4 +1095,36 @@ def articulatory_from_posteriors(
         coords={"feature": out_names},
         metadata=md,
         timebase=posteriors.timebase,
+    )
+
+
+def distinctive_from_posteriors(
+    posteriors: FeatureSeries,
+    *,
+    renormalize_posteriors: bool = True,
+    include_uncertainty: bool = True,
+) -> FeatureSeries:
+    """English distinctive-feature occupancy from phone posteriors."""
+
+    return articulatory_from_posteriors(
+        posteriors,
+        feature_names=list(DEFAULT_DISTINCTIVE_FEATURES),
+        renormalize_posteriors=renormalize_posteriors,
+        include_uncertainty=include_uncertainty,
+        extractor_name="speech.phonology.distinctive_from_posteriors",
+    )
+
+
+def distinctive_from_phoneme_events(
+    phonemes: EventSeries,
+    *,
+    include_confidence: bool = True,
+) -> FeatureSeries:
+    """English distinctive-feature vectors from phone events."""
+
+    return articulatory_from_phoneme_events(
+        phonemes,
+        feature_names=list(DEFAULT_DISTINCTIVE_FEATURES),
+        include_confidence=include_confidence,
+        extractor_name="speech.phonology.distinctive_from_phoneme_events",
     )

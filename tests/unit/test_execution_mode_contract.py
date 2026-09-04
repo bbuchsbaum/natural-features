@@ -13,6 +13,7 @@ from natural_features.features.speech.asr import whisper_transcribe
 from natural_features.features.speech.diarization import speaker_diarization
 from natural_features.features.speech.emotion import speech_emotion
 from natural_features.features.speech.phonology import ctc_phone_posteriors
+from natural_features.features.speech.ppgs import ppg_phone_posteriors
 from natural_features.features.speech.vad import neural_vad
 from natural_features.features.vision.neural import vision_clip_embeddings
 from natural_features.workflows import plan_features
@@ -94,6 +95,11 @@ def test_ctc_posteriors_reject_surrogate_execution() -> None:
         )
 
 
+def test_ppg_posteriors_reject_surrogate_execution() -> None:
+    with pytest.raises(ValueError, match="proxy and surrogate"):
+        ppg_phone_posteriors(_audio(), execution_mode="fallback")
+
+
 def test_ctc_posteriors_strict_mode_fails_loudly() -> None:
     with pytest.raises(RuntimeError):
         ctc_phone_posteriors(
@@ -132,7 +138,9 @@ def test_speech_emotion_strict_mode_uses_transformers_backend(monkeypatch) -> No
             assert local_files_only is True
             return cls()
 
-        def __call__(self, wav: np.ndarray, sampling_rate: int, return_tensors: str) -> dict[str, np.ndarray]:
+        def __call__(
+            self, wav: np.ndarray, sampling_rate: int, return_tensors: str
+        ) -> dict[str, np.ndarray]:
             assert wav.ndim == 1
             assert sampling_rate == 8000
             assert return_tensors == "pt"
@@ -148,7 +156,9 @@ def test_speech_emotion_strict_mode_uses_transformers_backend(monkeypatch) -> No
             return cls()
 
         def __call__(self, **_inputs: object) -> object:
-            return SimpleNamespace(logits=FakeTensor(np.asarray([[0.0, 2.0, -1.0]], dtype=np.float32)))
+            return SimpleNamespace(
+                logits=FakeTensor(np.asarray([[0.0, 2.0, -1.0]], dtype=np.float32))
+            )
 
     torch = types.ModuleType("torch")
     torch.no_grad = lambda: NoGrad()
@@ -170,7 +180,9 @@ def test_speech_emotion_strict_mode_uses_transformers_backend(monkeypatch) -> No
     assert out.metadata["fallback_used"] is False
     assert out.coords["feature"] == ["calm", "excited", "sad"]
     assert out.values.shape == (1, 3)
-    np.testing.assert_allclose(out.values.sum(axis=1), np.asarray([1.0], dtype=np.float32))
+    np.testing.assert_allclose(
+        out.values.sum(axis=1), np.asarray([1.0], dtype=np.float32)
+    )
 
 
 def test_neural_vad_strict_mode_uses_silero_backend(monkeypatch) -> None:  # noqa: ANN001
@@ -224,7 +236,9 @@ def test_neural_vad_strict_mode_uses_silero_backend(monkeypatch) -> None:  # noq
     assert np.logical_and(out.values >= 0.0, out.values <= 1.0).all()
 
 
-def test_speaker_diarization_strict_mode_uses_pyannote_backend(monkeypatch, tmp_path) -> None:  # noqa: ANN001
+def test_speaker_diarization_strict_mode_uses_pyannote_backend(
+    monkeypatch, tmp_path
+) -> None:  # noqa: ANN001
     class FakeTorchTensor:
         def __init__(self, array: np.ndarray):
             self.array = np.asarray(array, dtype=np.float32)
@@ -290,7 +304,9 @@ def test_speaker_diarization_strict_mode_uses_pyannote_backend(monkeypatch, tmp_
     assert out.track_id.tolist() == ["SPEAKER_00", "SPEAKER_01"]
     assert out.coords["feature"] == ["speaker_activity"]
     assert out.values.shape == (4, 2, 1)
-    np.testing.assert_array_equal(out.values[:, :, 0], np.asarray([[1, 0], [1, 0], [0, 1], [0, 1]]))
+    np.testing.assert_array_equal(
+        out.values[:, :, 0], np.asarray([[1, 0], [1, 0], [0, 1], [0, 1]])
+    )
 
 
 def test_multiscale_language_local_bow_is_an_explicit_provider() -> None:

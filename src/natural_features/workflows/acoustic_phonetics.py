@@ -15,6 +15,7 @@ from natural_features.features.speech.phonology import (
     articulatory_from_posteriors,
     ctc_phone_posteriors,
 )
+from natural_features.features.speech.ppgs import ppg_phone_posteriors
 from natural_features.fmri.resample import resample_feature_series
 
 
@@ -37,6 +38,13 @@ def extract_acoustic_phonetics(
     ctc_runtime: CTCModelRuntime | None = None,
     execution_mode: str | None = None,
     ctc_strict_dependency: bool | None = None,
+    ppgs_representation: str = "mel",
+    ppgs_checkpoint: str | None = None,
+    ppgs_gpu: int | None = None,
+    ppgs_local_files_only: bool = True,
+    ppgs_trim_edge_silence: bool = True,
+    ppgs_legacy_mode: bool = False,
+    ppgs_chunk_length: int | None = None,
     resolution_s: float | None = None,
     resample_method: str = "mean",
     include_uncertainty: bool = True,
@@ -51,7 +59,8 @@ def extract_acoustic_phonetics(
     hop_s:
         Base posterior hop in seconds (used by ``acoustic`` backend).
     posterior_backend:
-        ``"ctc"`` or the explicitly selected lightweight ``"acoustic"`` method.
+        ``"ctc"``, the lightweight ``"acoustic"`` surrogate, or ``"ppgs"``
+        (Churchwell et al. 2024 phonetic posteriorgrams).
     ctc_model:
         Hugging Face CTC model id for posterior extraction.
     ctc_local_files_only:
@@ -67,6 +76,21 @@ def extract_acoustic_phonetics(
         Optional preloaded CTC runtime. When omitted, a process-level cache is used.
     ctc_strict_dependency:
         If true, fail when transformers/torch/model is unavailable.
+    ppgs_representation:
+        ``ppgs`` frontend: ``"mel"`` (default checkpoint) or ``"w2v2fb"``.
+    ppgs_checkpoint:
+        Optional local ``ppgs`` checkpoint path.
+    ppgs_gpu:
+        CUDA index for ``ppgs``, or ``None`` for CPU.
+    ppgs_local_files_only:
+        If true, only resolve a cached ``ppgs`` checkpoint.
+    ppgs_trim_edge_silence:
+        Trim leading/trailing silence before ``ppgs`` inference and restore
+        those frames as the silence class (mitigation for ppgs issue #18).
+    ppgs_legacy_mode:
+        Use unchunked ``ppgs`` inference.
+    ppgs_chunk_length:
+        Optional temporary ``ppgs.CHUNK_LENGTH`` override.
     resolution_s:
         Optional output sampling resolution in seconds (for example 0.5, 1.0, 2.0).
         If omitted, features stay on the native posterior hop.
@@ -97,8 +121,20 @@ def extract_acoustic_phonetics(
         )
     elif posterior_backend == "acoustic":
         post = acoustic_phone_posteriors(stim, hop_s=hop_s)
+    elif posterior_backend == "ppgs":
+        post = ppg_phone_posteriors(
+            stim,
+            representation=ppgs_representation,
+            checkpoint=ppgs_checkpoint,
+            gpu=ppgs_gpu,
+            local_files_only=ppgs_local_files_only,
+            execution_mode=mode,
+            trim_edge_silence=ppgs_trim_edge_silence,
+            legacy_mode=ppgs_legacy_mode,
+            chunk_length=ppgs_chunk_length,
+        )
     else:
-        raise ValueError("posterior_backend must be one of {'ctc', 'acoustic'}")
+        raise ValueError("posterior_backend must be one of {'ctc', 'acoustic', 'ppgs'}")
     art = articulatory_from_posteriors(
         post,
         renormalize_posteriors=renormalize_posteriors,

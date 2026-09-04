@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from natural_features.core.stimulus import AudioStimulus
 from natural_features.core.timebase import ClockMap, TemporalContext
@@ -57,3 +58,8 @@ def test_acoustic_phonetics_preserves_input_clock_and_context() -> None:
     assert result.posteriorgrams.clock == "scan:run-01"
     assert result.articulatory.clock == "scan:run-01"
     assert result.posteriorgrams.temporal_context == context
+
+
+def test_extract_acoustic_phonetics_rejects_unknown_backend() -> None:
+    with pytest.raises(ValueError, match="posterior_backend"):
+        extract_acoustic_phonetics(_audio(), posterior_backend="charsiu")

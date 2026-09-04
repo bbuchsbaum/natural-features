@@ -823,6 +823,25 @@ extractors:
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
 
+  - name: speech.phonology.ppg_posteriors
+    impl: natural_features.features.speech.ppgs:ppg_phone_posteriors
+    version: "1.0"
+    label: PPGs phone posteriors
+    modalities: [audio]
+    requires: [ppgs, torch]
+    dependency_class: optional_python
+    cost_class: expensive
+    infer_bundles: false
+    tags: [speech, phonology, posterior, ppgs]
+    params:
+      representation: { type: str, default: mel, choices: [mel, w2v2fb] }
+      local_files_only: { type: bool, default: true }
+      execution_mode: { type: str, default: strict, choices: [strict] }
+      trim_edge_silence: { type: bool, default: true }
+      legacy_mode: { type: bool, default: false }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
   - name: speech.ctc
     impl: natural_features.features.speech.phonology:ctc_phone_posteriors
     version: "1.0"
@@ -1385,5 +1404,184 @@ extractors:
     bundles: [social_vision]
     tags: [affect, visual, social, alias]
     params: {}
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: features.residualize
+    impl: natural_features.features.preprocess:features_residualize
+    version: "1.0"
+    modalities: [features]
+    requires: [features]
+    infer_bundles: false
+    tags: [preprocess, features, residualize]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      method: { type: str, default: linear }
+      add_intercept: { type: bool, default: true }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: audio.envelope
+    impl: natural_features.features.audio.envelope:audio_envelope
+    version: "1.0"
+    label: Envelope and onset
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: cheap
+    infer_bundles: false
+    tags: [audio, envelope, ladder]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      win_s: { type: float, default: 0.025 }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: audio.modulation.spectrotemporal
+    impl: natural_features.features.audio.modulation:spectrotemporal_modulation
+    version: "1.0"
+    label: Spectrotemporal modulation energy
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: moderate
+    infer_bundles: false
+    tags: [audio, modulation, ladder]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      win_s: { type: float, default: 0.025 }
+      compressed: { type: bool, default: true }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: audio.formants
+    impl: natural_features.features.audio.phonetic:audio_formants
+    version: "1.0"
+    label: Formants
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: moderate
+    infer_bundles: false
+    tags: [audio, phonetic, formants, ladder]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      win_s: { type: float, default: 0.025 }
+      backend: { type: str, default: lpc_autocorr, choices: [lpc_autocorr, parselmouth] }
+      lpc_order: { type: int, default: 12 }
+      voicing_gate: { type: bool, default: true }
+      execution_mode: { type: str, default: strict, choices: [strict] }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: audio.harmonicity
+    impl: natural_features.features.audio.phonetic:audio_harmonicity
+    version: "1.0"
+    label: Harmonic-to-noise ratio
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: cheap
+    infer_bundles: false
+    tags: [audio, phonetic, hnr, ladder]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      win_s: { type: float, default: 0.04 }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: speech.phonetic.cues
+    impl: natural_features.features.speech.phonetic_cues:phonetic_cues
+    version: "1.0"
+    modalities: [audio, tokens]
+    requires: [speech]
+    infer_bundles: false
+    tags: [speech, phonetic, cues, ladder]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      win_s: { type: float, default: 0.025 }
+      burst_s: { type: float, default: 0.015 }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: speech.phones.mfa
+    impl: natural_features.features.speech.phones:mfa_phone_events
+    version: "1.0"
+    modalities: [audio, words]
+    requires: [alignment_mfa]
+    dependency_class: optional_python
+    cost_class: expensive
+    infer_bundles: false
+    tags: [speech, phones, mfa, ladder]
+    params:
+      execution_mode: { type: str, default: strict, choices: [strict] }
+    outputs:
+      default: { schema: EventSeries/v1, kind: phonemes }
+
+  - name: speech.phonology.distinctive_from_posteriors
+    impl: natural_features.features.speech.phonology:distinctive_from_posteriors
+    version: "1.0"
+    modalities: [features]
+    requires: [speech]
+    infer_bundles: false
+    tags: [speech, phonology, distinctive, ladder]
+    params:
+      renormalize_posteriors: { type: bool, default: true }
+      include_uncertainty: { type: bool, default: true }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: speech.phonology.distinctive_from_phoneme_events
+    impl: natural_features.features.speech.phonology:distinctive_from_phoneme_events
+    version: "1.0"
+    modalities: [tokens]
+    requires: [speech]
+    infer_bundles: false
+    tags: [speech, phonology, distinctive, ladder]
+    params:
+      include_confidence: { type: bool, default: true }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: speech.articulatory.sparc
+    impl: natural_features.features.speech.sparc:sparc_articulatory
+    version: "1.0"
+    modalities: [audio]
+    requires: [sparc, torch]
+    dependency_class: optional_python
+    cost_class: expensive
+    infer_bundles: false
+    tags: [speech, articulatory, sparc, ladder]
+    params:
+      model: { type: str, default: feature_extraction }
+      device: { type: str, default: cpu }
+      local_files_only: { type: bool, default: true }
+      include_aux: { type: bool, default: false }
+      execution_mode: { type: str, default: strict, choices: [strict] }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: speech.articulatory.gestures
+    impl: natural_features.features.speech.gestures:articulatory_gestures
+    version: "1.0"
+    modalities: [tokens]
+    requires: [speech]
+    infer_bundles: false
+    tags: [speech, articulatory, gestures, ladder]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      overlap_s: { type: float, default: 0.03 }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: speech.articulatory.dynamics
+    impl: natural_features.features.speech.gestures:articulatory_dynamics
+    version: "1.0"
+    modalities: [features]
+    requires: [speech]
+    infer_bundles: false
+    tags: [speech, articulatory, dynamics, ladder]
+    params:
+      speed_onset_quantile: { type: float, default: 0.7 }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }

@@ -10,6 +10,7 @@
 - `release_process.md`: release checklist and migration discipline.
 - `testing_strategy.md`: tiered test data and CI strategy.
 - `aligner_policy.md`: transcript/alignment backend policy.
+- `speech_ladder.md`: graded A1–M speech bands, honesty rules, and residualization.
 - `asr_alignment_contracts.md`: canonical metadata/QC/backend contracts for ASR/alignment.
 - `speech_align_cli.md`: one-pass ASR+alignment CLI usage and troubleshooting.
 - `mfa_runtime_setup.md`: MFA installation and `_kalpy` troubleshooting.

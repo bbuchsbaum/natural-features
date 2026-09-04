@@ -7,8 +7,11 @@ a hierarchical auditory-language analysis on one shared time grid:
 |---|---|---|---|
 | 1 | `acoustic.*` | Envelope, spectrum, cepstrum | `rms`, `mel`, `mfcc`, `spectral_stats`, `gammatone` |
 | 2 | `prosody.*` | F0, voicing, energy dynamics | `audio_pitch`, `prosody_features` |
-| 3 | `phonology.*` | Phone-class posteriors, articulatory features | `extract_acoustic_phonetics` (CTC or acoustic backend) |
+| 3 | `phonology.*` | Phone-class posteriors, articulatory features | `extract_acoustic_phonetics` (CTC, PPGs, or acoustic backend) |
 | 4 | `semantic.*` | Sentence/paragraph embeddings, lexical controls, optional surprisal | `extract_multiscale_language` |
+
+This vignette is a **shared-grid design-matrix recipe**. For native A1–M bands
+and residualization before encoding, see [`speech_ladder.md`](speech_ladder.md).
 
 Each level yields `FeatureSeries` objects on their native grids; rendering them
 onto one `build_tr_grid` grid makes them directly stackable into a single

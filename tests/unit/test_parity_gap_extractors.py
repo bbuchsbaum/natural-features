@@ -11,7 +11,10 @@ from natural_features.core.feature_types import EventSeries, FeatureSeries
 from natural_features.core.registry import Registry
 from natural_features.core.stimulus import AudioStimulus, VideoStimulus
 from natural_features.features.audio.cochlear import audio_gammatone
-from natural_features.features.audio.neural import audio_ast_embeddings, audio_clap_embeddings
+from natural_features.features.audio.neural import (
+    audio_ast_embeddings,
+    audio_clap_embeddings,
+)
 from natural_features.features.audio.prosody import audio_pitch, prosody_features
 from natural_features.features.language.discourse import discourse_features
 from natural_features.features.language.embed import lm_hidden_states
@@ -24,22 +27,41 @@ from natural_features.features.speech.vad import neural_vad, speech_vad
 from natural_features.features.vision.dct import vision_dct_features
 from natural_features.features.vision.motion import optical_flow
 from natural_features.features.vision.semantic import vision_semantic_views
-from natural_features.workflows._public_contract import load_r_public_feature_contracts, public_feature_ids
-from natural_features.workflows.extract_features import available_features, extract_features
+from natural_features.workflows._public_contract import (
+    load_r_public_feature_contracts,
+    public_feature_ids,
+)
+from natural_features.workflows.extract_features import (
+    available_features,
+    extract_features,
+)
 
 
 GAP_FEATURE_IDS = {
     "audio.ast",
     "audio.clap",
+    "audio.envelope",
+    "audio.formants",
     "audio.gammatone",
+    "audio.harmonicity",
+    "audio.modulation.spectrotemporal",
     "audio.pitch",
     "audio.prosody",
+    "features.residualize",
     "language.discourse",
     "language.syntax",
+    "speech.articulatory.dynamics",
+    "speech.articulatory.gestures",
+    "speech.articulatory.sparc",
     "speech.diarization",
     "speech.emotion",
     "speech.hubert",
     "speech.neural_vad",
+    "speech.phones.mfa",
+    "speech.phonetic.cues",
+    "speech.phonology.distinctive_from_phoneme_events",
+    "speech.phonology.distinctive_from_posteriors",
+    "speech.phonology.ppg_posteriors",
     "vision.dct",
     "vision.optical_flow",
     "vision.semantic_views",
@@ -146,7 +168,9 @@ def test_asr_and_vad_output_contracts_are_explicit() -> None:
     words_spec = registry.get("speech.words")
     whisper_spec = registry.get("speech.asr.whisper")
     chunked_spec = registry.get("speech.asr.whisper_chunked")
-    neural_vad_entry = {entry.feature_id: entry for entry in available_features(budget="all")}["speech.neural_vad"]
+    neural_vad_entry = {
+        entry.feature_id: entry for entry in available_features(budget="all")
+    }["speech.neural_vad"]
 
     for spec in [words_spec, whisper_spec, chunked_spec]:
         assert set(spec.outputs) == {"segments", "words", "qc"}
@@ -155,13 +179,26 @@ def test_asr_and_vad_output_contracts_are_explicit() -> None:
 
 
 def test_gap_feature_ids_are_discoverable_by_workflow_catalog() -> None:
-    assert {"audio.ast", "audio.clap", "audio.gammatone", "audio.pitch", "audio.prosody"} <= {
-        entry.feature_id for entry in available_features(modality="audio", budget="allow_python")
+    assert {
+        "audio.ast",
+        "audio.clap",
+        "audio.gammatone",
+        "audio.pitch",
+        "audio.prosody",
+    } <= {
+        entry.feature_id
+        for entry in available_features(modality="audio", budget="allow_python")
     }
     assert {"language.discourse", "language.syntax"} <= {
-        entry.feature_id for entry in available_features(modality="words", budget="allow_python")
+        entry.feature_id
+        for entry in available_features(modality="words", budget="allow_python")
     }
-    assert {"speech.diarization", "speech.emotion", "speech.hubert", "speech.neural_vad"} <= {
+    assert {
+        "speech.diarization",
+        "speech.emotion",
+        "speech.hubert",
+        "speech.neural_vad",
+    } <= {
         entry.feature_id for entry in available_features(modality="audio", budget="all")
     }
     assert {"vision.dct", "vision.optical_flow", "vision.semantic_views"} <= {

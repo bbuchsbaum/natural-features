@@ -11,12 +11,18 @@ PINNED_BACKEND_VERSIONS: dict[str, str] = {
     "faster-whisper": "1.2.1",
     "montreal-forced-aligner": "3.3.9",
     "gentle": "0.1",
+    "ppgs": "0.0.9",
+    "speech-articulatory-coding": "0.1.0",
+    "praat-parselmouth": "0.4.5",
 }
 
 PINNED_MODEL_IDS: dict[str, str] = {
     "asr_default": "small",
     "speech_ssl_default": "microsoft/wavlm-base-plus",
     "language_embed_default": "bert-base-uncased",
+    "ppgs_mel": "CameronChurchwell/ppgs:mel-800k.pt",
+    "ppgs_w2v2fb": "CameronChurchwell/ppgs:w2v2fb-425k.pt",
+    "sparc_default": "feature_extraction",
 }
 
 
