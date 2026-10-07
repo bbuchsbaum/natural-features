@@ -1,0 +1,37 @@
+---
+title: "Effective context for CLAP and AST"
+sidebar: cookbook
+---
+
+CLAP and AST return one native embedding per supplied audio segment. Their
+processors have finite input capacities. Long waveforms now raise by default
+instead of silently becoming a random CLAP crop or an AST prefix.
+
+Provide explicit segments when every interval matters. To intentionally retain
+one portion of a longer recording, choose a deterministic policy:
+
+```python
+from natural_features.features.audio.neural import audio_clap_embeddings
+
+# Audio must already have the model's expected sample rate (48 kHz for CLAP).
+features = audio_clap_embeddings(audio, context_policy="center_crop", padding="repeatpad")
+print(features.time_bounds_s)  # Actual retained source interval
+print(features.metadata["computation_context"])
+```
+
+`context_policy="error"` is the default; `"start_crop"` and `"center_crop"`
+select a sample-aligned native-capacity window before processor normalization.
+Returned timestamps and support refer to that window on the original clock.
+The source-computation metadata retains the supplied interval, exact crop
+sample indices, actual dependency interval, model capacity and padding policy.
+
+CLAP capacity is read from its processor (commonly 10 seconds). Its explicit
+padding options are `repeatpad`, `repeat` and `pad`; shorter inputs preserve
+their original source support even when samples are repeated or zeros added.
+AST capacity is derived from its native maximum spectrogram frame count and
+25 ms / 10 ms frame geometry (commonly 10.255 seconds for 1024 frames). AST
+zero-padding is recorded as `zero_fbank`. Unknown capacity is an error.
+
+These policies do not provide long-recording pooling. Create and retain
+separate segment embeddings, then apply any averaging as an explicit
+downstream transform. Neither extractor resamples audio implicitly.
