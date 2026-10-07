@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Native music feature extensions: layer-resolved MERT hidden states and Beat
+  This beat/downbeat activations, with optional `mert` and `beats` dependencies,
+  content-identified assets, explicit sample-rate refusal, and source-clock
+  computation context separate from frame support.
+- Estimated major/minor chord-template profiles, centered or past-only tonal
+  novelty, and ordered bounded-history recurrence. All three return companion
+  validity diagnostics; silence and missing history are not measured zeros.
+  Legacy feature resampling refuses these context-bearing outputs because it
+  cannot propagate their validity and computation dependencies.
 - Speech representational ladder extractors and `extract_speech_ladder`:
   envelope/onset (A1), STFT rate/scale modulation (A2), LPC formants and HNR
   (A3), MFA phone-tier events, English distinctive features, SPARC template

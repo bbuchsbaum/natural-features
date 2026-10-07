@@ -42,6 +42,11 @@ def resample_feature_series(
     duration_s: float | None = None,
     time_grid_s: np.ndarray | None = None,
 ) -> FeatureSeries:
+    if "computation_context" in feature.metadata:
+        raise ValueError(
+            "music features require context-aware and validity-aware aggregation; "
+            "pass native features and their diagnostics to the downstream consumer"
+        )
     if feature.values.ndim != 2:
         raise ValueError("resample_feature_series currently supports 2-D FeatureSeries only")
     if tr_s <= 0:

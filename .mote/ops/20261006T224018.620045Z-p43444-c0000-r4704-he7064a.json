@@ -1,0 +1,1 @@
+{"actor":"codex-music-plan","entity":"bd-01M49FY4QYQK4Y91Y6ZTZMK2YD","kind":"reserve_open","mode":"exclusive","op":"20261006T224018.620045Z-p43444-c0000-r4704-he7064a","paths":["tests/integration/test_music_feature_workflow.py"],"reservation_id":"rv-01M49NZXNW2CYJ9TGP89JAFMTV","ts":"2026-10-06T22:40:18.620045Z","ttl_s":3600,"v":2}

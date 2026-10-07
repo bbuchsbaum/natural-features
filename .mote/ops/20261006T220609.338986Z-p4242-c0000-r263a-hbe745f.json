@@ -1,0 +1,1 @@
+{"actor":"codex-mert-worker","entity":"bd-01M49FY490NHRTXJZMSK67R0PV","kind":"reserve_open","mode":"exclusive","op":"20261006T220609.338986Z-p4242-c0000-r263a-hbe745f","paths":["tests/external/test_real_mert_backend.py"],"reservation_id":"rv-01M49M1CDTPFF13VYSE8NKHSAZ","ts":"2026-10-06T22:06:09.338986Z","ttl_s":3600,"v":2}

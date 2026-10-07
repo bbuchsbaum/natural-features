@@ -1,0 +1,1 @@
+{"actor":"codex-music-structure","entity":"bd-01M49FY4JYZ4ET2TPN0XBE3NZK","kind":"reserve_open","mode":"exclusive","op":"20261006T210936.697642Z-p62443-c0000-rb557-h37ac13","paths":["src/natural_features/features/audio/music_structure.py","tests/unit/test_music_structure.py"],"reservation_id":"rv-01M49GSV9SNWJ7W14VPS4QVS9K","ts":"2026-10-06T21:09:36.697642Z","ttl_s":3600,"v":2}

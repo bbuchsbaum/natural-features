@@ -1107,6 +1107,107 @@ extractors:
         schema: FeatureSeries/v1
         kind: features
 
+  - name: audio.music.mert
+    impl: natural_features.features.audio.mert:audio_music_mert
+    version: "1.0"
+    label: Native MERT music hidden states
+    modalities: [audio]
+    requires: [audio, torch, transformers]
+    dependency_class: optional_python
+    cost_class: expensive
+    infer_bundles: false
+    tags: [audio, music, neural, layers]
+    params:
+      model: { type: str, default: m-a-p/MERT-v1-95M }
+      revision: { type: str, default: null, nullable: true }
+      layers: { type: "list[int]", default: null, nullable: true }
+      channel_policy: { type: str, default: mean, choices: [mean, mono] }
+      local_files_only: { type: bool, default: true }
+      trust_remote_code: { type: bool, default: false }
+      device: { type: str, default: cpu }
+      execution_mode: { type: str, default: strict, choices: [strict] }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: audio.music.beat_activations
+    impl: natural_features.features.audio.beat:music_beat_activations
+    version: "1.0"
+    label: Beat This beat and downbeat activation scores
+    modalities: [audio]
+    requires: [audio, torch, beat_this]
+    dependency_class: optional_python
+    cost_class: expensive
+    infer_bundles: false
+    tags: [audio, music, rhythm, neural]
+    params:
+      checkpoint: { type: str, default: final0 }
+      cache_dir: { type: str, default: null, nullable: true }
+      checkpoint_sha256: { type: str, default: null, nullable: true }
+      local_files_only: { type: bool, default: true }
+      representation: { type: str, default: activation, choices: [activation, logit] }
+      device: { type: str, default: cpu }
+      channel_policy: { type: str, default: mean, choices: [mean, mono] }
+      execution_mode: { type: str, default: strict, choices: [strict] }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+
+  - name: audio.music.chord_profiles
+    impl: natural_features.features.audio.music_structure:music_chord_profiles
+    version: "1.0"
+    label: Estimated triad-template profiles and ambiguity
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: moderate
+    tags: [audio, music, harmony, estimated]
+    params:
+      hop_s: { type: float, default: 0.1 }
+      win_s: { type: float, default: 0.25 }
+      activity_rms: { type: float, default: 0.000001 }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+      diagnostics: { schema: FeatureSeries/v1, kind: features }
+
+  - name: audio.music.tonal_novelty
+    impl: natural_features.features.audio.music_structure:music_tonal_novelty
+    version: "1.0"
+    label: Tonal novelty between adjacent chroma windows
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: moderate
+    tags: [audio, music, tonal, novelty]
+    params:
+      hop_s: { type: float, default: 0.1 }
+      win_s: { type: float, default: 0.25 }
+      window_s: { type: float, default: 1.0 }
+      mode: { type: str, default: centered, choices: [centered, past_only] }
+      activity_rms: { type: float, default: 0.000001 }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+      diagnostics: { schema: FeatureSeries/v1, kind: features }
+
+  - name: audio.music.sequence_recurrence
+    impl: natural_features.features.audio.music_structure:music_sequence_recurrence
+    version: "1.0"
+    label: Ordered motif recurrence in bounded past history
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: moderate
+    tags: [audio, music, recurrence, sequence]
+    params:
+      hop_s: { type: float, default: 0.1 }
+      win_s: { type: float, default: 0.25 }
+      embedding_frames: { type: int, default: 4 }
+      delay_frames: { type: int, default: 1 }
+      history_s: { type: float, default: 30.0 }
+      exclusion_s: { type: float, default: 0.0 }
+      activity_rms: { type: float, default: 0.000001 }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+      diagnostics: { schema: FeatureSeries/v1, kind: features }
+
   - name: audio.music.chroma
     impl: natural_features.features.audio.music:music_chroma
     version: "1.0"

@@ -1,6 +1,6 @@
 ---
 title: "Build a music feature hierarchy"
-subtitle: "Chroma, key, tempo and spectrotemporal modulation over a ladder of integration windows."
+subtitle: "Acoustics, learned representations, and musical structure on their native time grids."
 sidebar: cookbook
 ---
 
@@ -105,4 +105,135 @@ convolution, TR sampling and design-matrix choices belong downstream — see
 [Convolve RMS with an SPMG1 HRF](rms-hrf-spmg1.qmd). Because the window extractors
 already integrate over `window_s`, resample them by taking the window *nearest* each
 analysis timepoint rather than by averaging adjacent rows, which would widen the
-integration window past the value you asked for.
+integration window past the value you asked for. For the context-bearing features
+below, use the native payload and make aggregation validity-aware; the legacy
+feature resampler refuses these outputs.
+
+## Chord profiles, novelty and ordered recurrence
+
+These three extractors use NumPy and return a pair of native `FeatureSeries`
+objects: `default` holds scores and `diagnostics` holds validity and method-specific
+diagnostics. Keep the pair together. A score in a row whose `valid` column is zero
+is a placeholder, not a measured zero. The pair shares an `output_pair_id` and
+identical row coordinates, including after storage and interval alignment.
+
+```{python}
+from natural_features.features.audio import (
+    music_chord_profiles, music_tonal_novelty, music_sequence_recurrence,
+)
+
+chords = music_chord_profiles(stim)
+novelty = music_tonal_novelty(stim, window_s=1.0, mode="past_only")
+recurrence = music_sequence_recurrence(
+    stim, embedding_frames=4, delay_frames=2, history_s=8.0,
+)
+for name, pair in (("chords", chords), ("novelty", novelty), ("recurrence", recurrence)):
+    columns = pair["diagnostics"].coords["feature"]
+    valid = pair["diagnostics"].values[:, columns.index("valid")] == 1
+    print(name, pair["default"].values.shape, "valid rows:", int(valid.sum()))
+```
+
+Chord profiles compare unit-normalized chroma with 24 major/minor triad templates.
+They omit sevenths, inversions and a no-chord class, and are estimates rather than
+validated annotations. Score entropy normalizes the nonnegative template scores
+to sum to one; it is not posterior uncertainty. An ideal major triad still overlaps
+other templates and therefore need not have zero entropy. Activity uses unwindowed
+waveform RMS greater than `activity_rms` (default `1e-6`, in input amplitude units),
+plus nonzero chroma. Activity does not establish tonal reliability.
+
+Novelty is cosine distance between the means of two adjacent blocks of individually
+normalized chroma frames. `window_s` specifies each block; both must be fully
+supported and active. `centered` places the timestamp between the blocks;
+`past_only` timestamps the end of the available waveform support and uses two
+trailing blocks. Leading warmup rows are invalid; centered mode also has invalid
+trailing rows. Use separate calls for separate temporal scales.
+
+Recurrence compares ordered stacks of `embedding_frames` chroma vectors, separated
+by `delay_frames` hops. Reordering pitch classes changes a stack even if its pitch
+inventory is unchanged. Each historical candidate must fit entirely inside
+`history_s` and must not overlap the query's **waveform support**. `exclusion_s`
+can impose a larger separation. The outputs contain best cosine similarity and
+lag; diagnostics report candidate count, oldest candidate lag and query activity.
+Ties choose the smallest lag. Missing history has false validity.
+
+All framing uses integer sample positions and reports the realized hop. Short
+inputs with no complete frame yield empty series. Computation-context intervals
+enclose all inputs affecting a result, including the searched recurrence history.
+They remain explicitly tagged to the source clock after output clock conversion.
+
+## Optional learned music representations
+
+Install only the backends you need:
+
+```bash
+pip install 'natural-features[mert,beats]' scipy
+```
+
+MERT requires audio at the checkpoint's declared rate (24 kHz for MERT-v1-95M).
+Beat This requires 22.05 kHz. Neither extractor resamples. For example, an explicit
+polyphase conversion can preserve the stimulus clock and offset:
+
+```{python}
+from math import gcd
+from scipy.signal import resample_poly
+
+def at_rate(audio, target):
+    factor = gcd(audio.sr_hz, target)
+    samples = resample_poly(audio.samples, target // factor,
+                            audio.sr_hz // factor, axis=0)
+    return AudioStimulus.from_array(
+        samples.astype(np.float32), target, start_offset_s=audio.start_offset_s,
+        clock=audio.clock, temporal_context=audio.temporal_context,
+    )
+
+music_24k = at_rate(stim, 24000)
+```
+
+Prepare assets explicitly, outside extraction. For MERT, download a pinned snapshot
+and review its custom Python source before opting in. Custom model and processor
+code must reside inside that snapshot; cross-repository `auto_map` references are
+refused because their source is not covered by its content identity. Use a standalone
+checkpoint with flat `config.json` and `preprocessor_config.json` files. Versioned
+`configuration_files`, nested processors, fallback `processor_config.json`, and
+PEFT `adapter_config.json` layouts are unsupported.
+These model calls are not executed during the documentation build:
+
+```python
+from huggingface_hub import snapshot_download
+from natural_features.features.audio import audio_music_mert, music_beat_activations
+
+revision = "12af15fef9d0ac838c3f475bfbbf26d2060dd4f5"
+local_model = snapshot_download(
+    "m-a-p/MERT-v1-95M", revision=revision,
+    allow_patterns=["config.json", "preprocessor_config.json",
+                    "configuration_MERT.py", "modeling_MERT.py", "pytorch_model.bin"],
+)
+mert = audio_music_mert(
+    music_24k, model=local_model, layers=[0, 6, 12], trust_remote_code=True,
+)
+beats = music_beat_activations(stim, checkpoint="/path/to/beat-this-final0.ckpt")
+```
+
+The [MERT model card](https://huggingface.co/m-a-p/MERT-v1-95M) documents the
+candidate checkpoint and its license. MERT output has separate time, layer and
+unit axes, with no dimensionality reduction. `layers=None` selects all layers;
+layer zero is the backend's initial hidden state. Frame stride, centers and counts
+come from convolution configuration. The 95M model has a nominal 75 Hz stride,
+but a one-second unpadded input need not produce exactly 75 rows. Whole-input
+normalization and bidirectional context apply even when convolution support is
+short. Selecting a different input window can therefore change shared-frame values.
+
+[Beat This](https://github.com/CPJKU/beat_this) provides downloadable checkpoints.
+Pass an existing local file, or a cached `final0`/`small0` model name. A cache miss
+fails offline. Explicit downloads through `local_files_only=False` also require
+`checkpoint_sha256` from your trusted asset manifest. Scores are sigmoid-transformed
+frame logits at 50 Hz; `representation="logit"` returns logits. Neither form is
+empirically calibrated confidence. The adapter records reflected frontend support
+and bidirectional chunk context, including overlap and final-chunk cropping.
+
+Both adapters use evaluation mode, record content-based asset identity and runtime
+versions, and raise typed dependency, load or inference errors. Missing backends
+never produce a tempo heuristic or a substitute embedding. Model predictions and
+structure descriptors still require evaluation on suitable held-out genres and
+excerpt lengths before neural interpretation; synthetic tests and backend parity
+establish implementation behavior only.

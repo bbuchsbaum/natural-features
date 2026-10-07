@@ -742,6 +742,9 @@ def _collect_features(
             out[row.feature_id] = next(iter(outputs.values()))
         elif "default" in outputs:
             out[row.feature_id] = outputs["default"]
+            for key, value in outputs.items():
+                if key != "default" and isinstance(value, (FeatureSeries, EventSeries, TrackSeries)):
+                    out[f"{row.feature_id}.{key}"] = value
         else:
             out[row.feature_id] = outputs
             for key, value in outputs.items():

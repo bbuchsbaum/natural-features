@@ -34,6 +34,30 @@ and uses `time_bounds_s` for irregular intervals.
 
 ## Clock mappings
 
+Music extractors additionally record `metadata.computation_context`
+(`MusicComputationContext/v1`). This describes the audio used to compute a
+representation, separately from the interval represented by a row. Its
+`clock`, `input_bounds_s`, and `dependency_bounds_s` remain on the explicitly
+named **source clock**, including after `in_clock` converts output coordinates.
+One dependency interval applies to all rows; otherwise there is one per row.
+Intervals enclose dependencies and need not imply that every enclosed sample
+contributes. Model normalization and bidirectional attention can use the entire
+supplied clip even when a frame has narrow convolution support.
+
+The new music descriptors use actual integer sample positions. Waveform support
+is half-open: samples `a` through `b - 1` have support `[a / sr, b / sr)` plus
+the stimulus offset. MERT timestamps use convolution sample-index centers;
+past-only descriptors are timestamped at the end of their waveform support.
+The latter convention allows future-prefix tests to establish causality.
+
+Descriptor score placeholders with false validity are missing measurements,
+not measured zeros. Keep their companion diagnostics attached by native row
+index. Native interval alignment preserves this association. The legacy
+`fmri.resample_feature_series` refuses music computation-context metadata:
+numeric interpolation would lose dependency and validity semantics. Downstream
+aggregation must explicitly handle both. Dense feature storage supports NPZ
+and Zarr; the Parquet writer is for event series.
+
 `ClockMap(source, target, scale, offset_s)` always means:
 
 $$
