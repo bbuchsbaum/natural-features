@@ -7,7 +7,10 @@ from types import SimpleNamespace
 import numpy as np
 
 from natural_features.core.stimulus import AudioStimulus
-from natural_features.features.audio.neural import audio_ast_embeddings, audio_clap_embeddings
+from natural_features.features.audio.neural import (
+    audio_ast_embeddings,
+    audio_clap_embeddings,
+)
 
 
 class _Tensor:
@@ -44,6 +47,9 @@ def _install_audio_models(monkeypatch) -> dict[str, int]:  # noqa: ANN001
     calls = {"clap": 0, "ast": 0}
 
     class Processor:
+        nb_max_samples = 80
+        max_length = 1024
+
         @classmethod
         def from_pretrained(cls, *_args: object, **_kwargs: object) -> "Processor":
             return cls()
@@ -51,7 +57,9 @@ def _install_audio_models(monkeypatch) -> dict[str, int]:  # noqa: ANN001
         def __call__(self, *args: object, **kwargs: object) -> dict[str, _Tensor]:
             # transformers renamed this keyword from `audios` to `audio` in v5 and the
             # extractor now tries the new name first, so accept either.
-            waveform = kwargs.get("audio", kwargs.get("audios", args[0] if args else None))
+            waveform = kwargs.get(
+                "audio", kwargs.get("audios", args[0] if args else None)
+            )
             assert np.asarray(waveform).shape == (8,)
             assert kwargs["sampling_rate"] == 8
             return {"input_values": _Tensor([[1.0]])}
@@ -61,6 +69,9 @@ def _install_audio_models(monkeypatch) -> dict[str, int]:  # noqa: ANN001
         def from_pretrained(cls, *_args: object, **_kwargs: object) -> "Clap":
             return cls()
 
+        def eval(self):
+            return self
+
         def get_audio_features(self, **_inputs: object) -> _Tensor:
             calls["clap"] += 1
             return _Tensor([[1.0, 2.0, 3.0]])
@@ -69,6 +80,9 @@ def _install_audio_models(monkeypatch) -> dict[str, int]:  # noqa: ANN001
         @classmethod
         def from_pretrained(cls, *_args: object, **_kwargs: object) -> "AST":
             return cls()
+
+        def eval(self):
+            return self
 
         def __call__(self, **_inputs: object) -> object:
             calls["ast"] += 1

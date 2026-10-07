@@ -1,0 +1,1 @@
+{"actor":"codex-audio-context","entity":"bd-01M4BSXGD2N3QWN38DG2ECFPWS","kind":"create","op":"20261007T182722.658515Z-p28109-c0000-r9282-h26837f","set":{"priority":1,"status":"open","title":"Fix CLAP/AST effective source context and deterministic explicit cropping (GitHub #12)"},"ts":"2026-10-07T18:27:22.658515Z","v":1}

@@ -1,0 +1,1 @@
+{"actor":"codex-audio-context","entity":"bd-01M4BSXGD2N3QWN38DG2ECFPWS","kind":"note","note_kind":"progress","op":"20261007T182819.777796Z-p30188-c0003-r9868-h7f654c","text":"Implement GitHub #12: reject hidden truncation, deterministic explicit crop policies, source support and padding provenance; preserve native short-input embeddings.","ts":"2026-10-07T18:28:19.777796Z","v":1}

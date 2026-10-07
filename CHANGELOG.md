@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- CLAP and AST now reject over-capacity inputs by default. Explicit start/center
+  crops are deterministic and return actual source support plus clock-tagged
+  computation context. CLAP padding is explicit; native short-input embeddings
+  remain unchanged. Long-recording callers must segment or choose a crop policy.
+  This replaces silent random CLAP cropping and AST prefix truncation (#12).
+
 ### Added
 - Native music feature extensions: layer-resolved MERT hidden states and Beat
   This beat/downbeat activations, with optional `mert` and `beats` dependencies,
