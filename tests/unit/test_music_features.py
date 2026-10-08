@@ -12,13 +12,17 @@ import numpy as np
 import pytest
 
 from natural_features.core.stimulus import AudioStimulus
+from natural_features.core.registry import Registry
 from natural_features.features.audio.modulation import (
     audio_modulation_spectrum,
     log_cochleagram,
     modulation_power_spectrum,
 )
+import natural_features.features.audio.music as music_module
+from natural_features.flow.cache import cache_fingerprint
 from natural_features.features.audio.music import (
     PITCH_CLASSES,
+    _window_relative_late_phase_onset_energy_fraction,
     music_chroma,
     music_onset_strength,
     music_rhythm,
@@ -132,6 +136,96 @@ def test_rhythm_pulse_clarity_is_higher_for_a_beat_than_for_noise() -> None:
     idx = list(beat.coords["feature"]).index("pulse_clarity")
     noisy = music_rhythm(noise, window_s=8.0, hop_s=4.0)
     assert beat.values[:, idx].mean() > noisy.values[:, idx].mean()
+
+
+def test_rhythm_late_phase_fraction_is_window_origin_relative() -> None:
+    period = 50
+    onsets = np.zeros(1000)
+    onsets[::period] = 1.0
+    half_period_shifted = np.zeros(1000)
+    half_period_shifted[period // 2 :: period] = 1.0
+
+    assert _window_relative_late_phase_onset_energy_fraction(onsets, period) == 0.0
+    assert _window_relative_late_phase_onset_energy_fraction(half_period_shifted, period) == 1.0
+
+
+def test_rhythm_renames_syncopation_and_marks_undefined_periods() -> None:
+    fs = music_rhythm(_click_train(120.0, dur_s=16.0), window_s=8.0, hop_s=4.0)
+    names = list(fs.coords["feature"])
+    assert "late_phase_onset_energy_fraction" in names
+    assert "syncopation" not in names
+    assert fs.metadata["deprecated_feature_aliases"] == {
+        "syncopation": "late_phase_onset_energy_fraction"
+    }
+
+    silence = AudioStimulus.from_array(np.zeros(SR * 16, dtype=np.float32), sr_hz=SR)
+    silent = music_rhythm(silence, window_s=8.0, hop_s=4.0)
+    silent_names = list(silent.coords["feature"])
+    assert np.all(np.isfinite(silent.values[:, silent_names.index("tempo_bpm")]))
+    assert np.all(np.isfinite(silent.values[:, silent_names.index("log2_tempo")]))
+    assert np.all(
+        np.isnan(silent.values[:, silent_names.index("late_phase_onset_energy_fraction")])
+    )
+    assert silent.metadata["code_version"] == "music-rhythm-v2"
+    assert silent.metadata["descriptor_schema_version"] == "2.0"
+    assert Registry.with_builtin_specs().get("audio.music.rhythm").version == "2.0"
+    cache_inputs = {
+        "extractor_name": "audio.music.rhythm",
+        "params": {"window_s": 8.0, "hop_s": 4.0},
+        "model_revision": "none",
+        "upstream_ids": [],
+    }
+    assert cache_fingerprint(**cache_inputs, code_version="dev") != cache_fingerprint(
+        **cache_inputs, code_version=silent.metadata["code_version"]
+    )
+
+
+def test_rhythm_marks_low_flat_activity_as_an_undefined_beat(monkeypatch) -> None:
+    low_flat_envelope = np.full(1000, 1e-9, dtype=np.float32)
+    monkeypatch.setattr(
+        music_module,
+        "_onset_envelope",
+        lambda *_args, **_kwargs: (low_flat_envelope, np.arange(low_flat_envelope.size) / 100),
+    )
+    fs = music_rhythm(
+        AudioStimulus.from_array(np.zeros(SR, dtype=np.float32), sr_hz=SR),
+        window_s=8.0,
+        hop_s=1.0,
+    )
+    names = list(fs.coords["feature"])
+    assert np.all(np.isfinite(fs.values[:, names.index("tempo_bpm")]))
+    assert np.all(np.isfinite(fs.values[:, names.index("log2_tempo")]))
+    assert np.all(
+        np.isnan(fs.values[:, names.index("late_phase_onset_energy_fraction")])
+    )
+
+
+def test_rhythm_phase_fraction_uses_public_extractor_with_mocked_onsets(monkeypatch) -> None:
+    period = 50
+    onset_envelope = np.zeros(800, dtype=np.float32)
+    onset_envelope[::period] = 1.0
+    monkeypatch.setattr(
+        music_module,
+        "_onset_envelope",
+        lambda *_args, **_kwargs: (onset_envelope, np.arange(onset_envelope.size) / 100),
+    )
+    stimulus = AudioStimulus.from_array(np.zeros(SR, dtype=np.float32), sr_hz=SR)
+
+    def late_fraction() -> float:
+        fs = music_rhythm(stimulus, window_s=8.0, hop_s=1.0)
+        return float(
+            fs.values[0, list(fs.coords["feature"]).index("late_phase_onset_energy_fraction")]
+        )
+
+    base = onset_envelope.copy()
+    for shift in range(period):
+        onset_envelope[:] = np.roll(base, shift)
+        assert late_fraction() == float(shift >= period // 2)
+
+    onset_envelope[:] = 0.0
+    onset_envelope[::period] = 2.0
+    onset_envelope[period // 2 :: period] = 1.0
+    assert late_fraction() == pytest.approx(1 / 3)
 
 
 def test_tempogram_peaks_at_the_true_tempo() -> None:

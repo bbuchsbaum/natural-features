@@ -249,6 +249,23 @@ def _autocorr_tempogram(env: np.ndarray, lags: np.ndarray) -> np.ndarray:
     return out
 
 
+def _window_relative_late_phase_onset_energy_fraction(
+    env: np.ndarray, period: int
+) -> float:
+    """Return onset energy in the latter half of an origin-anchored period.
+
+    The phase origin is the first frame of the analysis window. This is a
+    deterministic window-relative descriptor, not a beat-aligned measure. A
+    silent window or an unavailable period has no defined fraction.
+    """
+
+    total_energy = float(env.sum())
+    if period < 2 or total_energy <= 1e-12:
+        return float("nan")
+    phase = np.arange(env.shape[0]) % period
+    return float(env[phase >= period / 2.0].sum() / total_energy)
+
+
 # --------------------------------------------------------------------------------------
 # frame-rate extractors
 # --------------------------------------------------------------------------------------
@@ -526,14 +543,22 @@ def music_rhythm(
     """Return scalar rhythm descriptors per analysis window.
 
     Columns are ``tempo_bpm``, ``log2_tempo``, ``pulse_clarity``, ``beat_strength``,
-    ``onset_rate``, ``ioi_median``, ``ioi_cv`` and ``syncopation``.
+    ``onset_rate``, ``ioi_median``, ``ioi_cv`` and
+    ``late_phase_onset_energy_fraction``.
 
     ``tempo_bpm`` is the autocorrelation peak under a log-normal prior centred on
     ``prior_bpm``; without the prior the estimate flips between a tempo and its double
     or half, which is a well-known octave ambiguity rather than a real difference.
-    ``syncopation`` is the share of onset energy falling in the second half of each
-    estimated beat period, so a value near 0.5 means energy is spread evenly across the
-    beat and low values mean it is locked to the beat onset.
+    ``log2_tempo`` is the base-two logarithm of that same estimate. The final column
+    is the share of onset energy in the latter half of the autocorrelation-estimated
+    period, with phase zero fixed at the first onset-envelope frame of each analysis
+    window. It therefore changes when the same periodic material is shifted relative
+    to the window origin. It is not beat-aligned and has not been validated as a
+    musical syncopation measure. It is undefined (``NaN``) when the window has no
+    autocorrelation-supported period or no onset energy. The other descriptors retain
+    their legacy arithmetic, including tempo and ``log2_tempo``, in these windows.
+    The old ``syncopation`` name is retained only as a deprecated metadata alias for
+    reading legacy outputs.
     """
 
     if window_s <= 0 or hop_s <= 0:
@@ -563,7 +588,7 @@ def music_rhythm(
         "onset_rate",
         "ioi_median",
         "ioi_cv",
-        "syncopation",
+        "late_phase_onset_energy_fraction",
     ]
     out = np.zeros((starts.shape[0], len(names)), dtype=np.float64)
 
@@ -572,6 +597,7 @@ def music_rhythm(
         ac = _autocorr_tempogram(seg, lags)
         scored = ac * prior
         j = int(np.argmax(scored))
+        has_period = bool(scored[j] > 1e-12)
         tempo = float(lag_bpm[j])
         period = int(lags[j])
 
@@ -594,13 +620,11 @@ def music_rhythm(
             ioi_cv = 0.0
             beat_strength = 0.0
 
-        # Syncopation: energy in the back half of the beat period, as a share of total.
-        if period >= 2 and seg.sum() > 1e-12:
-            phase = np.arange(seg.shape[0]) % period
-            late = phase >= (period / 2.0)
-            syncopation = float(seg[late].sum() / seg.sum())
-        else:
-            syncopation = 0.0
+        late_phase_energy = (
+            _window_relative_late_phase_onset_energy_fraction(seg, period)
+            if has_period
+            else float("nan")
+        )
 
         out[i] = [
             tempo,
@@ -610,7 +634,7 @@ def music_rhythm(
             onset_rate,
             ioi_median,
             ioi_cv,
-            syncopation,
+            late_phase_energy,
         ]
 
     times = (starts / frame_rate) + (window_s / 2.0) + stimulus.start_offset_s
@@ -627,7 +651,19 @@ def music_rhythm(
             "prior_bpm": prior_bpm,
             "prior_octaves": prior_octaves,
         },
-        extra={"backend": "onset_autocorrelation"},
+        code_version="music-rhythm-v2",
+        extra={
+            "backend": "onset_autocorrelation",
+            "descriptor_schema_version": "2.0",
+            "deprecated_feature_aliases": {
+                "syncopation": "late_phase_onset_energy_fraction",
+            },
+            "undefined_feature_values": {
+                "late_phase_onset_energy_fraction": (
+                    "NaN without an autocorrelation-supported period or onset energy"
+                ),
+            },
+        },
     )
     return FeatureSeries(
         values=out.astype(np.float32),

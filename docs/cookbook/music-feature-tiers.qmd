@@ -82,6 +82,26 @@ profile = [c for c in ton.coords["feature"] if c.startswith("key_r_")]
 print(len(profile), "key-profile columns, e.g.", profile[:4])
 ```
 
+## Rhythm descriptor limits
+
+`music_rhythm` estimates `tempo_bpm` from an onset-envelope autocorrelation and
+`log2_tempo` is the logarithm of that same estimate. They are two coordinate systems
+for one autocorrelation-selected period, not independent rhythm-family geometry; do
+not enter both as separate interpretable RSA features.
+
+Its `late_phase_onset_energy_fraction` descriptor is only the fraction of onset energy
+in the latter half of that estimated period, anchored to the start of each analysis
+window. Shifting otherwise identical periodic material by half a period relative to the
+window changes the descriptor from 0 to 1. It is not beat-aligned and is not a
+validated musical syncopation measure.
+
+Primary interpretable RSA analyses should exclude this descriptor. A reproduction or
+sensitivity analysis that uses the former `syncopation` column should label it
+“legacy window-relative late-phase onset-energy fraction”; saved outputs can map that
+deprecated name through the extractor metadata. Windows without an
+autocorrelation-supported period or onset energy contain `NaN` for this descriptor.
+Tempo and log2-tempo retain their legacy arithmetic in those windows.
+
 ## Spectrotemporal modulation
 
 `audio.modulation.mps` is the 2-D Fourier transform of a log-frequency cochleagram

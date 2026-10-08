@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+- `audio.music.rhythm` now names its origin-anchored late-phase onset-energy
+  fraction `late_phase_onset_energy_fraction`. The former `syncopation` label is
+  a deprecated metadata alias retained for legacy-output interpretation; the
+  descriptor is not beat-aligned or a validated musical-syncopation measure.
+  Its value is `NaN` when an analysis window has no autocorrelation-supported
+  period or onset energy. Tempo and log2-tempo retain their legacy arithmetic
+  under those conditions. This output-schema change is versioned as
+  `audio.music.rhythm` 2.0 / `music-rhythm-v2`.
+
 ### Added
 - Native music feature extensions: layer-resolved MERT hidden states and Beat
   This beat/downbeat activations, with optional `mert` and `beats` dependencies,

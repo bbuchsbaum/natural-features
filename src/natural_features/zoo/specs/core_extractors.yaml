@@ -1300,8 +1300,8 @@ extractors:
 
   - name: audio.music.rhythm
     impl: natural_features.features.audio.music:music_rhythm
-    version: "1.0"
-    label: Rhythm descriptors (tempo, pulse, syncopation)
+    version: "2.0"
+    label: Rhythm descriptors (tempo, pulse, and onset statistics)
     modalities: [audio]
     requires: [audio]
     dependency_class: base_python
