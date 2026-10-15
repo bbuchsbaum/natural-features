@@ -54,6 +54,11 @@ ppgs = [
 formants = [
   "praat-parselmouth>=0.4",
 ]
+vocal_f0 = [
+  "demucs==4.0.1",
+  "torchcrepe==0.0.24",
+  "scipy>=1.10",
+]
 sparc = [
   "speech-articulatory-coding>=0.1.0",
 ]
@@ -69,6 +74,7 @@ dev = [
   "ruff==0.15.20",
 ]
 docs = [
+  "scipy>=1.10",
   "griffe<2",
   "ipykernel>=6.29",
   "jupyter-cache>=1.0",
@@ -102,6 +108,7 @@ dev = [
     "ruff==0.15.20",
 ]
 docs = [
+    "scipy>=1.10",
     "griffe<2",
     "ipykernel>=6.29",
     "jupyter-cache>=1.0",

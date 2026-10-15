@@ -103,3 +103,8 @@ contributes no articulatory silence occupancy. Explicit `sil`/`sp` labels retain
 their declared silence meaning. Audit blank and word-boundary mass separately.
 Token-role metadata records the delimiter and raw blank vocabulary ID; raw IDs
 are not output-column indices after special-token filtering.
+
+For source-selected F0 in mixed music, use the optional
+[`audio.vocal_f0` extractor](vocal_f0.md). It selects a separated vocal stem and
+retains pitch confidence, source support and missingness on the native grid.
+Its reference qualification is separate from these clock and token fixes.
