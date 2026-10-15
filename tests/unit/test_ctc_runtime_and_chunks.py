@@ -84,6 +84,10 @@ class FakeCTCModel:
 
     def __init__(self) -> None:
         self.device = "cpu"
+        hop = round(0.02 * FakeCTCProcessor.sampling_rate)
+        self.config = SimpleNamespace(
+            model_type="wav2vec2", conv_kernel=[hop], conv_stride=[hop], add_adapter=False,
+        )
 
     @classmethod
     def from_pretrained(cls, model: str, local_files_only: bool = True) -> FakeCTCModel:
@@ -239,7 +243,7 @@ def test_long_audio_stitches_interior_overlap_frames(monkeypatch: pytest.MonkeyP
     assert FakeCTCModel.n_forward == 2
     assert out.metadata["chunk_count"] == 2
     assert np.all(np.diff(out.times_s) >= 0)
-    assert out.times_s[0] == pytest.approx(0.0)
+    assert out.times_s[0] == pytest.approx(0.01)
     assert out.times_s[-1] < 3.0
     labels = list(out.coords["feature"])
     aa = labels.index("aa")
