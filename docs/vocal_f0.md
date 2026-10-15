@@ -1,5 +1,7 @@
 # Vocal F0 in mixed music
 
+**Experimental and unqualified:** the frozen v2 profile failed its singer-disjoint test on false voicing. Pitch accuracy alone does not establish supported vocal F0. Do not treat this candidate as a qualified vocal-pitch bank.
+
 `audio.vocal_f0` selects the `vocals` stem of Demucs 4.0.1 `htdemucs`, then
 estimates its dominant F0 with torchcrepe 0.0.24 `full`. It is a separate optional
 extractor from the monophonic `audio.pitch` control. It cannot identify an
@@ -120,9 +122,30 @@ Only a profile satisfying every original development gate may proceed to a
 test on singer-disjoint IDs 7, 10, 11, 12, 13 and 14. Those IDs were selected
 from singer metadata alone; the instrumental test windows start at ten seconds.
 The grid is not expanded after outcomes, and the test set is not replaced.
-Calibration passed: five profiles met all development gates, and the frozen ranking selected (0.65, 0.03, 0.01). The original threshold profile reproduced the retained v1 predictions and scores. The selected profile is frozen in `tests/benchmarks/thresholds/vocal_f0_holdout_v2.json`; independent qualification remains pending until its holdout report passes. Calibration and holdout status are recorded in their separate reports.
+Calibration passed: five profiles met all development gates, and the frozen ranking selected (0.65, 0.03, 0.01). The original threshold profile reproduced the retained v1 predictions and scores. The selected profile is frozen in `tests/benchmarks/thresholds/vocal_f0_holdout_v2.json`; the one-shot holdout evaluation failed. Calibration and holdout status are recorded in their separate reports.
 
-Qualification applies to the named excerpts and controlled mixtures only.
+The retained `tests/benchmarks/reports/vocal_f0_holdout_v2.json` contains all
+30 completed conditions, no inference errors, and passing analytic controls.
+It fails the unchanged 0.10 false-voicing limit in every singing condition:
+
+| Holdout condition | Raw pitch accuracy | Voiced recall | False voicing |
+|---|---:|---:|---:|
+| Solo | 0.9599 | 0.9649 | 0.1171 |
+| 0 dB mixture | 0.9444 | 0.9523 | 0.1443 |
+| −6 dB mixture | 0.8881 | 0.9023 | 0.1273 |
+
+Backing-only and silence false acceptance were zero. All remaining pitch,
+recall, median-error and octave gates passed. The profile is nevertheless
+unqualified. The thresholds and test set were not changed after this result;
+the original failed v1 and successful development calibration remain retained.
+The calibration report's `holdout_consumed=false` records its state before the
+subsequent test, rather than claiming that the holdout is still unused.
+
+Reproduce the frozen test with the runner above plus
+`--protocol tests/benchmarks/thresholds/vocal_f0_holdout_v2.json`, retaining a
+separate output report and native artifact directory.
+
+Evaluation covers the named excerpts and controlled mixtures only.
 It does not establish performance on commercial mixes, choirs, every singer,
 calibrated source confidence, or independence from model training data.
 Downstream item/scanner alignment remains study code's responsibility.
