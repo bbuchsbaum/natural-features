@@ -50,8 +50,8 @@ qualification for that configuration.
 
 `voicing_guard_s` defaults to zero, preserving the v2 framewise decision. A
 positive value requires every neighboring frame out to
-`ceil(voicing_guard_s / effective_hop_s)` rows on each side to pass the same
-framewise gate. Missing neighbors reject. For example, 0.02 seconds at the
+`ceil(voicing_guard_s / effective_hop_s)` rows on each side to pass the combined
+framewise and optional local-waveform gate. Missing neighbors reject. For example, 0.02 seconds at the
 default 0.01-second hop requires five consecutive accepted rows. It can only
 remove accepted pitch; it never fills gaps or changes surviving pitch values.
 The optional 20 ms configuration **failed development**, as detailed below.
@@ -65,6 +65,15 @@ energies and C is their mean cross-product. The existing RMS floor penalizes
 faint periodic tails. Full observed sample support is required, without zero
 padding. The score lies in [-1,1] and is not a vocal probability. Periodic
 instrument leakage and reverberation can still pass it.
+
+`max_internal_gap_s=0` disables gap-aware neighborhood support. A positive
+value permits bounded internal runs of rejected candidates, up to
+`floor(max_internal_gap_s / effective_hop_s)` rows, in a temporary support
+envelope before temporal erosion. It never bridges unavailable evidence or
+clip endpoints. The final mask still intersects the original candidate mask:
+rejected rows remain missing, and surviving pitches are unchanged. Short true
+rests may also be bridged in the envelope, so this is not proof of continuous
+singing. All three optional parameters remain disabled by default.
 
 ## Assets, clocks and context
 
@@ -242,13 +251,41 @@ require a threshold at least 0.8899342361260348, while accuracy/recall require
 at most 0.8849322848886569. The analysis covered 24,099 decision states and
 found that these monotone constraints do not overlap. This is a limitation of
 this fixed veto on these recordings, not proof that other voicing methods fail.
-The prospective singer set remains unused.
+The prospective singer set was unused during versions 4 and 5.
 
 The reports are `tests/benchmarks/reports/vocal_f0_development_v4.json` and
 `vocal_f0_calibration_v5.json`; the corresponding protocols retain the
 development groups, all original gates, selection rules and exact input hashes.
 The independent v4 review verified all 60 artifacts and all 240 profile-row
 scores, including waveform calculations from the retained stems.
+
+## Gap-aware development: version 6
+
+Version 6 is explicitly adaptive development following those failures. It
+froze twelve combinations of local threshold {0.25, 0.50, 0.75}, temporal
+guard {0.01, 0.02} seconds and maximum internal gap {0.02, 0.04} seconds.
+Both consumed groups must separately pass every original gate. The frozen
+ranking favors the greatest worst-condition pitch accuracy, then the lowest
+worst-condition false voicing, followed by the specified parameter tie breaks.
+
+Exactly one combination passed: local threshold 0.50, guard 0.01 seconds,
+maximum gap 0.02 seconds. Across both groups and three singing conditions,
+the lowest raw pitch accuracy was 0.8010634 and the highest false-voicing
+rate was 0.0988746. These narrow development margins do not establish
+qualification. The report retains all twelve profiles and all 720 scores.
+
+The frozen development protocol retains a stale inherited sentence under
+`method.acceptance` saying "no temporal erosion". That field describes only
+the local candidate veto; `method.temporal_envelope`, the twelve-profile grid,
+and the implementation define the complete v6 operation. The original file
+is preserved unchanged. The prospective protocol states the complete rule.
+
+The selected configuration must pass independent rescoring and exact real-model
+replay checks before its source, runner, scorer and prospective protocol are
+committed. The reserved singer-disjoint IDs are 15, 18, 19, 20, 21 and 22,
+selected from metadata before outcomes; accompaniment starts at 20 seconds.
+Their test is one shot, with unchanged gates and no subsequent tuning or
+replacement test. The public defaults remain the unqualified v2 profile.
 
 Evaluation covers the named excerpts and controlled mixtures only.
 It does not establish performance on commercial mixes, choirs, every singer,

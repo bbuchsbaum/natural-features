@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 import hashlib
 from importlib.metadata import version
-from math import ceil, gcd
+from math import ceil, floor, gcd
 from pathlib import Path
 import tempfile
 from urllib.request import urlopen
@@ -255,6 +255,31 @@ def _local_periodicity(audio, centers, candidate_f0, min_source_rms, duration_s)
     return result
 
 
+def _gap_aware_core(candidate, available, guard_s, max_gap_s, effective_hop_s):
+    """Use bounded internal gaps only to construct neighborhood support.
+
+    The returned mask always intersects the original candidate mask. Filled
+    envelope rows never become accepted output, and unavailable evidence is
+    never bridged. Run lengths are measured on the original mask once.
+    """
+    if not np.isfinite(max_gap_s) or max_gap_s < 0:
+        raise ValueError("max_internal_gap_s must be finite and nonnegative")
+    if not np.isfinite(effective_hop_s) or effective_hop_s <= 0:
+        raise ValueError("effective_hop_s must be finite and positive")
+    candidate = np.asarray(candidate, dtype=bool)
+    available = np.asarray(available, dtype=bool)
+    if candidate.ndim != 1 or available.shape != candidate.shape or np.any(candidate & ~available):
+        raise ValueError("candidate must be one-dimensional and a subset of available evidence")
+    maximum_gap = len(candidate) if max_gap_s >= len(candidate) * effective_hop_s else floor(max_gap_s / effective_hop_s)
+    envelope = candidate.copy()
+    if maximum_gap:
+        edges = np.diff(np.r_[False, ~candidate, False].astype(np.int8))
+        for start, end in zip(np.flatnonzero(edges == 1), np.flatnonzero(edges == -1), strict=True):
+            if start > 0 and end < len(candidate) and end - start <= maximum_gap and np.all(available[start:end]):
+                envelope[start:end] = True
+    return candidate & _temporal_core(envelope, guard_s, effective_hop_s)
+
+
 def audio_vocal_f0(
     stimulus: AudioStimulus, *, separator_checkpoint: str | None = None,
     cache_dir: str | None = None, local_files_only: bool = True, device: str = "cpu",
@@ -262,6 +287,7 @@ def audio_vocal_f0(
     confidence_threshold: float = 0.65, source_threshold: float = 0.03,
     min_source_rms: float = 0.01, voicing_guard_s: float = 0.0,
     local_periodicity_threshold: float | None = None,
+    max_internal_gap_s: float = 0.0,
 ) -> FeatureSeries:
     """Estimate dominant F0 of Demucs' selected vocal stem, with missingness.
 
@@ -291,6 +317,8 @@ def audio_vocal_f0(
         raise ValueError("voicing_guard_s must be finite and nonnegative")
     if local_periodicity_threshold is not None and (not np.isfinite(local_periodicity_threshold) or not 0 <= local_periodicity_threshold <= 1):
         raise ValueError("local_periodicity_threshold must be None or lie in [0, 1]")
+    if not np.isfinite(max_internal_gap_s) or max_internal_gap_s < 0:
+        raise ValueError("max_internal_gap_s must be finite and nonnegative")
     runtime = _load_runtime(separator_checkpoint, cache_dir, local_files_only, device)
     x = np.asarray(stimulus.samples, dtype=np.float32)
     if x.ndim == 1:
@@ -327,10 +355,13 @@ def audio_vocal_f0(
     support = source_rms ** 2 / np.maximum(total_energy, 1e-20)
     duration = len(mono) / stimulus.sr_hz
     source, framewise = _acceptance_masks(confidence, support, source_rms, centers / 16000 < duration, confidence_threshold, source_threshold, min_source_rms)
-    voiced = _temporal_core(framewise, voicing_guard_s, hop / 16000)
+    voiced = framewise.copy()
     local = _local_periodicity(pitch_input, centers, f0, min_source_rms, duration)
+    available = centers / 16000 < duration
     if local_periodicity_threshold is not None:
-        voiced &= (local[:, 1] > 0) & (local[:, 0] >= local_periodicity_threshold)
+        available &= local[:, 1] > 0
+        voiced &= available & (local[:, 0] >= local_periodicity_threshold)
+    voiced = _gap_aware_core(voiced, available, voicing_guard_s, max_internal_gap_s, hop / 16000)
     edge = (1200 * np.log2(f0 / fmin) < 20) | (1200 * np.log2(fmax / f0) < 20)
     jump = np.zeros(len(f0), dtype=bool)
     intervals = np.abs(1200 * np.diff(np.log2(f0)))
@@ -351,10 +382,11 @@ def audio_vocal_f0(
                        "pitch_zero_padding_samples_each_side": 512},
     )
     md = extractor_metadata(
-        "audio.vocal_f0", code_version="vocal-f0-v4",
+        "audio.vocal_f0", code_version="vocal-f0-v6",
         params={"hop_s": hop_s, "fmin": fmin, "fmax": fmax, "confidence_threshold": confidence_threshold,
                 "source_threshold": source_threshold, "min_source_rms": min_source_rms,
-                "voicing_guard_s": voicing_guard_s, "local_periodicity_threshold": local_periodicity_threshold},
+                "voicing_guard_s": voicing_guard_s, "local_periodicity_threshold": local_periodicity_threshold,
+                "max_internal_gap_s": max_internal_gap_s},
         model_revision=f"demucs:sha256:{SEPARATOR_SHA256};crepe:sha256:{CREPE_SHA256}",
         extra={"backend": "demucs_htdemucs_crepe_full", "fallback_used": False, "execution_mode": "strict",
                "source_selection": "Demucs vocals; dominant periodic pitch within that stem; no singer identity",
@@ -363,8 +395,9 @@ def audio_vocal_f0(
                "missing_f0": "NaN; never encoded as acoustic silence or phonology",
                "candidate_f0_hz": "raw finite CREPE candidate before acceptance gates; diagnostic only and not vocal-F0 evidence",
                "gate_precision": "float32 confidence; float64 source support and RMS, preserved in output diagnostics",
-               "voicing_rule": "framewise acceptance eroded symmetrically by ceil(voicing_guard_s/effective_hop_s) native rows; missing neighbors reject; zero guard is v2",
+               "voicing_rule": "framewise gate, optional local waveform veto, then symmetric envelope erosion; internal available gaps up to floor(max_internal_gap_s/effective_hop_s) rows support the envelope only; final output always intersects the unfilled candidate mask",
                "voicing_guard_s": voicing_guard_s,
+               "max_internal_gap_s": max_internal_gap_s,
                "framewise_voiced": "Original confidence/source/RMS acceptance before optional temporal and local gates; not final supported F0",
                "local_periodicity_threshold": local_periodicity_threshold,
                "local_periodicity_semantics": "Float64 2*mean(a*b)/max(mean(a*a)+mean(b*b),2*min_source_rms**2); each arm mean-centered; waveform agreement, not vocal probability",

@@ -38,7 +38,7 @@ def test_source_support_clock_offset_missingness_and_context(runtime):
     assert np.all(a.values[:-1, 0] == 220)
     assert np.isnan(a.values[-1, 0]) and a.values[-1, 5] == 1
     assert a.values[0, 8] == 1 and a.values[-1, 8] == 1
-    assert a.metadata["code_version"] == "vocal-f0-v4"
+    assert a.metadata["code_version"] == "vocal-f0-v6"
     assert a.clock == "song"
     assert b.metadata["computation_context"]["dependency_bounds_s"] == [[7.25, 8.25]]
     assert b.metadata["computation_context"]["policy"] == "bidirectional"

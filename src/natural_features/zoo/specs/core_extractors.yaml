@@ -1391,6 +1391,7 @@ extractors:
       min_source_rms: { type: float, default: 0.01 }
       voicing_guard_s: { type: float, default: 0.0 }
       local_periodicity_threshold: { type: float, default: null, nullable: true }
+      max_internal_gap_s: { type: float, default: 0.0 }
     outputs:
       default:
         schema: FeatureSeries/v1

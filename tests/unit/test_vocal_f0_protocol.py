@@ -61,3 +61,23 @@ def test_minus_six_db_recipe_makes_backing_louder_than_vocal() -> None:
 
     assert recipe["target_vocal_to_backing_db"] == -6.0
     assert recipe["backing_scale"] == pytest.approx(10 ** (6 / 20) / 2.0)
+
+
+def test_frozen_sources_reject_drift_before_qualification(tmp_path, monkeypatch):
+    protocol = _protocol_module()
+    monkeypatch.setattr(protocol, "ROOT", tmp_path)
+    paths = ["src/natural_features/features/audio/vocal_f0.py",
+             "src/natural_features/features/audio/vocal_f0_benchmark.py",
+             "scripts/qualify_vocal_f0.py"]
+    for relative in paths:
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("frozen source")
+    frozen = {"frozen_sources": {p: protocol._digest(tmp_path / p) for p in paths}}
+    protocol._verify_frozen_sources(frozen)
+    (tmp_path / paths[1]).write_text("changed scoring")
+    with pytest.raises(ValueError, match="frozen source identity mismatch"):
+        protocol._verify_frozen_sources(frozen)
+    with pytest.raises(ValueError, match="must identify"):
+        protocol._verify_frozen_sources({"frozen_sources": {}})
+    protocol._verify_frozen_sources({})

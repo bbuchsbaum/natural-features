@@ -352,6 +352,21 @@ def _analytic_cases(args: argparse.Namespace) -> dict:
             "worst_median_abs_cents_error": None if any(value is None for value in medians) else float(max(medians))}
 
 
+def _verify_frozen_sources(protocol: dict) -> None:
+    """Reject source drift before touching a prospectively frozen test set."""
+    sources = protocol.get("frozen_sources")
+    if sources is None:
+        return  # Historical protocols remain replayable with explicit identities.
+    required = {"src/natural_features/features/audio/vocal_f0.py",
+                "src/natural_features/features/audio/vocal_f0_benchmark.py",
+                "scripts/qualify_vocal_f0.py"}
+    if set(sources) != required:
+        raise ValueError("frozen_sources must identify extractor, scorer and runner")
+    for relative, expected in sources.items():
+        if _digest(ROOT / relative) != expected:
+            raise ValueError(f"frozen source identity mismatch: {relative}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--assets", type=Path, required=True)
@@ -383,10 +398,11 @@ def main() -> int:
     if not np.isfinite(backing_start) or backing_start < 0:
         raise ValueError("backing_start_s must be finite and nonnegative")
     args.extractor_params = {key: value for key, value in protocol["extractor"].items()
-                            if key in {"hop_s", "fmin", "fmax", "confidence_threshold", "source_threshold", "min_source_rms", "voicing_guard_s", "local_periodicity_threshold"}}
+                            if key in {"hop_s", "fmin", "fmax", "confidence_threshold", "source_threshold", "min_source_rms", "voicing_guard_s", "local_periodicity_threshold", "max_internal_gap_s"}}
     # Older protocols specify framewise acceptance even if public defaults change.
     args.extractor_params.setdefault("voicing_guard_s", 0.0)
     args.extractor_params.setdefault("local_periodicity_threshold", None)
+    args.extractor_params.setdefault("max_internal_gap_s", 0.0)
     extractor_path = ROOT / "src/natural_features/features/audio/vocal_f0.py"
     extractor_hash = _digest(extractor_path)
     report: dict = {"schema": "VocalF0QualificationReport/v1", "protocol_path": str(protocol_path), "protocol_sha256": protocol_hash,
@@ -399,6 +415,7 @@ def main() -> int:
                     "per_excerpt": [], "summary": {}, "analytic": {"complete": False}, "errors": [], "completed_jobs": 0, "qualified_scope": "unqualified"}
     _atomic_json(args.out_json, report)
     try:
+        _verify_frozen_sources(protocol)
         _prepare_assets(args.assets, args.download)
         backing_paths = {name: args.assets / f"{name}.ogg" for name in BACKING}
         for path in backing_paths.values():

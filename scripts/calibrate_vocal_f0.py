@@ -14,7 +14,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 from natural_features.core.feature_types import FeatureSeries  # noqa: E402
-from natural_features.features.audio.vocal_f0 import _acceptance_masks, _temporal_core  # noqa: E402
+from natural_features.features.audio.vocal_f0 import _acceptance_masks, _gap_aware_core  # noqa: E402
 from natural_features.features.audio.vocal_f0_benchmark import score_vocal_f0  # noqa: E402
 
 GRID = ([0.21, 0.35, 0.5, 0.65, 0.8], [0.01, 0.03, 0.05, 0.1], [0.001, 0.003, 0.01])
@@ -39,7 +39,7 @@ def _duration(feature: FeatureSeries) -> float:
     return float(bounds[1] - bounds[0])
 
 
-def replay(feature: FeatureSeries, c: float, s: float, r: float, *, voicing_guard_s: float = 0.0, local_periodicity_threshold: float | None = None) -> FeatureSeries:
+def replay(feature: FeatureSeries, c: float, s: float, r: float, *, voicing_guard_s: float = 0.0, local_periodicity_threshold: float | None = None, max_internal_gap_s: float = 0.0) -> FeatureSeries:
     names = list(feature.coords["feature"])
     required = [
         "candidate_f0_hz",
@@ -76,9 +76,10 @@ def replay(feature: FeatureSeries, c: float, s: float, r: float, *, voicing_guar
         else ((feature.times_s >= start) & (feature.times_s < end))
     )
     source, framewise = _acceptance_masks(confidence, support, rms, valid, c, s, r)
-    if voicing_guard_s != 0 and hop is None:
+    if (voicing_guard_s != 0 or max_internal_gap_s != 0) and hop is None:
         raise ValueError("temporal replay requires effective_hop_s")
-    voiced = _temporal_core(framewise, voicing_guard_s, hop if hop is not None else 1.0)
+    voiced = framewise.copy()
+    available = valid.copy()
     if "local_periodicity" in names:
         ea, eb, cross = (values[:, at(name)] for name in ("local_energy_before", "local_energy_after", "local_cross_energy"))
         values[:, at("local_periodicity")] = np.clip(2 * cross / np.maximum(ea + eb, 2 * r ** 2), -1, 1)
@@ -87,7 +88,9 @@ def replay(feature: FeatureSeries, c: float, s: float, r: float, *, voicing_guar
             raise ValueError("local_periodicity_threshold must be None or lie in [0, 1]")
         if "local_periodicity" not in names or "local_supported" not in names:
             raise ValueError("local replay requires waveform evidence")
-        voiced &= (values[:, at("local_supported")] > 0) & (values[:, at("local_periodicity")] >= local_periodicity_threshold)
+        available &= values[:, at("local_supported")] > 0
+        voiced &= available & (values[:, at("local_periodicity")] >= local_periodicity_threshold)
+    voiced = _gap_aware_core(voiced, available, voicing_guard_s, max_internal_gap_s, hop if hop is not None else 1.0)
     if "framewise_voiced" in names:
         values[:, at("framewise_voiced")] = framewise
     else:
