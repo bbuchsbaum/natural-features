@@ -80,3 +80,10 @@ windows: the old combination mixed 25 ms and 40 ms centers by row index. Request
 and effective sample-rounded framing and short-input right padding are recorded.
 The pitch estimator remains a monophonic autocorrelation estimator, not a
 validated vocal-F0 extractor or a voice detector for polyphonic music.
+
+CTC word delimiters are labeled `word_boundary`, including configurable tokenizer
+delimiters. A word boundary is neither CTC blank nor labeled acoustic silence; it
+contributes no articulatory silence occupancy. Explicit `sil`/`sp` labels retain
+their declared silence meaning. Audit blank and word-boundary mass separately.
+Token-role metadata records the delimiter and raw blank vocabulary ID; raw IDs
+are not output-column indices after special-token filtering.

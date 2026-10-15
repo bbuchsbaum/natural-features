@@ -273,7 +273,9 @@ def _normalize_ctc_token(label: str) -> str:
     if not token:
         return ""
     token = token.replace("▁", "").replace("Ġ", "").replace(" ", "")
-    if token in {"|", "sil", "sp", "spn"}:
+    if token == "|":
+        return "word_boundary"
+    if token in {"sil", "sp", "spn"}:
         return "silence"
     token_lower = token.lower()
     if token_lower in _SPECIAL_TOKEN_VALUES:
@@ -848,7 +850,11 @@ def _decode_ctc_labels(
         ]
     else:
         labels = [f"tok_{i}" for i in range(vocab_size)]
-    normalized_labels = [_normalize_ctc_token(x) for x in labels]
+    delimiter = getattr(tokenizer, "word_delimiter_token", None)
+    normalized_labels = [
+        "word_boundary" if delimiter is not None and x == str(delimiter)
+        else _normalize_ctc_token(x) for x in labels
+    ]
     if drop_special_tokens:
         keep_idx = [i for i, norm in enumerate(normalized_labels) if norm != ""]
         if keep_idx:
@@ -1054,6 +1060,17 @@ def ctc_phone_posteriors(
             params=params,
             extra={
                 "backend": "transformers_ctc",
+                "ctc_token_roles": {
+                    "word_boundary_label": "word_boundary",
+                    "word_delimiter_token": getattr(
+                        getattr(active_runtime.processor, "tokenizer", None),
+                        "word_delimiter_token", None,
+                    ),
+                    "blank_raw_vocabulary_id": getattr(
+                        active_runtime.model.config, "pad_token_id", None,
+                    ),
+                    "note": "Raw vocabulary IDs precede special-token filtering; word boundaries are not acoustic silence.",
+                },
                 "device": active_runtime.device,
                 "chunk_count": chunk_count,
                 "native_hop_s": hop_s,

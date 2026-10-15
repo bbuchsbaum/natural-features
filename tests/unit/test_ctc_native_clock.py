@@ -114,3 +114,30 @@ def test_articulatory_mapping_preserves_support_and_context(native):
     np.testing.assert_array_equal(mapped.time_bounds_s, out.time_bounds_s)
     assert mapped.temporal_context == out.temporal_context
     assert mapped.metadata["source_metadata"]["chunks"] == out.metadata["chunks"]
+
+
+@pytest.mark.parametrize("delimiter", ["|", "<wb>"])
+def test_word_boundaries_are_not_blank_phone_or_acoustic_silence(delimiter):
+    labels = ["<pad>", delimiter, "a", "sil"]
+    processor = SimpleNamespace(tokenizer=SimpleNamespace(
+        word_delimiter_token=delimiter, convert_ids_to_tokens=lambda i: labels[i],
+    ))
+    raw = np.array([[.1, .7, .15, .05]], np.float32)
+    probs, names = ph._decode_ctc_labels(processor, raw, drop_special_tokens=False)
+    assert names == ["<pad>", "word_boundary", "a", "silence"]
+    np.testing.assert_allclose(probs, raw)
+    from natural_features.core.feature_types import FeatureSeries
+    post = FeatureSeries(values=probs, times_s=np.array([.02]),
+                         coords={"feature": names}, metadata={"extractor_id": "test", "params_hash": "test"})
+    art = ph.articulatory_from_posteriors(post, include_uncertainty=False)
+    silence = list(art.coords["feature"]).index("silence")
+    assert art.values[0, silence] == pytest.approx(.05)
+    filtered, filtered_names = ph._decode_ctc_labels(processor, raw, drop_special_tokens=True)
+    assert filtered_names == ["word_boundary", "a", "silence"]
+    np.testing.assert_allclose(filtered, raw[:, 1:] / .9)
+
+
+def test_bare_word_separator_cannot_become_articulatory_silence():
+    assert ph._features_for_label("|") == set()
+    assert ph._features_for_label("word_boundary") == set()
+    assert ph._features_for_label("sil") == {"silence"}
