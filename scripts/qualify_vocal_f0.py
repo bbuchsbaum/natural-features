@@ -383,9 +383,10 @@ def main() -> int:
     if not np.isfinite(backing_start) or backing_start < 0:
         raise ValueError("backing_start_s must be finite and nonnegative")
     args.extractor_params = {key: value for key, value in protocol["extractor"].items()
-                            if key in {"hop_s", "fmin", "fmax", "confidence_threshold", "source_threshold", "min_source_rms", "voicing_guard_s"}}
+                            if key in {"hop_s", "fmin", "fmax", "confidence_threshold", "source_threshold", "min_source_rms", "voicing_guard_s", "local_periodicity_threshold"}}
     # Older protocols specify framewise acceptance even if public defaults change.
     args.extractor_params.setdefault("voicing_guard_s", 0.0)
+    args.extractor_params.setdefault("local_periodicity_threshold", None)
     extractor_path = ROOT / "src/natural_features/features/audio/vocal_f0.py"
     extractor_hash = _digest(extractor_path)
     report: dict = {"schema": "VocalF0QualificationReport/v1", "protocol_path": str(protocol_path), "protocol_sha256": protocol_hash,

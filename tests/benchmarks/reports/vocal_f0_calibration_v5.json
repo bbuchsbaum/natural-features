@@ -1,0 +1,23 @@
+{
+  "calibration_source_sha256": "abb05adfc615a952b243962ccbbd279d8e384117f46ecfc28b027b64fd028754",
+  "development_passed": false,
+  "errors": [],
+  "extractor_source_sha256": "5828c43ad1fc5707920ad51e201c16be9eab1b245f72942e54569d23b1c88d0e",
+  "feasible_intervals": [],
+  "input_report_sha256": "38b7525aeadd4f6b1c351daae0f770f816d942eccea43f2b73bb89cfc1dc7de0",
+  "prospective_test_consumed": false,
+  "protocol_sha256": "10977e1e7b38d62d2779ccb15c54c126a81d73100f4aa33b4e68b5760d72fcb6",
+  "qualified": false,
+  "replay_source_sha256": "c95ecd8b06471981b326ce88ada0235caf62500d8d9aee0074a8e1358b904d59",
+  "schema": "VocalF0AdaptiveCalibration/v5",
+  "search": {
+    "first_accuracy_infeasible_index": 2008,
+    "first_false_alarm_feasible_index": 2127,
+    "fully_checked_states": 0,
+    "maximum_accuracy_threshold": 0.8849322848886569,
+    "minimum_false_alarm_threshold": 0.8899342361260348,
+    "total_decision_states": 24099
+  },
+  "selected_threshold": null,
+  "verified_v4_rows": 240
+}

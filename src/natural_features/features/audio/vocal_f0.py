@@ -27,7 +27,7 @@ SEPARATOR_SHA256 = "8726e21a993978c7ba086d3872e7608d7d5bfca646ca4aca459ffda844fa
 CREPE_SHA256 = "133225604dedd2e4005f8bbd1bd0a2ec073ba8b7a6cd31ff6d5edbbfa3539986"
 SEPARATOR_FILE = "955717e8-8726e21a.th"
 SEPARATOR_URL = "https://dl.fbaipublicfiles.com/demucs/hybrid_transformer/" + SEPARATOR_FILE
-FEATURES = ["f0_hz", "confidence", "source_support", "source_supported", "voiced", "missing", "range_edge", "octave_jump", "padded", "candidate_f0_hz", "source_rms", "framewise_voiced"]
+FEATURES = ["f0_hz", "confidence", "source_support", "source_supported", "voiced", "missing", "range_edge", "octave_jump", "padded", "candidate_f0_hz", "source_rms", "framewise_voiced", "local_periodicity", "local_supported", "local_energy_before", "local_energy_after", "local_cross_energy"]
 
 
 def _sha256(path):
@@ -213,12 +213,55 @@ def _temporal_core(framewise_voiced, guard_s, effective_hop_s):
     return result
 
 
+def _local_periodicity(audio, centers, candidate_f0, min_source_rms, duration_s):
+    """Candidate-period agreement over 320 symmetric sample-pair midpoints.
+
+    Each arm is centered independently. Symmetric energy normalization keeps
+    amplitude imbalance; the existing RMS floor penalizes faint periodic tails.
+    Missing waveform support is unavailable evidence, never observed silence.
+    Returns columns q, available, mean(a*a), mean(b*b), mean(a*b).
+    """
+    x = np.asarray(audio, dtype=np.float64)
+    centers = np.asarray(centers, dtype=np.float64)
+    f0 = np.asarray(candidate_f0, dtype=np.float32).astype(np.float64)
+    if x.ndim != 1 or not np.all(np.isfinite(x)):
+        raise ValueError("local periodicity requires finite mono audio")
+    if centers.ndim != 1 or f0.shape != centers.shape or not np.all(np.isfinite(centers)):
+        raise ValueError("local periodicity requires matching finite centers and candidates")
+    if not np.all(np.isfinite(f0)) or np.any(f0 <= 0):
+        raise ValueError("local periodicity candidates must be finite and positive")
+    if not np.isfinite(min_source_rms) or min_source_rms <= 0 or not np.isfinite(duration_s) or duration_s < 0:
+        raise ValueError("local periodicity requires positive RMS floor and nonnegative duration")
+    result = np.full((len(f0), 5), np.nan, dtype=np.float64)
+    result[:, 1] = 0
+    midpoint = np.arange(320, dtype=np.float64) - 159.5
+    grid = np.arange(len(x), dtype=np.float64)
+    for start in range(0, len(f0), 256):
+        end = min(start + 256, len(f0))
+        half_lag = 8000.0 / f0[start:end, None]
+        middle = centers[start:end, None] + midpoint
+        left, right = middle - half_lag, middle + half_lag
+        available = (left[:, 0] >= 0) & (right[:, -1] <= len(x) - 1) & (right[:, -1] / 16000 < duration_s)
+        indices = np.flatnonzero(available)
+        if not len(indices):
+            continue
+        a = np.interp(left[indices], grid, x)
+        b = np.interp(right[indices], grid, x)
+        a -= a.mean(axis=1, keepdims=True)
+        b -= b.mean(axis=1, keepdims=True)
+        ea, eb, cross = np.mean(a * a, axis=1), np.mean(b * b, axis=1), np.mean(a * b, axis=1)
+        q = np.clip(2 * cross / np.maximum(ea + eb, 2 * min_source_rms ** 2), -1, 1)
+        result[start + indices] = np.column_stack([q, np.ones(len(indices)), ea, eb, cross])
+    return result
+
+
 def audio_vocal_f0(
     stimulus: AudioStimulus, *, separator_checkpoint: str | None = None,
     cache_dir: str | None = None, local_files_only: bool = True, device: str = "cpu",
     hop_s: float = 0.01, fmin: float = 50.0, fmax: float = 1000.0,
     confidence_threshold: float = 0.65, source_threshold: float = 0.03,
     min_source_rms: float = 0.01, voicing_guard_s: float = 0.0,
+    local_periodicity_threshold: float | None = None,
 ) -> FeatureSeries:
     """Estimate dominant F0 of Demucs' selected vocal stem, with missingness.
 
@@ -228,7 +271,9 @@ def audio_vocal_f0(
     decoder and threshold choices must be qualified for the intended domain.
     An optional symmetric ``voicing_guard_s`` rejects frames without persistent
     neighboring acceptance. Zero preserves the v2 framewise decision. This
-    does not resolve individual singers in duets/choirs.
+    does not resolve individual singers in duets/choirs. An optional
+    ``local_periodicity_threshold`` requires amplitude-regularized waveform
+    agreement at the candidate period; it is not a vocal probability.
     """
     mono = mono_audio(stimulus)
     if not isinstance(local_files_only, bool) or not isinstance(device, str) or not device:
@@ -244,6 +289,8 @@ def audio_vocal_f0(
         raise ValueError("min_source_rms must be finite and positive")
     if not np.isfinite(voicing_guard_s) or voicing_guard_s < 0:
         raise ValueError("voicing_guard_s must be finite and nonnegative")
+    if local_periodicity_threshold is not None and (not np.isfinite(local_periodicity_threshold) or not 0 <= local_periodicity_threshold <= 1):
+        raise ValueError("local_periodicity_threshold must be None or lie in [0, 1]")
     runtime = _load_runtime(separator_checkpoint, cache_dir, local_files_only, device)
     x = np.asarray(stimulus.samples, dtype=np.float32)
     if x.ndim == 1:
@@ -281,12 +328,15 @@ def audio_vocal_f0(
     duration = len(mono) / stimulus.sr_hz
     source, framewise = _acceptance_masks(confidence, support, source_rms, centers / 16000 < duration, confidence_threshold, source_threshold, min_source_rms)
     voiced = _temporal_core(framewise, voicing_guard_s, hop / 16000)
+    local = _local_periodicity(pitch_input, centers, f0, min_source_rms, duration)
+    if local_periodicity_threshold is not None:
+        voiced &= (local[:, 1] > 0) & (local[:, 0] >= local_periodicity_threshold)
     edge = (1200 * np.log2(f0 / fmin) < 20) | (1200 * np.log2(fmax / f0) < 20)
     jump = np.zeros(len(f0), dtype=bool)
     intervals = np.abs(1200 * np.diff(np.log2(f0)))
     jump[1:] = voiced[1:] & voiced[:-1] & (np.abs(intervals - 1200) <= 100)
     padded = (centers < 512) | ((centers + 512) / 16000 > duration)
-    values = np.column_stack([np.where(voiced, f0, np.nan), confidence, support, source, voiced, ~voiced, edge, jump, padded, f0, source_rms, framewise])
+    values = np.column_stack([np.where(voiced, f0, np.nan), confidence, support, source, voiced, ~voiced, edge, jump, padded, f0, source_rms, framewise, local])
     start = stimulus.start_offset_s
     bounds = start + np.clip(np.column_stack([centers - 512, centers + 512]) / 16000, 0, duration)
     context = computation_context(
@@ -301,10 +351,10 @@ def audio_vocal_f0(
                        "pitch_zero_padding_samples_each_side": 512},
     )
     md = extractor_metadata(
-        "audio.vocal_f0", code_version="vocal-f0-v3",
+        "audio.vocal_f0", code_version="vocal-f0-v4",
         params={"hop_s": hop_s, "fmin": fmin, "fmax": fmax, "confidence_threshold": confidence_threshold,
                 "source_threshold": source_threshold, "min_source_rms": min_source_rms,
-                "voicing_guard_s": voicing_guard_s},
+                "voicing_guard_s": voicing_guard_s, "local_periodicity_threshold": local_periodicity_threshold},
         model_revision=f"demucs:sha256:{SEPARATOR_SHA256};crepe:sha256:{CREPE_SHA256}",
         extra={"backend": "demucs_htdemucs_crepe_full", "fallback_used": False, "execution_mode": "strict",
                "source_selection": "Demucs vocals; dominant periodic pitch within that stem; no singer identity",
@@ -315,7 +365,10 @@ def audio_vocal_f0(
                "gate_precision": "float32 confidence; float64 source support and RMS, preserved in output diagnostics",
                "voicing_rule": "framewise acceptance eroded symmetrically by ceil(voicing_guard_s/effective_hop_s) native rows; missing neighbors reject; zero guard is v2",
                "voicing_guard_s": voicing_guard_s,
-               "framewise_voiced": "Original confidence/source/RMS acceptance before the optional temporal core; not final supported F0",
+               "framewise_voiced": "Original confidence/source/RMS acceptance before optional temporal and local gates; not final supported F0",
+               "local_periodicity_threshold": local_periodicity_threshold,
+               "local_periodicity_semantics": "Float64 2*mean(a*b)/max(mean(a*a)+mean(b*b),2*min_source_rms**2); each arm mean-centered; waveform agreement, not vocal probability",
+               "local_periodicity_support": "320 half-sample symmetric pair midpoints at16kHz, arms separated by candidate period using linear interpolation; full observed support required, otherwise NaN and local_supported=0",
                "source_rms": "Exact 1024-sample selected-stem frame RMS used by the source acceptance gate; global stem DC was removed before resampling",
                "octave_jump_semantics": "adjacent supported frames differ by 1200 +/- 100 cents; not proven octave error",
                "pitch_decoder": "local weighted +/-4 bins; undithered centers; no temporal smoothing",

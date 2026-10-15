@@ -1,0 +1,114 @@
+{
+  "schema": "VocalF0DevelopmentProtocol/v4",
+  "source_dataset": "https://zenodo.org/records/5578807",
+  "archive_md5": "dea40fd18f14d899643c4ba221b33a46",
+  "conditions": [
+    "solo",
+    "mixture_0db",
+    "mixture_minus6db"
+  ],
+  "negative_conditions": [
+    "backing",
+    "silence"
+  ],
+  "averaging": "equal-weight macro across six excerpts, separately per condition",
+  "gates": {
+    "raw_pitch_accuracy_min": 0.8,
+    "voicing_recall_min": 0.8,
+    "voicing_false_alarm_rate_max": 0.1,
+    "median_abs_cents_error_max": 50.0,
+    "octave_error_rate_max": 0.05,
+    "backing_false_alarm_rate_max": 0.05,
+    "silence_false_alarm_rate_max": 0.0,
+    "analytic_median_abs_cents_error_max": 50.0
+  },
+  "extractor": {
+    "demucs": "4.0.1",
+    "torchcrepe": "0.0.24",
+    "separator_sha256": "8726e21a993978c7ba086d3872e7608d7d5bfca646ca4aca459ffda844faa8b4",
+    "crepe_sha256": "133225604dedd2e4005f8bbd1bd0a2ec073ba8b7a6cd31ff6d5edbbfa3539986",
+    "decoder": "local weighted +/-4 bins, undithered",
+    "hop_s": 0.01,
+    "fmin": 50.0,
+    "fmax": 1000.0,
+    "confidence_threshold": 0.65,
+    "source_threshold": 0.03,
+    "min_source_rms": 0.01,
+    "voicing_guard_s": 0.0,
+    "local_periodicity_threshold": null
+  },
+  "singer_metadata_sha256": "22266a2deb232e6783cc5ebfbba5e4c7639d7c614e9e248e780a0bee8678a41c",
+  "purpose": "New amplitude-regularized local waveform agreement experiment after v3 failure. Both prior groups are consumed development data, never qualification.",
+  "method": {
+    "name": "candidate_period_local_agreement",
+    "midpoint_count": 320,
+    "midpoint_positions": "center + arange(320) - 159.5 at 16000Hz",
+    "lag": "16000 / float32 candidate_f0_hz, promoted to float64",
+    "sampling": "numpy linear interpolation at midpoint +/- lag/2; require every position within available waveform samples and real input duration; no zero padding or clamped observations",
+    "centering": "Subtract each arm mean separately in float64",
+    "statistic": "A=mean(a*a), B=mean(b*b), C=mean(a*b); q=clip(2*C/max(A+B,2*min_source_rms**2),-1,1), all accumulated float64; undefined support gives NaN with local_supported=0. Silence/constant full-support arms give0.",
+    "acceptance": "Original v2 framewise gate AND available local evidence AND q>=threshold; no temporal erosion or change to accepted pitch.",
+    "interpretation": "Local repeated waveform energy at candidate period, not voice identity or calibrated probability; periodic instrumental leakage and reverb can pass.",
+    "reference": "https://www.cs.otago.ac.nz/graphics/Geoff/tartini/papers/A_Smarter_Way_to_Find_Pitch.pdf",
+    "reference_scope": "Symmetric normalization inspired by NSDF; this candidate-conditioned, mean-centered, amplitude-regularized veto is not the MPM pitch estimator."
+  },
+  "development_sets": [
+    {
+      "name": "original_development",
+      "report": "tests/benchmarks/reports/vocal_f0_development_v2.json",
+      "excerpt_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "report_sha256": "a1dd10d4ed93c8b0a6a30de1f35be6ab6ae54bc1d43f5a7d889afecf6a00c4ba"
+    },
+    {
+      "name": "consumed_v2_test",
+      "report": "tests/benchmarks/reports/vocal_f0_holdout_v2.json",
+      "excerpt_ids": [
+        7,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "report_sha256": "ed328fe19e465a773437beb9358591068ed0c283565f547c3dfb082f2dd301a0"
+    }
+  ],
+  "prospective_test": {
+    "excerpt_ids": [
+      15,
+      18,
+      19,
+      20,
+      21,
+      22
+    ],
+    "singer_ids": [
+      "S12",
+      "S13",
+      "S14",
+      "S15",
+      "S16",
+      "S17"
+    ],
+    "backing_start_s": 20,
+    "selection": "First track of each next six unseen singers in numeric ID order, metadata only; no audio, annotations or model output inspected.",
+    "prerequisite": "Both development groups pass every original gate separately; exact direct/replay agreement, independent review, and immutable candidate/protocol freeze before any test inference."
+  },
+  "stop_rule": "One frozen local-agreement statistic and four thresholds. If none passes both groups, retain all failures and stop without consuming prospective test. If feasible, freeze exact source and selected threshold then test metadata-selected IDs once; no parameter changes or replacement test after outcomes.",
+  "calibration_grid": {
+    "local_periodicity_threshold": [
+      0.25,
+      0.5,
+      0.75,
+      0.9
+    ]
+  },
+  "selection": "Lowest threshold satisfying all original gates separately in both development groups; disabled-veto control must first reproduce v2 predictions and scores. No threshold-grid expansion or method change after outcomes."
+}

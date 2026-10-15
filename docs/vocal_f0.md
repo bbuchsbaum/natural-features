@@ -37,6 +37,8 @@ silence label. Retain native rows and validity when pooling downstream.
 | `candidate_f0_hz` | Unaccepted raw pitch candidate, including instrumental/silent frames; not vocal F0 evidence |
 | `source_rms` | Exact vocal-stem frame RMS used by the acceptance gate, retained at float64 precision |
 | `framewise_voiced` | Acceptance before the optional temporal guard; retained so temporal rejection can be distinguished from confidence/source rejection |
+| `local_periodicity`, `local_supported` | Candidate-period waveform agreement and availability of its full observed support; unavailable agreement is NaN |
+| `local_energy_before`, `local_energy_after`, `local_cross_energy` | Float64 mean-square energies and cross-product of the two mean-centered waveform arms, retained for exact replay |
 
 Confidence comparisons use float32; source support and RMS comparisons use float64, preserved in the diagnostic output.
 
@@ -54,6 +56,15 @@ default 0.01-second hop requires five consecutive accepted rows. It can only
 remove accepted pitch; it never fills gaps or changes surviving pitch values.
 The optional 20 ms configuration **failed development**, as detailed below.
 It is not a recommended or qualified replacement for the default.
+
+`local_periodicity_threshold=None` disables the optional local-waveform veto.
+Its diagnostic samples two waveform arms one candidate period apart, with
+320 symmetric pair midpoints spanning 20 ms. Each arm is mean-centered.
+The score is `2*C/max(A+B, 2*min_source_rms**2)`, where A and B are mean-square
+energies and C is their mean cross-product. The existing RMS floor penalizes
+faint periodic tails. Full observed sample support is required, without zero
+padding. The score lies in [-1,1] and is not a vocal probability. Periodic
+instrument leakage and reverberation can still pass it.
 
 ## Assets, clocks and context
 
@@ -209,6 +220,36 @@ script checks report, artifact and annotation identities and exits nonzero
 for incomplete input or failed development gates. A development pass would
 still not establish qualification.
 
+## Local waveform development: versions 4 and 5
+
+Version 4 froze four local-agreement thresholds (0.25, 0.50, 0.75, 0.90)
+before computing their scores. It held all v2 framewise gates fixed and
+disabled temporal erosion. The separated stems were regenerated only for
+the two consumed groups; their original RMS and source-share diagnostics
+reproduced exactly. All four profiles failed, and no new singers were tested.
+At 0.75, the consumed v2 group's 0 dB false-voicing rate was 0.1158. At 0.90,
+both groups' −6 dB pitch accuracy fell below 0.80 (0.7869 and 0.7961).
+
+Version 5 was separately registered as **adaptive development after the v4
+failure**. It checked the complete threshold decision space for this fixed
+scalar veto, keeping the v4 failure unchanged. Inclusive `q >= threshold`
+decisions change immediately above each distinct float64 q; tied values are
+removed together. Accuracy/recall and false-alarm constraints are monotone,
+while conditional median and octave-error gates require separate checks.
+
+There is no feasible threshold on these consumed groups: false-voicing gates
+require a threshold at least 0.8899342361260348, while accuracy/recall require
+at most 0.8849322848886569. The analysis covered 24,099 decision states and
+found that these monotone constraints do not overlap. This is a limitation of
+this fixed veto on these recordings, not proof that other voicing methods fail.
+The prospective singer set remains unused.
+
+The reports are `tests/benchmarks/reports/vocal_f0_development_v4.json` and
+`vocal_f0_calibration_v5.json`; the corresponding protocols retain the
+development groups, all original gates, selection rules and exact input hashes.
+The independent v4 review verified all 60 artifacts and all 240 profile-row
+scores, including waveform calculations from the retained stems.
+
 Evaluation covers the named excerpts and controlled mixtures only.
 It does not establish performance on commercial mixes, choirs, every singer,
 calibrated source confidence, or independence from model training data.
@@ -218,6 +259,10 @@ Downstream item/scanner alignment remains study code's responsibility.
 
 - [Demucs model/source](https://github.com/facebookresearch/demucs/tree/v4.0.1), MIT.
 - [CREPE implementation](https://github.com/maxrmorrison/torchcrepe), MIT.
+- [McLeod and Wyvill, A Smarter Way to Find Pitch](https://www.cs.otago.ac.nz/graphics/Geoff/tartini/papers/A_Smarter_Way_to_Find_Pitch.pdf):
+  source for symmetric energy normalization. The local veto here adds a fixed
+  candidate period, separate arm centering and amplitude regularization; it is
+  not an implementation of their complete pitch estimator.
 - [Vocadito dataset and annotations](https://zenodo.org/records/5578807), CC BY 4.0;
   archive MD5 `dea40fd18f14d899643c4ba221b33a46`.
 - Kevin MacLeod's [Vibe Ace attribution](https://librosa.org/data/audio/Kevin_MacLeod_-_Vibe_Ace.txt)

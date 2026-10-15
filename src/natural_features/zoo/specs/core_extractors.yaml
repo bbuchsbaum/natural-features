@@ -1390,6 +1390,7 @@ extractors:
       source_threshold: { type: float, default: 0.03 }
       min_source_rms: { type: float, default: 0.01 }
       voicing_guard_s: { type: float, default: 0.0 }
+      local_periodicity_threshold: { type: float, default: null, nullable: true }
     outputs:
       default:
         schema: FeatureSeries/v1

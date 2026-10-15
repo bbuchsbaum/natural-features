@@ -39,7 +39,7 @@ def _duration(feature: FeatureSeries) -> float:
     return float(bounds[1] - bounds[0])
 
 
-def replay(feature: FeatureSeries, c: float, s: float, r: float, *, voicing_guard_s: float = 0.0) -> FeatureSeries:
+def replay(feature: FeatureSeries, c: float, s: float, r: float, *, voicing_guard_s: float = 0.0, local_periodicity_threshold: float | None = None) -> FeatureSeries:
     names = list(feature.coords["feature"])
     required = [
         "candidate_f0_hz",
@@ -79,6 +79,15 @@ def replay(feature: FeatureSeries, c: float, s: float, r: float, *, voicing_guar
     if voicing_guard_s != 0 and hop is None:
         raise ValueError("temporal replay requires effective_hop_s")
     voiced = _temporal_core(framewise, voicing_guard_s, hop if hop is not None else 1.0)
+    if "local_periodicity" in names:
+        ea, eb, cross = (values[:, at(name)] for name in ("local_energy_before", "local_energy_after", "local_cross_energy"))
+        values[:, at("local_periodicity")] = np.clip(2 * cross / np.maximum(ea + eb, 2 * r ** 2), -1, 1)
+    if local_periodicity_threshold is not None:
+        if not np.isfinite(local_periodicity_threshold) or not 0 <= local_periodicity_threshold <= 1:
+            raise ValueError("local_periodicity_threshold must be None or lie in [0, 1]")
+        if "local_periodicity" not in names or "local_supported" not in names:
+            raise ValueError("local replay requires waveform evidence")
+        voiced &= (values[:, at("local_supported")] > 0) & (values[:, at("local_periodicity")] >= local_periodicity_threshold)
     if "framewise_voiced" in names:
         values[:, at("framewise_voiced")] = framewise
     else:
