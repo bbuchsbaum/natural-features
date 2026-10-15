@@ -1,6 +1,6 @@
 # Vocal F0 in mixed music
 
-**Experimental and unqualified:** the v2 profile failed its singer-disjoint test on false voicing. The new v6 hybrid passed the false-voicing limits on six fresh singers but failed pitch accuracy and voiced recall in the −6 dB mixtures. Do not treat either configuration as a qualified vocal-pitch bank.
+**Experimental and unqualified:** the v2 profile failed its singer-disjoint test on false voicing. The v6 hybrid passed the false-voicing limits on six fresh singers but failed pitch accuracy and voiced recall in the −6 dB mixtures. The v7 learned voicing experiment also failed development; no fresh recordings were used for v7. None is a qualified vocal-pitch bank.
 
 `audio.vocal_f0` selects the `vocals` stem of Demucs 4.0.1 `htdemucs`, then
 estimates its dominant F0 with torchcrepe 0.0.24 `full`. It is a separate optional
@@ -318,6 +318,114 @@ test assets; historical source commit `061a1c4` retains those identities.
 Further work must recover supported singing in difficult mixtures while
 keeping false voicing controlled. A passing development profile alone was
 insufficient, despite independent replay verification.
+
+## Learned voicing and grouped validation: version 7
+
+Version 7 implements a joint voicing decision and a two-state temporal decoder.
+It uses all 18 previously consumed clips from 17 singers as adaptive development
+data. It does not replace any earlier held-out result. The complete procedure
+was committed as `c404d11fcf24729d17f269e87012f8a64191ac9e` before empirical
+fitting, with protocol SHA256
+`26099428ce8de69c703eb383ed48577f2af478bb7c69eba875ea247bbef85fc4`.
+
+The fixed five predictors are transformed CREPE confidence, source energy
+share, source RMS, local waveform agreement, and availability of that local
+evidence. A ridge logistic model replaces the independent hard cutoffs.
+Training-only scaling and singer-out-of-fold Platt calibration precede the
+explicit voiced/unvoiced sequence decision. Voiced rows retain the original
+raw pitch candidate; unvoiced rows are NaN. The method can recover candidates
+rejected by the old gates. Only exact zero source energy, invalid pitch, or a
+center outside real input bounds forces rejection independently of the model.
+
+Five outer singer folds evaluate the procedure. Within each outer training
+partition, three selector folds choose among probability thresholds
+{0.25, 0.50, 0.75} and switch penalties {0, 1, 2}. Each selector-training fit
+has its own three-fold probability calibration. Every level excludes held
+singers, identical rendered inputs, and negative accompaniment families,
+including inherited exclusions. Repeated backing/silence copies cannot
+increase their training mass. Controls removed by ancestor exclusions are
+explicitly untested in inner selection; all 90 outer results and every
+original gate remain required.
+
+**The frozen nine-profile family failed.** No outer selector or final selector
+found an eligible profile. The predeclared diagnostic fallback (threshold
+0.50, switch penalty 0) produced these outer-fold results:
+
+| Consumed group | Condition | Raw pitch accuracy | Voiced recall | False voicing |
+|---|---|---:|---:|---:|
+| Original development | Solo | 0.9606 | 0.9723 | 0.1186 |
+| Original development | 0 dB | 0.9328 | 0.9545 | 0.1365 |
+| Original development | −6 dB | 0.9067 | 0.9342 | 0.0874 |
+| Consumed v2 test | Solo | 0.9759 | 0.9837 | 0.1560 |
+| Consumed v2 test | 0 dB | 0.9642 | 0.9791 | 0.1920 |
+| Consumed v2 test | −6 dB | 0.9415 | 0.9649 | 0.1864 |
+| Consumed v6 test | Solo | 0.9608 | 0.9791 | 0.1103 |
+| Consumed v6 test | 0 dB | 0.9327 | 0.9620 | 0.1464 |
+| Consumed v6 test | −6 dB | 0.8864 | 0.9354 | 0.1365 |
+
+Backing-only and silence false acceptance were zero. Pitch, recall, median
+and octave gates passed; false voicing failed in eight of nine singing
+comparisons. These are out-of-fold predictions from five fitted models,
+not independent qualification of the final all-data fit.
+
+In the separate final three-fold selector, threshold 0.75 with no switch
+penalty had the lowest worst-condition false voicing among the nine profiles:
+0.1404, still above 0.10, with minimum pitch accuracy 0.8515. Positive switch
+penalties did not rescue eligibility. No additional thresholds were tried.
+This finite experiment does not establish that every possible threshold, or
+the broader vocal-identification problem, is infeasible.
+
+Outer-fold probability diagnostics are retained by condition. Before physical
+admissibility, Platt calibration changed Brier scores from 0.03926 to 0.03798
+for solo, 0.05403 to 0.05374 at 0 dB, and 0.06084 to 0.06147 at −6 dB.
+It therefore did not improve every condition. Reliability bins and log loss
+are also reported; the fitted probabilities describe the stated benchmark
+weighting, not population prevalence or a temporal-state posterior.
+Frames are correlated, development is adaptive, and only two accompaniment
+recordings are represented. Analytic evidence is inherited from the unchanged
+pitch engine; those controls bypass singing identification.
+
+The experiment retains all 90 native outer predictions, 120 fit records,
+fold membership, input/source hashes, every tested profile, and the final
+unqualified diagnostic model in
+`tests/benchmarks/reports/vocal_voicing_development_v7.json`.
+Independent review reproduced all 90 outputs (88,990 native rows), all 54
+selector-profile evaluations, and checked the 96 base/24 calibration fit records,
+including training-only scaling and ancestor exclusions. It confirmed the
+failure. The receipt is `tests/benchmarks/reports/vocal_voicing_review_v7.json`.
+It did not refit the optimizer, rerun neural inference, or rerender the
+previously audited input waveforms. The standalone reviewer is retained at
+`/private/tmp/natural-features-vocal-assets/v7-independent-review/review.py`
+(SHA256 `7afb1b39c9b7be2920e8acad48e6753f904dd56a3d25bd53593596ac3c1afe75`).
+Reproduce the development experiment with the retained artifacts at their recorded paths:
+
+```bash
+python scripts/calibrate_vocal_voicing.py \
+  --assets /tmp/vocal-f0-assets \
+  --artifact-dir /tmp/vocal-voicing-v7 \
+  --out-json /tmp/vocal-voicing-v7-report.json
+```
+
+The command exits nonzero on failed development or incomplete input. It
+exports `final_profile.json` even when no eligible operating point exists,
+marked as development only. Explicit experimental application is:
+
+```python
+import json
+from pathlib import Path
+from natural_features.features.audio.vocal_voicing import apply_voicing_model
+
+profile = json.loads(Path("/tmp/vocal-voicing-v7/final_profile.json").read_text())
+experimental = apply_voicing_model(vocal, profile)
+```
+
+Application requires the pinned models and a verified native frontend
+identity with the original 50–1000 Hz range and 10 ms hop. Native times,
+bounds, raw candidates, and input context are preserved. The output adds
+`voicing_probability` and `voicing_admissible`; legacy gate diagnostics
+remain available but no longer define acceptance. Public extraction defaults
+remain unchanged. The failed bounded experiment stops here, without using
+fresh qualification recordings or relaxing any acceptance limit.
 
 Evaluation covers the named excerpts and controlled mixtures only.
 It does not establish performance on commercial mixes, choirs, every singer,
