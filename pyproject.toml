@@ -18,6 +18,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+vocals = [
+  "torch>=2.2",
+  "torchaudio>=2.2",
+  "demucs>=4.1.0",
+  "torchcrepe>=0.0.24",
+]
 mert = [
   "torch>=2.2",
   "transformers>=4.40,<5",
