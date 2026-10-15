@@ -1,0 +1,84 @@
+{
+  "schema": "VocalF0QualificationProtocol/v6",
+  "selection": "First track of each next six unseen singers in numeric ID order, metadata only; no audio, annotations or model output inspected.",
+  "source_dataset": "https://zenodo.org/records/5578807",
+  "archive_md5": "dea40fd18f14d899643c4ba221b33a46",
+  "conditions": [
+    "solo",
+    "mixture_0db",
+    "mixture_minus6db"
+  ],
+  "negative_conditions": [
+    "backing",
+    "silence"
+  ],
+  "averaging": "equal-weight macro across six excerpts, separately per condition",
+  "gates": {
+    "raw_pitch_accuracy_min": 0.8,
+    "voicing_recall_min": 0.8,
+    "voicing_false_alarm_rate_max": 0.1,
+    "median_abs_cents_error_max": 50.0,
+    "octave_error_rate_max": 0.05,
+    "backing_false_alarm_rate_max": 0.05,
+    "silence_false_alarm_rate_max": 0.0,
+    "analytic_median_abs_cents_error_max": 50.0
+  },
+  "extractor": {
+    "demucs": "4.0.1",
+    "torchcrepe": "0.0.24",
+    "separator_sha256": "8726e21a993978c7ba086d3872e7608d7d5bfca646ca4aca459ffda844faa8b4",
+    "crepe_sha256": "133225604dedd2e4005f8bbd1bd0a2ec073ba8b7a6cd31ff6d5edbbfa3539986",
+    "decoder": "local weighted +/-4 bins, undithered",
+    "hop_s": 0.01,
+    "fmin": 50.0,
+    "fmax": 1000.0,
+    "confidence_threshold": 0.65,
+    "source_threshold": 0.03,
+    "min_source_rms": 0.01,
+    "local_periodicity_threshold": 0.5,
+    "max_internal_gap_s": 0.02,
+    "voicing_guard_s": 0.01
+  },
+  "scope": "Six named singer-disjoint Vocadito excerpts (15,18,19,20,21,22), first10s solo and constructed0/-6dB mixtures, with two backing windows20-30s and silence. No population, commercial-mix, choir, singer-identity, calibrated-probability or training-independence claim.",
+  "purpose": "One prospective singer-disjoint qualification of the v6 hybrid after adaptive development on all previously consumed groups.",
+  "excerpt_ids": [
+    15,
+    18,
+    19,
+    20,
+    21,
+    22
+  ],
+  "backing_start_s": 20,
+  "stop_rule": "Evaluate once; no threshold changes or replacement holdout after outcomes.",
+  "calibration_report_sha256": "eb92e52b2a6157b3b616a2be005fc0a9176e191986e3b8608f91de8b2d11d255",
+  "calibration_protocol_sha256": "53b78c2009c7e214449bae9b7cc3561b3d58e133340ef330ea02317afd508b67",
+  "singer_metadata_sha256": "22266a2deb232e6783cc5ebfbba5e4c7639d7c614e9e248e780a0bee8678a41c",
+  "extractor_source_sha256": "cf166895a44398808cefe86e2da41559f4c8dd1ae61e10d9462b95bd9c1b4d2c",
+  "singer_ids": [
+    "S12",
+    "S13",
+    "S14",
+    "S15",
+    "S16",
+    "S17"
+  ],
+  "acceptance_rule": "C=original v2 framewise acceptance AND available local q>=threshold. Fill only bounded internal zero-runs of ORIGINAL C whose length <=floor(max_internal_gap_s/effective_hop_s), into a temporary support envelope. Require all envelope rows within ceil(voicing_guard_s/effective_hop_s) each side. Final acceptance=C AND that erosion. Never bridge unavailable local evidence or invalid/out-of-duration rows; never fill a missing output or recursively update C.",
+  "local_statistic": {
+    "name": "candidate_period_local_agreement",
+    "midpoint_count": 320,
+    "midpoint_positions": "center + arange(320) - 159.5 at 16000Hz",
+    "lag": "16000 / float32 candidate_f0_hz, promoted to float64",
+    "sampling": "numpy linear interpolation at midpoint +/- lag/2; require every position within available waveform samples and real input duration; no zero padding or clamped observations",
+    "centering": "Subtract each arm mean separately in float64",
+    "statistic": "A=mean(a*a), B=mean(b*b), C=mean(a*b); q=clip(2*C/max(A+B,2*min_source_rms**2),-1,1), all accumulated float64; undefined support gives NaN with local_supported=0. Silence/constant full-support arms give0.",
+    "interpretation": "Local repeated waveform energy at candidate period, not voice identity or calibrated probability; periodic instrumental leakage and reverb can pass.",
+    "reference": "https://www.cs.otago.ac.nz/graphics/Geoff/tartini/papers/A_Smarter_Way_to_Find_Pitch.pdf",
+    "reference_scope": "Symmetric normalization inspired by NSDF; this candidate-conditioned, mean-centered, amplitude-regularized veto is not the MPM pitch estimator."
+  },
+  "frozen_sources": {
+    "src/natural_features/features/audio/vocal_f0.py": "cf166895a44398808cefe86e2da41559f4c8dd1ae61e10d9462b95bd9c1b4d2c",
+    "src/natural_features/features/audio/vocal_f0_benchmark.py": "23670160c8e70b605a304281d6be653e39178b6ae5dc7a8facdc7cfbc35bcdde",
+    "scripts/qualify_vocal_f0.py": "139656428df7324df65b00ecc6c8a42156bb6752c33e1a2a2f826de2d6a08d48"
+  }
+}

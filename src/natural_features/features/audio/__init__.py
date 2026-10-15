@@ -25,6 +25,7 @@ from .opensmile import egemaps_lld
 from .periodicity import audio_periodicity
 from .phonetic import audio_formants, audio_harmonicity
 from .prosody import audio_pitch, prosody_features
+from .vocal_f0 import audio_vocal_f0
 
 __all__ = [
     "audio_ast_embeddings",
@@ -37,6 +38,7 @@ __all__ = [
     "audio_music_mert",
     "audio_periodicity",
     "audio_pitch",
+    "audio_vocal_f0",
     "egemaps_lld",
     "log_cochleagram",
     "mel",

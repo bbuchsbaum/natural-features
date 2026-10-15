@@ -1,0 +1,174 @@
+{
+  "schema": "VocalVoicingDevelopmentProtocol/v7",
+  "purpose": "Explicit adaptive development on all consumed data; no independent qualification or new empirical recordings.",
+  "input_reports": [
+    {
+      "path": "tests/benchmarks/reports/vocal_f0_development_v4.json",
+      "sha256": "38b7525aeadd4f6b1c351daae0f770f816d942eccea43f2b73bb89cfc1dc7de0",
+      "rows": "raw_diagnostics"
+    },
+    {
+      "path": "tests/benchmarks/reports/vocal_f0_holdout_v6.json",
+      "sha256": "f62002e2cb0b617c38334bf5f65bcddf8479fe9fce4fea944a574869d4969621",
+      "rows": "per_excerpt",
+      "group": "consumed_v6_test"
+    }
+  ],
+  "groups": {
+    "original_development": {
+      "excerpt_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "backing_start_s": 0
+    },
+    "consumed_v2_test": {
+      "excerpt_ids": [
+        7,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "backing_start_s": 10
+    },
+    "consumed_v6_test": {
+      "excerpt_ids": [
+        15,
+        18,
+        19,
+        20,
+        21,
+        22
+      ],
+      "backing_start_s": 20
+    }
+  },
+  "singer_metadata_sha256": "22266a2deb232e6783cc5ebfbba5e4c7639d7c614e9e248e780a0bee8678a41c",
+  "gates": {
+    "raw_pitch_accuracy_min": 0.8,
+    "voicing_recall_min": 0.8,
+    "voicing_false_alarm_rate_max": 0.1,
+    "median_abs_cents_error_max": 50.0,
+    "octave_error_rate_max": 0.05,
+    "backing_false_alarm_rate_max": 0.05,
+    "silence_false_alarm_rate_max": 0.0,
+    "analytic_median_abs_cents_error_max": 50.0
+  },
+  "frontend": {
+    "source_sha256": "cf166895a44398808cefe86e2da41559f4c8dd1ae61e10d9462b95bd9c1b4d2c",
+    "model_pins": {
+      "demucs": "4.0.1",
+      "torchcrepe": "0.0.24",
+      "separator_sha256": "8726e21a993978c7ba086d3872e7608d7d5bfca646ca4aca459ffda844faa8b4",
+      "crepe_sha256": "133225604dedd2e4005f8bbd1bd0a2ec073ba8b7a6cd31ff6d5edbbfa3539986",
+      "decoder": "local weighted +/-4 bins, undithered"
+    },
+    "effective_hop_s": 0.01,
+    "fmin": 50.0,
+    "fmax": 1000.0,
+    "local_statistic_min_source_rms": 0.01,
+    "neural_inference_changes": false,
+    "accepted_native_identities": [
+      [
+        "vocal-f0-v4-replay",
+        "f6f91fb1c505fea0"
+      ],
+      [
+        "vocal-f0-v6",
+        "42e8a79a9ca5b190"
+      ],
+      [
+        "vocal-f0-v6",
+        "5d1a29f54c2ac556"
+      ]
+    ],
+    "identity_scope": "Verified same pinned models, range50-1000Hz,10ms grid and local-statistic RMS floor.01; historical gate choices differ but raw predictors remain compatible. Reject unlisted code_version/params_hash."
+  },
+  "features": [
+    "logit(clip(confidence,1e-4,1-1e-4))",
+    "log(max(source_support,1e-8))",
+    "log(max(source_rms,1e-6))",
+    "local_periodicity if available else 0",
+    "local_supported"
+  ],
+  "fit": {
+    "standardization": "weighted train-only mean/std; variance exactly0 gives scale1",
+    "objective": "weighted mean BCE + .01/2 * squared coefficient norm; free intercept",
+    "l2": 0.01,
+    "calibration": "3-fold singer-OOF base logits; weighted mean BCE of sigmoid(a*logit+b) + .001/2*(a-1)^2; a>=0, free b; then refit base on full allowed training partition",
+    "platt_l2": 0.001,
+    "optimizer": "scipy L-BFGS-B; analytic gradient; start base all0, Platt(a,b)=(1,0); require success and finite parameters",
+    "optimizer_options": {
+      "maxiter": 500,
+      "ftol": 1e-12,
+      "gtol": 1e-08
+    },
+    "labels": "reference->native nearest mapping using original scorer tolerance.005001 and earlier ties; unknown excluded; duplicate labels aggregate voiced fraction with count weight; target voicing not pitch correctness",
+    "weights": "each singer mass1, equal excerpts then 3 singing conditions; each negative family mass1, equal unique rendered inputs, repeated copies split input mass; within stream normalize mapped admissible annotation counts; omit streams with zero admissible labels; no class balancing; normalize total mass"
+  },
+  "admissibility": "force U only for exact source_rms==0, nonfinite/nonpositive candidate, or center outside real input bounds; missing local evidence is a predictor, not a veto; malformed required diagnostics fail",
+  "purge": "at every fit/calibration/selector level exclude held singers, exact rendered audio hashes, and negative families of validation rows; inherit all ancestor exclusions. Backing family=(recording SHA,window start); silence one family across lengths. Family purge applies to negative rows, not all singing mixtures using same backing.",
+  "cross_validation": {
+    "outer_folds": 5,
+    "outer_assignment": "(numeric singer id -1)%5",
+    "selector_folds": 3,
+    "calibration_folds": 3,
+    "inner_assignment": "sort remaining singer ids numerically and assign round-robin; all excerpts/conditions of a singer stay together",
+    "nesting": "outer training ->3-fold profile selection; each selector-training pipeline itself uses3-fold OOF logits for Platt, then refits base. After profile selection refit calibrated pipeline on outer training; never use outer labels at any stage."
+  },
+  "decoder": {
+    "states": [
+      "unvoiced",
+      "voiced"
+    ],
+    "emissions": "U=0,V=logit(clip(p,1e-12,1-1e-12))-logit(threshold); inadmissible V=-infinity",
+    "transitions": "subtract fixed penalty per state switch; no pitch-jump term",
+    "ties": "U predecessor on ties and U final on tie",
+    "endpoint_priors": "equal; process every clip independently",
+    "output": "V uses unchanged raw candidate pitch; U givesNaN; no pitch interpolation or clock changes"
+  },
+  "grid": {
+    "threshold": [
+      0.25,
+      0.5,
+      0.75
+    ],
+    "switch_penalty": [
+      0.0,
+      1.0,
+      2.0
+    ]
+  },
+  "selection": "profiles must satisfy unchanged gates separately in every historical group represented in pooled selector OOF. Rank max minimum RPA over groups/conditions, min maximum FA over the three singing conditions, smaller switch penalty, larger threshold. If none eligible choose fixed(.5,0) for complete diagnostics and record failure; do not expand grid.",
+  "advancement": "complete outer OOF must pass original gates separately on all3 full historical groups; final selection using same3-fold procedure on all17 singers must be eligible; unchanged pitch-engine analytic controls must retain passing hash-bound evidence. These inherited controls bypass vocal identification and do not validate learned voicing on analytic tones. Outer fallback status explicit; final fallback cannot advance.",
+  "probability_diagnostics": "outer OOF base and Platt Brier/logloss/fixed10-bin reliability by condition; exact annotation-level Brier for softlabels is y*(1-p)^2+(1-y)*p^2; show admissibility coverage and unmatched counts. Viterbi decisions are not calibrated probabilities.",
+  "stop_rule": "One frozen9-profile family. Preserve all failures; if advancement criteria fail stop this experiment without grid expansion or fresh data. No new qualification recordings in this development run.",
+  "limitations": [
+    "17 singers/18clips; frames correlated",
+    "only two known accompaniment recordings; no unseen-backing generalization claim",
+    "adaptive design informed by prior outcomes",
+    "cross-fit versus refit score-distribution difference",
+    "probabilities describe specified benchmark weighting, not population prevalence"
+  ],
+  "selection_structural_absence": "Only inner selector gates for backing/silence with zero eligible validation rows after ancestor family purge are marked not_tested:ancestor_family_purge and omitted, never counted as passed. Any present control rows must satisfy original gate. Undefined metrics or missing artifacts fail. OuterOOF must include all90 rows/all5conditions/3groups.",
+  "analytic_reports": {
+    "original_development": {
+      "path": "tests/benchmarks/reports/vocal_f0_development_v2.json",
+      "sha256": "a1dd10d4ed93c8b0a6a30de1f35be6ab6ae54bc1d43f5a7d889afecf6a00c4ba"
+    },
+    "consumed_v2_test": {
+      "path": "tests/benchmarks/reports/vocal_f0_holdout_v2.json",
+      "sha256": "ed328fe19e465a773437beb9358591068ed0c283565f547c3dfb082f2dd301a0"
+    },
+    "consumed_v6_test": {
+      "path": "tests/benchmarks/reports/vocal_f0_holdout_v6.json",
+      "sha256": "f62002e2cb0b617c38334bf5f65bcddf8479fe9fce4fea944a574869d4969621"
+    }
+  }
+}

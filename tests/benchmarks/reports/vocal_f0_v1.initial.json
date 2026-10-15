@@ -1,0 +1,1223 @@
+{
+  "analytic": {
+    "cases": {
+      "glide_110_440": {
+        "gross_pitch_error_rate": 0.0,
+        "median_abs_cents_error": 6.1193820307777385,
+        "median_abs_cents_error_interior": 6.0435496860578795,
+        "n_joint_voiced": 99,
+        "n_reference": 100,
+        "n_reference_unvoiced": 0,
+        "n_reference_voiced": 100,
+        "n_scored": 100,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.0,
+        "raw_pitch_accuracy": 0.99,
+        "voicing_false_alarm_rate": null,
+        "voicing_recall": 0.99
+      },
+      "missing_fundamental_220": {
+        "gross_pitch_error_rate": 0.01,
+        "median_abs_cents_error": 5.021218804797177,
+        "median_abs_cents_error_interior": 5.021218804797177,
+        "n_joint_voiced": 100,
+        "n_reference": 100,
+        "n_reference_unvoiced": 0,
+        "n_reference_voiced": 100,
+        "n_scored": 100,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.01,
+        "raw_pitch_accuracy": 0.99,
+        "voicing_false_alarm_rate": null,
+        "voicing_recall": 1.0
+      },
+      "tone_100": {
+        "gross_pitch_error_rate": 0.0,
+        "median_abs_cents_error": 8.065234073299761,
+        "median_abs_cents_error_interior": 8.065234073299761,
+        "n_joint_voiced": 99,
+        "n_reference": 100,
+        "n_reference_unvoiced": 0,
+        "n_reference_voiced": 100,
+        "n_scored": 100,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.0,
+        "raw_pitch_accuracy": 0.99,
+        "voicing_false_alarm_rate": null,
+        "voicing_recall": 0.99
+      },
+      "tone_150": {
+        "gross_pitch_error_rate": 0.0,
+        "median_abs_cents_error": 8.921786495143092,
+        "median_abs_cents_error_interior": 8.802113209377126,
+        "n_joint_voiced": 99,
+        "n_reference": 100,
+        "n_reference_unvoiced": 0,
+        "n_reference_voiced": 100,
+        "n_scored": 100,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.0,
+        "raw_pitch_accuracy": 0.99,
+        "voicing_false_alarm_rate": null,
+        "voicing_recall": 0.99
+      },
+      "tone_220": {
+        "gross_pitch_error_rate": 0.0,
+        "median_abs_cents_error": 5.152674501316282,
+        "median_abs_cents_error_interior": 5.152674501316282,
+        "n_joint_voiced": 100,
+        "n_reference": 100,
+        "n_reference_unvoiced": 0,
+        "n_reference_voiced": 100,
+        "n_scored": 100,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.0,
+        "raw_pitch_accuracy": 1.0,
+        "voicing_false_alarm_rate": null,
+        "voicing_recall": 1.0
+      },
+      "tone_440": {
+        "gross_pitch_error_rate": 0.0,
+        "median_abs_cents_error": 5.36097183160147,
+        "median_abs_cents_error_interior": 5.36097183160147,
+        "n_joint_voiced": 100,
+        "n_reference": 100,
+        "n_reference_unvoiced": 0,
+        "n_reference_voiced": 100,
+        "n_scored": 100,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.0,
+        "raw_pitch_accuracy": 1.0,
+        "voicing_false_alarm_rate": null,
+        "voicing_recall": 1.0
+      }
+    },
+    "complete": true,
+    "worst_median_abs_cents_error": 8.802113209377126
+  },
+  "arguments": {
+    "device": "cpu",
+    "download": false,
+    "threads": 4
+  },
+  "completed_jobs": 30,
+  "errors": [],
+  "extractor_revision": "vocal-f0-v1",
+  "extractor_source_sha256": "69577406bdd5fb196ab15854f6ed914357943e6b7cab692b85d104c380ac4096",
+  "gate": {
+    "failures": [
+      "solo.voicing_false_alarm_rate <= 0.1 failed: 0.3795446230995583",
+      "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.22844189556127326",
+      "mixture_minus6db.raw_pitch_accuracy >= 0.8 failed: 0.7453649841097824",
+      "mixture_minus6db.voicing_recall >= 0.8 failed: 0.7610549246843258",
+      "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.13106473153549744"
+    ],
+    "passed": false
+  },
+  "per_excerpt": [
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/5fab2e8709710f37e474823d015f1e1938fc190df09d2a8777ca5b405f8598aa.npz",
+        "artifact_sha256": "dc05f48c216df8c9b6b0d7914b81b1566df98a40db4c4d9a4e772926aeba8ea5",
+        "cache_key": "5fab2e8709710f37e474823d015f1e1938fc190df09d2a8777ca5b405f8598aa",
+        "cached": false
+      },
+      "condition": "solo",
+      "excerpt_id": 1,
+      "input_hashes": {
+        "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+        "reference_sha256": "dd10beba57b94d37b1d3263f5deca3b780adc7ec90f1d43bb00099b02c2878e5",
+        "rendered_16khz_mono_sha256": "1a0eb964dc0d9efc69fd5a4bde676d98b6048b9d9c70fe34e3fa186c3a55be7e",
+        "source_audio_sha256": "b509768315efad8120183b48e01d6090f1649d5bcc691241940dc7a100274ab8"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": 0.01910828025477707,
+        "median_abs_cents_error": 6.103487587768486,
+        "n_joint_voiced": 1099,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 618,
+        "n_reference_voiced": 1105,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.00545950864422202,
+        "raw_pitch_accuracy": 0.9755656108597285,
+        "voicing_false_alarm_rate": 0.13106796116504854,
+        "voicing_recall": 0.9945701357466064
+      },
+      "mixture_recipe": {
+        "recipe": "source only"
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/161ac9eeae53fbaa262b4a00d5bf530c5a44850c986fc1b9cc11db97409a36cf.npz",
+        "artifact_sha256": "d1a59262bc584dd7a4c6f2d56dc94969aebcc117c0c990ce52e5d55fe85300c6",
+        "cache_key": "161ac9eeae53fbaa262b4a00d5bf530c5a44850c986fc1b9cc11db97409a36cf",
+        "cached": false
+      },
+      "condition": "backing",
+      "excerpt_id": 1,
+      "input_hashes": {
+        "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+        "reference_sha256": "dd10beba57b94d37b1d3263f5deca3b780adc7ec90f1d43bb00099b02c2878e5",
+        "rendered_16khz_mono_sha256": "e561ded6fba2884f8eef1b96e3f8866efd5cbbb070a9f3aa19cfa6e826ddc8cf",
+        "source_audio_sha256": "b509768315efad8120183b48e01d6090f1649d5bcc691241940dc7a100274ab8"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": null,
+        "median_abs_cents_error": null,
+        "n_joint_voiced": 0,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 1723,
+        "n_reference_voiced": 0,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": null,
+        "raw_pitch_accuracy": null,
+        "voicing_false_alarm_rate": 0.0,
+        "voicing_recall": null
+      },
+      "mixture_recipe": {
+        "backing": "vibe",
+        "recipe": "backing only"
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/be06eb97c83321ff4e1be45266759071bb09ca58b4d2f612ca0be8aa64582fd0.npz",
+        "artifact_sha256": "6a6d6a5ae1437b838427168e0a1f4e91a1d918d2cde8b9eabe09e5c1dc086dca",
+        "cache_key": "be06eb97c83321ff4e1be45266759071bb09ca58b4d2f612ca0be8aa64582fd0",
+        "cached": false
+      },
+      "condition": "silence",
+      "excerpt_id": 1,
+      "input_hashes": {
+        "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+        "reference_sha256": "dd10beba57b94d37b1d3263f5deca3b780adc7ec90f1d43bb00099b02c2878e5",
+        "rendered_16khz_mono_sha256": "3d00ed86b663cd1b8ac82b105257cd109412f92dca442048532439f920a7f645",
+        "source_audio_sha256": "b509768315efad8120183b48e01d6090f1649d5bcc691241940dc7a100274ab8"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": null,
+        "median_abs_cents_error": null,
+        "n_joint_voiced": 0,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 1723,
+        "n_reference_voiced": 0,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": null,
+        "raw_pitch_accuracy": null,
+        "voicing_false_alarm_rate": 0.0,
+        "voicing_recall": null
+      },
+      "mixture_recipe": {
+        "recipe": "zero signal"
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/02bd8a97188edbe335ff843b3f2ed4f4699417072230bedc100f80fe91fdff82.npz",
+        "artifact_sha256": "03f44b26bf98b6448b0cb881926eb80959b4b39e1d47b2bc0c132d6280d9d423",
+        "cache_key": "02bd8a97188edbe335ff843b3f2ed4f4699417072230bedc100f80fe91fdff82",
+        "cached": false
+      },
+      "condition": "mixture_0db",
+      "excerpt_id": 1,
+      "input_hashes": {
+        "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+        "reference_sha256": "dd10beba57b94d37b1d3263f5deca3b780adc7ec90f1d43bb00099b02c2878e5",
+        "rendered_16khz_mono_sha256": "a3b9d50bd3f49d11d7f1dfa95f124a559a1bc98a2f93d2d0e0e5e65af64fae00",
+        "source_audio_sha256": "b509768315efad8120183b48e01d6090f1649d5bcc691241940dc7a100274ab8"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": 0.013295346628679962,
+        "median_abs_cents_error": 6.303910480673761,
+        "n_joint_voiced": 1053,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 618,
+        "n_reference_voiced": 1105,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.0,
+        "raw_pitch_accuracy": 0.9402714932126697,
+        "voicing_false_alarm_rate": 0.0744336569579288,
+        "voicing_recall": 0.9529411764705882
+      },
+      "mixture_recipe": {
+        "backing": "vibe",
+        "backing_rms_masked_before_scaling": 0.0783813198094991,
+        "backing_scale": 0.24736751068728727,
+        "common_peak_scale": 1.0,
+        "source_rms_masked": 0.01938899196565995,
+        "target_vocal_to_backing_db": 0.0
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/4d5f697145fe189ec206653a76a0933c9aafa7f54b527366222e7348adfec6df.npz",
+        "artifact_sha256": "7fb95ddba78aa280f8c32b47792f2ea0ba6340a53d677b0cbaf8d5793fd13742",
+        "cache_key": "4d5f697145fe189ec206653a76a0933c9aafa7f54b527366222e7348adfec6df",
+        "cached": false
+      },
+      "condition": "mixture_minus6db",
+      "excerpt_id": 1,
+      "input_hashes": {
+        "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+        "reference_sha256": "dd10beba57b94d37b1d3263f5deca3b780adc7ec90f1d43bb00099b02c2878e5",
+        "rendered_16khz_mono_sha256": "aadc6584a75e9b96121df5fd4f8f33faae6f6198633529794e3cbe73b9506437",
+        "source_audio_sha256": "b509768315efad8120183b48e01d6090f1649d5bcc691241940dc7a100274ab8"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": 0.01282051282051282,
+        "median_abs_cents_error": 6.097437498883657,
+        "n_joint_voiced": 858,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 618,
+        "n_reference_voiced": 1105,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.002331002331002331,
+        "raw_pitch_accuracy": 0.7665158371040725,
+        "voicing_false_alarm_rate": 0.025889967637540454,
+        "voicing_recall": 0.7764705882352941
+      },
+      "mixture_recipe": {
+        "backing": "vibe",
+        "backing_rms_masked_before_scaling": 0.0783813198094991,
+        "backing_scale": 0.49356307202200594,
+        "common_peak_scale": 1.0,
+        "source_rms_masked": 0.01938899196565995,
+        "target_vocal_to_backing_db": -6.0
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/20f6ba4aef3bff7c96a4ede7bf9ac3db9d1e0b7a973173341b0c446ea5ef31df.npz",
+        "artifact_sha256": "e2b2646a50ad0ec396b0d9a4fb4c3c4a06fea7d7dcbbd3e4d107e376aa2d7ec4",
+        "cache_key": "20f6ba4aef3bff7c96a4ede7bf9ac3db9d1e0b7a973173341b0c446ea5ef31df",
+        "cached": false
+      },
+      "condition": "solo",
+      "excerpt_id": 2,
+      "input_hashes": {
+        "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+        "reference_sha256": "4d515029c036312e8d04545470c3d5dc5db3132dec54813624faee7d84cd6363",
+        "rendered_16khz_mono_sha256": "6a346a968c0cf342a22a31fd103d74fa00e11f2fac2e8cd20335e7cbf699a0f6",
+        "source_audio_sha256": "8dcc99c3b08a9a5800b793e3d65cccfb4464961f15cf8ccde25bd4c8b853d519"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": 0.0327455919395466,
+        "median_abs_cents_error": 5.399889819452932,
+        "n_joint_voiced": 1191,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 532,
+        "n_reference_voiced": 1191,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.02686817800167926,
+        "raw_pitch_accuracy": 0.9672544080604534,
+        "voicing_false_alarm_rate": 0.42857142857142855,
+        "voicing_recall": 1.0
+      },
+      "mixture_recipe": {
+        "recipe": "source only"
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/d68b825e718d3c045dc55857eed048397312d6ac616b81fdbe828d7d476f19d7.npz",
+        "artifact_sha256": "e48d9c37d4af64e47e4d95eaa8f6773aeb0ba75828ead59a068cb13111883050",
+        "cache_key": "d68b825e718d3c045dc55857eed048397312d6ac616b81fdbe828d7d476f19d7",
+        "cached": false
+      },
+      "condition": "backing",
+      "excerpt_id": 2,
+      "input_hashes": {
+        "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+        "reference_sha256": "4d515029c036312e8d04545470c3d5dc5db3132dec54813624faee7d84cd6363",
+        "rendered_16khz_mono_sha256": "9a4214f6cc8b45170dce2ba25222eb944ee01b37cb511d79508268a92f8ac1b1",
+        "source_audio_sha256": "8dcc99c3b08a9a5800b793e3d65cccfb4464961f15cf8ccde25bd4c8b853d519"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": null,
+        "median_abs_cents_error": null,
+        "n_joint_voiced": 0,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 1723,
+        "n_reference_voiced": 0,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": null,
+        "raw_pitch_accuracy": null,
+        "voicing_false_alarm_rate": 0.0,
+        "voicing_recall": null
+      },
+      "mixture_recipe": {
+        "backing": "sugar",
+        "recipe": "backing only"
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/71e4a01191133b2641ebf9c9d6de6eef5c243152acf725c7a92149ed47b55517.npz",
+        "artifact_sha256": "6a3f44881f5fe41bb424aa509a2bca2ade262a1cac232a9fddca590fb6ce7c60",
+        "cache_key": "71e4a01191133b2641ebf9c9d6de6eef5c243152acf725c7a92149ed47b55517",
+        "cached": false
+      },
+      "condition": "silence",
+      "excerpt_id": 2,
+      "input_hashes": {
+        "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+        "reference_sha256": "4d515029c036312e8d04545470c3d5dc5db3132dec54813624faee7d84cd6363",
+        "rendered_16khz_mono_sha256": "3d00ed86b663cd1b8ac82b105257cd109412f92dca442048532439f920a7f645",
+        "source_audio_sha256": "8dcc99c3b08a9a5800b793e3d65cccfb4464961f15cf8ccde25bd4c8b853d519"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": null,
+        "median_abs_cents_error": null,
+        "n_joint_voiced": 0,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 1723,
+        "n_reference_voiced": 0,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": null,
+        "raw_pitch_accuracy": null,
+        "voicing_false_alarm_rate": 0.0,
+        "voicing_recall": null
+      },
+      "mixture_recipe": {
+        "recipe": "zero signal"
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/df0403b6d1338d2f396b2539dd0d8f0a73af3b434b12bf3f64e271b1f1912f82.npz",
+        "artifact_sha256": "37cd4ee5dca87db22f42f920cbe8726cba3bbc58810577660635f4fe22f28fba",
+        "cache_key": "df0403b6d1338d2f396b2539dd0d8f0a73af3b434b12bf3f64e271b1f1912f82",
+        "cached": false
+      },
+      "condition": "mixture_0db",
+      "excerpt_id": 2,
+      "input_hashes": {
+        "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+        "reference_sha256": "4d515029c036312e8d04545470c3d5dc5db3132dec54813624faee7d84cd6363",
+        "rendered_16khz_mono_sha256": "2dcb71ed7fca18c79b0e9ddfc4fab438cfa6d962854c0a461d902685bcc7e63f",
+        "source_audio_sha256": "8dcc99c3b08a9a5800b793e3d65cccfb4464961f15cf8ccde25bd4c8b853d519"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": 0.05866177818515124,
+        "median_abs_cents_error": 6.382139804615051,
+        "n_joint_voiced": 1091,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 532,
+        "n_reference_voiced": 1191,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.04766269477543538,
+        "raw_pitch_accuracy": 0.8623005877413937,
+        "voicing_false_alarm_rate": 0.2669172932330827,
+        "voicing_recall": 0.9160369437447523
+      },
+      "mixture_recipe": {
+        "backing": "sugar",
+        "backing_rms_masked_before_scaling": 0.01719050590029693,
+        "backing_scale": 8.253924140155203,
+        "common_peak_scale": 0.9331860691036461,
+        "source_rms_masked": 0.14188913163194128,
+        "target_vocal_to_backing_db": 0.0
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/ab57c70a73e4ec5178008b4936c7486504c0bb8a0c593e48eafd42e8c3a46d5e.npz",
+        "artifact_sha256": "aed0a85f1bf8d4ad95b7a45150dea9f4e8d704e460fa2dd258df891393cbd2a1",
+        "cache_key": "ab57c70a73e4ec5178008b4936c7486504c0bb8a0c593e48eafd42e8c3a46d5e",
+        "cached": false
+      },
+      "condition": "mixture_minus6db",
+      "excerpt_id": 2,
+      "input_hashes": {
+        "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+        "reference_sha256": "4d515029c036312e8d04545470c3d5dc5db3132dec54813624faee7d84cd6363",
+        "rendered_16khz_mono_sha256": "62976461d3302686f93e3988f11b2c9151cbb3e783af16fe1182cf90a2814391",
+        "source_audio_sha256": "8dcc99c3b08a9a5800b793e3d65cccfb4464961f15cf8ccde25bd4c8b853d519"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": 0.0671892497200448,
+        "median_abs_cents_error": 6.19698125140176,
+        "n_joint_voiced": 893,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 532,
+        "n_reference_voiced": 1191,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.04927211646136618,
+        "raw_pitch_accuracy": 0.6994122586062133,
+        "voicing_false_alarm_rate": 0.25,
+        "voicing_recall": 0.7497900923593619
+      },
+      "mixture_recipe": {
+        "backing": "sugar",
+        "backing_rms_masked_before_scaling": 0.01719050590029693,
+        "backing_scale": 16.46874378746359,
+        "common_peak_scale": 0.5058447666894584,
+        "source_rms_masked": 0.14188913163194128,
+        "target_vocal_to_backing_db": -6.0
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/9ff9e12c9a806cd6431a456aba9635e57a963d6ed75021323eb0855dd6a3cb1e.npz",
+        "artifact_sha256": "bae543dd2e3852fcb61f1b219654a4c95595dba482d5aa2a491555039a37881b",
+        "cache_key": "9ff9e12c9a806cd6431a456aba9635e57a963d6ed75021323eb0855dd6a3cb1e",
+        "cached": false
+      },
+      "condition": "solo",
+      "excerpt_id": 3,
+      "input_hashes": {
+        "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+        "reference_sha256": "18f48fc77df7dd43c1e4bc588a79482b1d330768d63b76b90e82998573582b6a",
+        "rendered_16khz_mono_sha256": "4eba9725d9903297e53dba1612fedc6cc8de9b4ef5ab94050a023ed047ea2ee6",
+        "source_audio_sha256": "73b6fe13bc3435ae9173ee1bdec247e2943526c70cd9b69ab2b35002fa4cb04d"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": 0.012295081967213115,
+        "median_abs_cents_error": 5.75324375315256,
+        "n_joint_voiced": 976,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 734,
+        "n_reference_voiced": 989,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.0,
+        "raw_pitch_accuracy": 0.974721941354904,
+        "voicing_false_alarm_rate": 0.17029972752043596,
+        "voicing_recall": 0.9868554095045501
+      },
+      "mixture_recipe": {
+        "recipe": "source only"
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/b8fbf1c42f27711dd9d365507393285b92d7a1190fce73aa9550710babd87c7f.npz",
+        "artifact_sha256": "55618f42634b6d8f14d5b854bed3c570127f3c131e4ecd7243d26120d7c433dd",
+        "cache_key": "b8fbf1c42f27711dd9d365507393285b92d7a1190fce73aa9550710babd87c7f",
+        "cached": false
+      },
+      "condition": "backing",
+      "excerpt_id": 3,
+      "input_hashes": {
+        "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+        "reference_sha256": "18f48fc77df7dd43c1e4bc588a79482b1d330768d63b76b90e82998573582b6a",
+        "rendered_16khz_mono_sha256": "e561ded6fba2884f8eef1b96e3f8866efd5cbbb070a9f3aa19cfa6e826ddc8cf",
+        "source_audio_sha256": "73b6fe13bc3435ae9173ee1bdec247e2943526c70cd9b69ab2b35002fa4cb04d"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": null,
+        "median_abs_cents_error": null,
+        "n_joint_voiced": 0,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 1723,
+        "n_reference_voiced": 0,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": null,
+        "raw_pitch_accuracy": null,
+        "voicing_false_alarm_rate": 0.0,
+        "voicing_recall": null
+      },
+      "mixture_recipe": {
+        "backing": "vibe",
+        "recipe": "backing only"
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/b2b93bad07d784f17031650985dd4aeba37337f9566c9399d8fefcb58cb2ce20.npz",
+        "artifact_sha256": "6c19b56b9f069fb03fb344b2779a8bb87da4844d313261b58cbfb7559c1e4a15",
+        "cache_key": "b2b93bad07d784f17031650985dd4aeba37337f9566c9399d8fefcb58cb2ce20",
+        "cached": false
+      },
+      "condition": "silence",
+      "excerpt_id": 3,
+      "input_hashes": {
+        "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+        "reference_sha256": "18f48fc77df7dd43c1e4bc588a79482b1d330768d63b76b90e82998573582b6a",
+        "rendered_16khz_mono_sha256": "3d00ed86b663cd1b8ac82b105257cd109412f92dca442048532439f920a7f645",
+        "source_audio_sha256": "73b6fe13bc3435ae9173ee1bdec247e2943526c70cd9b69ab2b35002fa4cb04d"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": null,
+        "median_abs_cents_error": null,
+        "n_joint_voiced": 0,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 1723,
+        "n_reference_voiced": 0,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": null,
+        "raw_pitch_accuracy": null,
+        "voicing_false_alarm_rate": 0.0,
+        "voicing_recall": null
+      },
+      "mixture_recipe": {
+        "recipe": "zero signal"
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/f120106275144db10e3b544117ff7108afa4d20047e9b36b489f7e25028c1d28.npz",
+        "artifact_sha256": "1ec96720bee853f4d3e0f5cde55a5f955c5f882f11c9e6176f527fd3677baa40",
+        "cache_key": "f120106275144db10e3b544117ff7108afa4d20047e9b36b489f7e25028c1d28",
+        "cached": false
+      },
+      "condition": "mixture_0db",
+      "excerpt_id": 3,
+      "input_hashes": {
+        "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+        "reference_sha256": "18f48fc77df7dd43c1e4bc588a79482b1d330768d63b76b90e82998573582b6a",
+        "rendered_16khz_mono_sha256": "f1cd53195e37985f30d2c51ae7d6cde27233e020a2dd65a1a34d8cba3645f55c",
+        "source_audio_sha256": "73b6fe13bc3435ae9173ee1bdec247e2943526c70cd9b69ab2b35002fa4cb04d"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": 0.009782608695652175,
+        "median_abs_cents_error": 5.917452815002523,
+        "n_joint_voiced": 920,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 734,
+        "n_reference_voiced": 989,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.0,
+        "raw_pitch_accuracy": 0.9211324570273003,
+        "voicing_false_alarm_rate": 0.12534059945504086,
+        "voicing_recall": 0.9302325581395349
+      },
+      "mixture_recipe": {
+        "backing": "vibe",
+        "backing_rms_masked_before_scaling": 0.07832125922853951,
+        "backing_scale": 0.21235534029298003,
+        "common_peak_scale": 1.0,
+        "source_rms_masked": 0.01663193765565121,
+        "target_vocal_to_backing_db": 0.0
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/589feefbe8c47e5d1d617b1830ea10480ed709593a24aafc1f70cd9ba7e8dbea.npz",
+        "artifact_sha256": "82211281ad3915e4b2f21afea536090828a269a82f4507a093e6e5bb01afd083",
+        "cache_key": "589feefbe8c47e5d1d617b1830ea10480ed709593a24aafc1f70cd9ba7e8dbea",
+        "cached": false
+      },
+      "condition": "mixture_minus6db",
+      "excerpt_id": 3,
+      "input_hashes": {
+        "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+        "reference_sha256": "18f48fc77df7dd43c1e4bc588a79482b1d330768d63b76b90e82998573582b6a",
+        "rendered_16khz_mono_sha256": "8bf5478f77546bed3ae29414cce89a64466a3968eaa2e781f0d35c4c55b51c29",
+        "source_audio_sha256": "73b6fe13bc3435ae9173ee1bdec247e2943526c70cd9b69ab2b35002fa4cb04d"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": 0.012738853503184714,
+        "median_abs_cents_error": 5.834722993876248,
+        "n_joint_voiced": 785,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 734,
+        "n_reference_voiced": 989,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.0,
+        "raw_pitch_accuracy": 0.7836198179979778,
+        "voicing_false_alarm_rate": 0.04223433242506812,
+        "voicing_recall": 0.7937310414560161
+      },
+      "mixture_recipe": {
+        "backing": "vibe",
+        "backing_rms_masked_before_scaling": 0.07832125922853951,
+        "backing_scale": 0.42370460786897557,
+        "common_peak_scale": 1.0,
+        "source_rms_masked": 0.01663193765565121,
+        "target_vocal_to_backing_db": -6.0
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/2f0e0b38a77061e098efa3b9d3bc42565733c09d7f6bb20130f5ce08b520ad1a.npz",
+        "artifact_sha256": "a60f988b9f0b8a77a215bf0ab1e2bf8f241981291b829c7f885ef653230749f5",
+        "cache_key": "2f0e0b38a77061e098efa3b9d3bc42565733c09d7f6bb20130f5ce08b520ad1a",
+        "cached": false
+      },
+      "condition": "solo",
+      "excerpt_id": 4,
+      "input_hashes": {
+        "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+        "reference_sha256": "fb0a5b73a66edc0bac5aaec64f82eccd95d5a54781b354ab9020056803cf3d08",
+        "rendered_16khz_mono_sha256": "180ea457d4114d84c4fb0d0bf3f555c03a6c9e32ea25f9cf8485e5a4c4878c79",
+        "source_audio_sha256": "fc07b202eb609c975d1549be5320db116a49be1bd1fc6904e70e31cd7e44ec23"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": 0.010021474588403722,
+        "median_abs_cents_error": 5.8812823376329755,
+        "n_joint_voiced": 1397,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 324,
+        "n_reference_voiced": 1399,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.0,
+        "raw_pitch_accuracy": 0.9885632594710507,
+        "voicing_false_alarm_rate": 0.43209876543209874,
+        "voicing_recall": 0.9985704074338814
+      },
+      "mixture_recipe": {
+        "recipe": "source only"
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/da61bb0d42150e8823e37799eb146001a9ebc07849deb7a4c905f13e3335160d.npz",
+        "artifact_sha256": "be87611a193130f82504cff371891015d6bda0a0b9da028f2b93d280c9b40441",
+        "cache_key": "da61bb0d42150e8823e37799eb146001a9ebc07849deb7a4c905f13e3335160d",
+        "cached": false
+      },
+      "condition": "backing",
+      "excerpt_id": 4,
+      "input_hashes": {
+        "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+        "reference_sha256": "fb0a5b73a66edc0bac5aaec64f82eccd95d5a54781b354ab9020056803cf3d08",
+        "rendered_16khz_mono_sha256": "9a4214f6cc8b45170dce2ba25222eb944ee01b37cb511d79508268a92f8ac1b1",
+        "source_audio_sha256": "fc07b202eb609c975d1549be5320db116a49be1bd1fc6904e70e31cd7e44ec23"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": null,
+        "median_abs_cents_error": null,
+        "n_joint_voiced": 0,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 1723,
+        "n_reference_voiced": 0,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": null,
+        "raw_pitch_accuracy": null,
+        "voicing_false_alarm_rate": 0.0,
+        "voicing_recall": null
+      },
+      "mixture_recipe": {
+        "backing": "sugar",
+        "recipe": "backing only"
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/72451d00b79fd94683c326dc170fd9ac128eabaef59e60944be180bfc0fda945.npz",
+        "artifact_sha256": "69ee5202359c2d92d8b3756160f8fc343c688d1085f6c29566e2d50331d4adbc",
+        "cache_key": "72451d00b79fd94683c326dc170fd9ac128eabaef59e60944be180bfc0fda945",
+        "cached": false
+      },
+      "condition": "silence",
+      "excerpt_id": 4,
+      "input_hashes": {
+        "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+        "reference_sha256": "fb0a5b73a66edc0bac5aaec64f82eccd95d5a54781b354ab9020056803cf3d08",
+        "rendered_16khz_mono_sha256": "3d00ed86b663cd1b8ac82b105257cd109412f92dca442048532439f920a7f645",
+        "source_audio_sha256": "fc07b202eb609c975d1549be5320db116a49be1bd1fc6904e70e31cd7e44ec23"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": null,
+        "median_abs_cents_error": null,
+        "n_joint_voiced": 0,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 1723,
+        "n_reference_voiced": 0,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": null,
+        "raw_pitch_accuracy": null,
+        "voicing_false_alarm_rate": 0.0,
+        "voicing_recall": null
+      },
+      "mixture_recipe": {
+        "recipe": "zero signal"
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/a072e8f917379fb8146e1441388660ecfc4a94318464e625e1bf886c7f60f0e6.npz",
+        "artifact_sha256": "ab8966de2a873a0872b863620bb5918e796306b6b2c00b3f0e2ee05c014a191d",
+        "cache_key": "a072e8f917379fb8146e1441388660ecfc4a94318464e625e1bf886c7f60f0e6",
+        "cached": false
+      },
+      "condition": "mixture_0db",
+      "excerpt_id": 4,
+      "input_hashes": {
+        "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+        "reference_sha256": "fb0a5b73a66edc0bac5aaec64f82eccd95d5a54781b354ab9020056803cf3d08",
+        "rendered_16khz_mono_sha256": "81cc1ebcdc4b1431d1a96ac3546ad2e15133bb79c647fd9f14824c67976471fa",
+        "source_audio_sha256": "fc07b202eb609c975d1549be5320db116a49be1bd1fc6904e70e31cd7e44ec23"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": 0.012527634487840826,
+        "median_abs_cents_error": 6.112391916541027,
+        "n_joint_voiced": 1357,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 324,
+        "n_reference_voiced": 1399,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.0,
+        "raw_pitch_accuracy": 0.9578270192994996,
+        "voicing_false_alarm_rate": 0.2222222222222222,
+        "voicing_recall": 0.9699785561115082
+      },
+      "mixture_recipe": {
+        "backing": "sugar",
+        "backing_rms_masked_before_scaling": 0.01579146980842278,
+        "backing_scale": 10.216277366848747,
+        "common_peak_scale": 0.6092053781338901,
+        "source_rms_masked": 0.16133003559306494,
+        "target_vocal_to_backing_db": 0.0
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/d83db4f91247205972f31a004c4ded8d0c7f5d11a1d8ad5d0df000a2a8a35dcd.npz",
+        "artifact_sha256": "3dfeb9ac7b4eb13b9f148893363eb9a458ff5452867d4474735e03d5061c4a8c",
+        "cache_key": "d83db4f91247205972f31a004c4ded8d0c7f5d11a1d8ad5d0df000a2a8a35dcd",
+        "cached": false
+      },
+      "condition": "mixture_minus6db",
+      "excerpt_id": 4,
+      "input_hashes": {
+        "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+        "reference_sha256": "fb0a5b73a66edc0bac5aaec64f82eccd95d5a54781b354ab9020056803cf3d08",
+        "rendered_16khz_mono_sha256": "0660c8a169681ee4f555ee9694a25576b36f27effe2979b3a29c6166af410f00",
+        "source_audio_sha256": "fc07b202eb609c975d1549be5320db116a49be1bd1fc6904e70e31cd7e44ec23"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": 0.008944543828264758,
+        "median_abs_cents_error": 6.611283844905351,
+        "n_joint_voiced": 1118,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 324,
+        "n_reference_voiced": 1399,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.0,
+        "raw_pitch_accuracy": 0.7919942816297355,
+        "voicing_false_alarm_rate": 0.16666666666666666,
+        "voicing_recall": 0.7991422444603288
+      },
+      "mixture_recipe": {
+        "backing": "sugar",
+        "backing_rms_masked_before_scaling": 0.01579146980842278,
+        "backing_scale": 20.3841532293428,
+        "common_peak_scale": 0.36423373037231177,
+        "source_rms_masked": 0.16133003559306494,
+        "target_vocal_to_backing_db": -6.0
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/341d01afe3e73caee89151fea89c8768c6a40835792e114cbf6796640edb2e77.npz",
+        "artifact_sha256": "14d282e454f50c9f99f03c0a52463411af0f6ee54910003b6d886992d9449839",
+        "cache_key": "341d01afe3e73caee89151fea89c8768c6a40835792e114cbf6796640edb2e77",
+        "cached": false
+      },
+      "condition": "solo",
+      "excerpt_id": 5,
+      "input_hashes": {
+        "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+        "reference_sha256": "561eb6ac03530a3219cf1a8eab9f0c14b1c4571185f0e059b61643325e4642ca",
+        "rendered_16khz_mono_sha256": "b5d00bc74ec8bd7d9b517a1c02646469b16c70c1d116f8a915d8d84c3537ddf7",
+        "source_audio_sha256": "7cecfd126a9437f88db0a297cdab3075bb38faeef10f1a98f22ba22a2a939220"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": 0.011067193675889328,
+        "median_abs_cents_error": 6.1382106819215325,
+        "n_joint_voiced": 1265,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 457,
+        "n_reference_voiced": 1266,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.0,
+        "raw_pitch_accuracy": 0.9881516587677726,
+        "voicing_false_alarm_rate": 0.700218818380744,
+        "voicing_recall": 0.9992101105845181
+      },
+      "mixture_recipe": {
+        "recipe": "source only"
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/d954d73144c00d4a16c77fb8f978fecdc4a932668b8a67eead0186a2a66f2755.npz",
+        "artifact_sha256": "610968faf0407f51c114bf3d7f3ed4eddef975132376be70e0fb24aebc89869b",
+        "cache_key": "d954d73144c00d4a16c77fb8f978fecdc4a932668b8a67eead0186a2a66f2755",
+        "cached": false
+      },
+      "condition": "backing",
+      "excerpt_id": 5,
+      "input_hashes": {
+        "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+        "reference_sha256": "561eb6ac03530a3219cf1a8eab9f0c14b1c4571185f0e059b61643325e4642ca",
+        "rendered_16khz_mono_sha256": "e561ded6fba2884f8eef1b96e3f8866efd5cbbb070a9f3aa19cfa6e826ddc8cf",
+        "source_audio_sha256": "7cecfd126a9437f88db0a297cdab3075bb38faeef10f1a98f22ba22a2a939220"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": null,
+        "median_abs_cents_error": null,
+        "n_joint_voiced": 0,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 1723,
+        "n_reference_voiced": 0,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": null,
+        "raw_pitch_accuracy": null,
+        "voicing_false_alarm_rate": 0.0,
+        "voicing_recall": null
+      },
+      "mixture_recipe": {
+        "backing": "vibe",
+        "recipe": "backing only"
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/b08db826fcf7e9fc1c77559339914daf2dcefa024a70dd2c1515ef899909c7fe.npz",
+        "artifact_sha256": "fbe335754c1a440d9b91c7876811bef4cf4e68ee02ef1773a09cb878d238de09",
+        "cache_key": "b08db826fcf7e9fc1c77559339914daf2dcefa024a70dd2c1515ef899909c7fe",
+        "cached": false
+      },
+      "condition": "silence",
+      "excerpt_id": 5,
+      "input_hashes": {
+        "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+        "reference_sha256": "561eb6ac03530a3219cf1a8eab9f0c14b1c4571185f0e059b61643325e4642ca",
+        "rendered_16khz_mono_sha256": "3d00ed86b663cd1b8ac82b105257cd109412f92dca442048532439f920a7f645",
+        "source_audio_sha256": "7cecfd126a9437f88db0a297cdab3075bb38faeef10f1a98f22ba22a2a939220"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": null,
+        "median_abs_cents_error": null,
+        "n_joint_voiced": 0,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 1723,
+        "n_reference_voiced": 0,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": null,
+        "raw_pitch_accuracy": null,
+        "voicing_false_alarm_rate": 0.0,
+        "voicing_recall": null
+      },
+      "mixture_recipe": {
+        "recipe": "zero signal"
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/45d7e9df7ba69c7f80da3d64a7b49da5e9b9aa7fd51f02db8da5a0e41dd827a1.npz",
+        "artifact_sha256": "9d04149702a40e2f5f1ded2342d82ae5aceca0e9215e0e61387e7ac46df53fa3",
+        "cache_key": "45d7e9df7ba69c7f80da3d64a7b49da5e9b9aa7fd51f02db8da5a0e41dd827a1",
+        "cached": false
+      },
+      "condition": "mixture_0db",
+      "excerpt_id": 5,
+      "input_hashes": {
+        "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+        "reference_sha256": "561eb6ac03530a3219cf1a8eab9f0c14b1c4571185f0e059b61643325e4642ca",
+        "rendered_16khz_mono_sha256": "9aa7bdb78703dd68beaacfe9f80bbf387028149cd4e808412343c7480d3271c8",
+        "source_audio_sha256": "7cecfd126a9437f88db0a297cdab3075bb38faeef10f1a98f22ba22a2a939220"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": 0.008935824532900082,
+        "median_abs_cents_error": 6.20644883566413,
+        "n_joint_voiced": 1231,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 457,
+        "n_reference_voiced": 1266,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.0,
+        "raw_pitch_accuracy": 0.9636650868878357,
+        "voicing_false_alarm_rate": 0.29321663019693656,
+        "voicing_recall": 0.9723538704581358
+      },
+      "mixture_recipe": {
+        "backing": "vibe",
+        "backing_rms_masked_before_scaling": 0.07940919072688109,
+        "backing_scale": 1.53393207136649,
+        "common_peak_scale": 0.9024214795305836,
+        "source_rms_masked": 0.12180830441722136,
+        "target_vocal_to_backing_db": 0.0
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/a8e1e2583cf3a8451def9beb39326483b164fbe66d95970142ce178fbb999c82.npz",
+        "artifact_sha256": "15f20951a23afab0486bce97d047e2810815142e8e3c0b1c50b328d7cd4a19d9",
+        "cache_key": "a8e1e2583cf3a8451def9beb39326483b164fbe66d95970142ce178fbb999c82",
+        "cached": false
+      },
+      "condition": "mixture_minus6db",
+      "excerpt_id": 5,
+      "input_hashes": {
+        "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+        "reference_sha256": "561eb6ac03530a3219cf1a8eab9f0c14b1c4571185f0e059b61643325e4642ca",
+        "rendered_16khz_mono_sha256": "52ba72649e768e183d7be41b18af34f7c0ee133f425564b97857619dd47fa6ad",
+        "source_audio_sha256": "7cecfd126a9437f88db0a297cdab3075bb38faeef10f1a98f22ba22a2a939220"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": 0.005376344086021506,
+        "median_abs_cents_error": 6.087436338603798,
+        "n_joint_voiced": 930,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 457,
+        "n_reference_voiced": 1266,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.0,
+        "raw_pitch_accuracy": 0.7306477093206951,
+        "voicing_false_alarm_rate": 0.09409190371991247,
+        "voicing_recall": 0.7345971563981043
+      },
+      "mixture_recipe": {
+        "backing": "vibe",
+        "backing_rms_masked_before_scaling": 0.07940919072688109,
+        "backing_scale": 3.0605968557197114,
+        "common_peak_scale": 0.5092814524135371,
+        "source_rms_masked": 0.12180830441722136,
+        "target_vocal_to_backing_db": -6.0
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/6a54b77adcde2a229ca3c447a7567769fc479d645fbe20f9508b5ce77aa6431d.npz",
+        "artifact_sha256": "2cf4ccde1e05f5197f4a814317b64cf574d1223a7e5bf2aca04eadf612d459ab",
+        "cache_key": "6a54b77adcde2a229ca3c447a7567769fc479d645fbe20f9508b5ce77aa6431d",
+        "cached": false
+      },
+      "condition": "solo",
+      "excerpt_id": 6,
+      "input_hashes": {
+        "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+        "reference_sha256": "443e7f37172ef683f687fba39ab87710f22af2227e8fdb9031b2faa3002eb002",
+        "rendered_16khz_mono_sha256": "73a960aae4356d266fc13aebd485b54b45ce532509296252135715399196efe6",
+        "source_audio_sha256": "13816752a6366f2d66f21e71a70d55e22b6a44f0d1712d97abff5390bc0c1f3b"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": 0.008661417322834646,
+        "median_abs_cents_error": 5.755887320368513,
+        "n_joint_voiced": 1270,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 453,
+        "n_reference_voiced": 1270,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.0,
+        "raw_pitch_accuracy": 0.9913385826771653,
+        "voicing_false_alarm_rate": 0.41501103752759383,
+        "voicing_recall": 1.0
+      },
+      "mixture_recipe": {
+        "recipe": "source only"
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/862023867f5070be1d7c97492689af7de21176638dee7f58f58adf4dd829aae4.npz",
+        "artifact_sha256": "a80e226850f1ce1f422f9908b0314b4eb0a8cf4bdb0a72a2d50eef38aac0466b",
+        "cache_key": "862023867f5070be1d7c97492689af7de21176638dee7f58f58adf4dd829aae4",
+        "cached": false
+      },
+      "condition": "backing",
+      "excerpt_id": 6,
+      "input_hashes": {
+        "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+        "reference_sha256": "443e7f37172ef683f687fba39ab87710f22af2227e8fdb9031b2faa3002eb002",
+        "rendered_16khz_mono_sha256": "9a4214f6cc8b45170dce2ba25222eb944ee01b37cb511d79508268a92f8ac1b1",
+        "source_audio_sha256": "13816752a6366f2d66f21e71a70d55e22b6a44f0d1712d97abff5390bc0c1f3b"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": null,
+        "median_abs_cents_error": null,
+        "n_joint_voiced": 0,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 1723,
+        "n_reference_voiced": 0,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": null,
+        "raw_pitch_accuracy": null,
+        "voicing_false_alarm_rate": 0.0,
+        "voicing_recall": null
+      },
+      "mixture_recipe": {
+        "backing": "sugar",
+        "recipe": "backing only"
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/ed0bd290c029aed3a54e3fa3657f0f4bc7a21eca6b38c08c46b085b5941897e9.npz",
+        "artifact_sha256": "58db6003bb258eb1a8b5015c35ca5b8447d5967c6c6016b1b24a995224aa2538",
+        "cache_key": "ed0bd290c029aed3a54e3fa3657f0f4bc7a21eca6b38c08c46b085b5941897e9",
+        "cached": false
+      },
+      "condition": "silence",
+      "excerpt_id": 6,
+      "input_hashes": {
+        "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+        "reference_sha256": "443e7f37172ef683f687fba39ab87710f22af2227e8fdb9031b2faa3002eb002",
+        "rendered_16khz_mono_sha256": "3d00ed86b663cd1b8ac82b105257cd109412f92dca442048532439f920a7f645",
+        "source_audio_sha256": "13816752a6366f2d66f21e71a70d55e22b6a44f0d1712d97abff5390bc0c1f3b"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": null,
+        "median_abs_cents_error": null,
+        "n_joint_voiced": 0,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 1723,
+        "n_reference_voiced": 0,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": null,
+        "raw_pitch_accuracy": null,
+        "voicing_false_alarm_rate": 0.0,
+        "voicing_recall": null
+      },
+      "mixture_recipe": {
+        "recipe": "zero signal"
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/838c4126c1b7ee7f3644957ebb27e5688cb3a3525d472823dff739db00752ba7.npz",
+        "artifact_sha256": "78e93755b748255c230b1e806dfe3040afc07c43e512155d2b8b71a69de6472b",
+        "cache_key": "838c4126c1b7ee7f3644957ebb27e5688cb3a3525d472823dff739db00752ba7",
+        "cached": false
+      },
+      "condition": "mixture_0db",
+      "excerpt_id": 6,
+      "input_hashes": {
+        "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+        "reference_sha256": "443e7f37172ef683f687fba39ab87710f22af2227e8fdb9031b2faa3002eb002",
+        "rendered_16khz_mono_sha256": "2a51a538726650190dc8a7fd2989606c45c9249a1b46283235577befa95b86d4",
+        "source_audio_sha256": "13816752a6366f2d66f21e71a70d55e22b6a44f0d1712d97abff5390bc0c1f3b"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": 0.0182648401826484,
+        "median_abs_cents_error": 5.962086044279856,
+        "n_joint_voiced": 1095,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 453,
+        "n_reference_voiced": 1270,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.0,
+        "raw_pitch_accuracy": 0.8464566929133859,
+        "voicing_false_alarm_rate": 0.38852097130242824,
+        "voicing_recall": 0.8622047244094488
+      },
+      "mixture_recipe": {
+        "backing": "sugar",
+        "backing_rms_masked_before_scaling": 0.01799643489248319,
+        "backing_scale": 7.134339774221418,
+        "common_peak_scale": 0.9216635372748442,
+        "source_rms_masked": 0.12839268124762898,
+        "target_vocal_to_backing_db": 0.0
+      }
+    },
+    {
+      "artifact": {
+        "artifact": "/private/tmp/natural-features-vocal-assets/native-v1/30a5b65871cf3c4c81f9a3bdc344cc6ec774ec4ad9c71fdd10c0a96b7411eab9.npz",
+        "artifact_sha256": "3531398ca2d10fea29f5c34c8b6c147cc58aaa6b3e0d92b7b601544da570e109",
+        "cache_key": "30a5b65871cf3c4c81f9a3bdc344cc6ec774ec4ad9c71fdd10c0a96b7411eab9",
+        "cached": false
+      },
+      "condition": "mixture_minus6db",
+      "excerpt_id": 6,
+      "input_hashes": {
+        "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+        "reference_sha256": "443e7f37172ef683f687fba39ab87710f22af2227e8fdb9031b2faa3002eb002",
+        "rendered_16khz_mono_sha256": "7573c32d6db6adc71ffc37f33a7f0bf2dc82e5b85e2251c3d444759e65ddf569",
+        "source_audio_sha256": "13816752a6366f2d66f21e71a70d55e22b6a44f0d1712d97abff5390bc0c1f3b"
+      },
+      "metrics": {
+        "gross_pitch_error_rate": 0.017679558011049725,
+        "median_abs_cents_error": 5.988287578779552,
+        "n_joint_voiced": 905,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 453,
+        "n_reference_voiced": 1270,
+        "n_scored": 1723,
+        "n_unmatched": 0,
+        "octave_error_rate": 0.0,
+        "raw_pitch_accuracy": 0.7,
+        "voicing_false_alarm_rate": 0.20750551876379691,
+        "voicing_recall": 0.7125984251968503
+      },
+      "mixture_recipe": {
+        "backing": "sugar",
+        "backing_rms_masked_before_scaling": 0.01799643489248319,
+        "backing_scale": 14.234879293687582,
+        "common_peak_scale": 0.6086868810774243,
+        "source_rms_masked": 0.12839268124762898,
+        "target_vocal_to_backing_db": -6.0
+      }
+    }
+  ],
+  "protocol_path": "/private/tmp/natural-features-vocal-f0/tests/benchmarks/thresholds/vocal_f0_v1.json",
+  "protocol_sha256": "a689eb6d1993013b7d2296d425dde48e5e45466fe1fe72811f639a8e3bfc660a",
+  "qualified_scope": "unqualified",
+  "runner_source_sha256": "8ecd5969a78c20f00ec3cc7c7fdd0494f76c7bd5fc4127f3aa8f573f9584953a",
+  "schema": "VocalF0QualificationReport/v1",
+  "scorer_source_sha256": "23670160c8e70b605a304281d6be653e39178b6ae5dc7a8facdc7cfbc35bcdde",
+  "summary": {
+    "backing": {
+      "gross_pitch_error_rate": null,
+      "median_abs_cents_error": null,
+      "octave_error_rate": null,
+      "raw_pitch_accuracy": null,
+      "voicing_false_alarm_rate": 0.0,
+      "voicing_recall": null
+    },
+    "mixture_0db": {
+      "gross_pitch_error_rate": 0.020244672118812115,
+      "median_abs_cents_error": 6.147404982796058,
+      "octave_error_rate": 0.007943782462572564,
+      "raw_pitch_accuracy": 0.9152755561803475,
+      "voicing_false_alarm_rate": 0.22844189556127326,
+      "voicing_recall": 0.9339579715556613
+    },
+    "mixture_minus6db": {
+      "gross_pitch_error_rate": 0.02079151032817972,
+      "median_abs_cents_error": 6.136024917741728,
+      "octave_error_rate": 0.008600519798728085,
+      "raw_pitch_accuracy": 0.7453649841097824,
+      "voicing_false_alarm_rate": 0.13106473153549744,
+      "voicing_recall": 0.7610549246843258
+    },
+    "silence": {
+      "gross_pitch_error_rate": null,
+      "median_abs_cents_error": null,
+      "octave_error_rate": null,
+      "raw_pitch_accuracy": null,
+      "voicing_false_alarm_rate": 0.0,
+      "voicing_recall": null
+    },
+    "solo": {
+      "gross_pitch_error_rate": 0.015649839958110746,
+      "median_abs_cents_error": 5.838666916716167,
+      "octave_error_rate": 0.005387947774316879,
+      "raw_pitch_accuracy": 0.980932576865179,
+      "voicing_false_alarm_rate": 0.3795446230995583,
+      "voicing_recall": 0.9965343438782593
+    }
+  }
+}

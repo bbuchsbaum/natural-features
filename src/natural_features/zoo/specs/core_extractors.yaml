@@ -1369,6 +1369,34 @@ extractors:
         schema: FeatureSeries/v1
         kind: features
 
+  - name: audio.vocal_f0
+    impl: natural_features.features.audio.vocal_f0:audio_vocal_f0
+    version: "1.0"
+    label: Source-selected vocal F0 with support diagnostics
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: optional_python
+    cost_class: expensive
+    tags: [audio, music, pitch, vocals, source-specific]
+    params:
+      separator_checkpoint: { type: str, default: null, nullable: true }
+      cache_dir: { type: str, default: null, nullable: true }
+      local_files_only: { type: bool, default: true }
+      device: { type: str, default: cpu }
+      hop_s: { type: float, default: 0.01 }
+      fmin: { type: float, default: 50.0 }
+      fmax: { type: float, default: 1000.0 }
+      confidence_threshold: { type: float, default: 0.65 }
+      source_threshold: { type: float, default: 0.03 }
+      min_source_rms: { type: float, default: 0.01 }
+      voicing_guard_s: { type: float, default: 0.0 }
+      local_periodicity_threshold: { type: float, default: null, nullable: true }
+      max_internal_gap_s: { type: float, default: 0.0 }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features
+
   - name: audio.periodicity
     impl: natural_features.features.audio.periodicity:audio_periodicity
     version: "1.0"

@@ -1,0 +1,1439 @@
+{
+  "schema": "VocalF0PreTestReview/v6",
+  "status": "passed_bounded_development_review",
+  "qualified": false,
+  "prospective_test_consumed": false,
+  "development_protocol": {
+    "path": "tests/benchmarks/thresholds/vocal_f0_development_v6.json",
+    "sha256": "53b78c2009c7e214449bae9b7cc3561b3d58e133340ef330ea02317afd508b67"
+  },
+  "development_report": {
+    "path": "tests/benchmarks/reports/vocal_f0_development_v6.json",
+    "sha256": "eb92e52b2a6157b3b616a2be005fc0a9176e191986e3b8608f91de8b2d11d255"
+  },
+  "prospective_protocol": {
+    "path": "tests/benchmarks/thresholds/vocal_f0_holdout_v6.json",
+    "sha256": "c3f9820c1eaaa542e78bdcb4b05734724259721b92dda28bbc45b86ddd195565"
+  },
+  "independent_development_receipt": {
+    "errors": [],
+    "passed": true,
+    "production_modules_imported": false,
+    "profile_rows_scored": 720,
+    "profiles": [
+      {
+        "development_sets": [
+          {
+            "failed_gates": [],
+            "name": "original_development",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.012658012049032228,
+                "median_abs_cents_error": 5.868419380563281,
+                "octave_error_rate": 0.006710362047440699,
+                "raw_pitch_accuracy": 0.8689652051834633,
+                "voicing_false_alarm_rate": 0.0521609744150478,
+                "voicing_recall": 0.8803745647599118
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.015902277740387244,
+                "median_abs_cents_error": 6.05079125748787,
+                "octave_error_rate": 0.006937721845756696,
+                "raw_pitch_accuracy": 0.8058316052706206,
+                "voicing_false_alarm_rate": 0.024586193452643002,
+                "voicing_recall": 0.8192462008392033
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.006908939248904282,
+                "median_abs_cents_error": 5.501958929053832,
+                "octave_error_rate": 0.004032258064516129,
+                "raw_pitch_accuracy": 0.8904388352388559,
+                "voicing_false_alarm_rate": 0.045798375779784135,
+                "voicing_recall": 0.8968713048734797
+              }
+            }
+          },
+          {
+            "failed_gates": [
+              "mixture_0db.voicing_false_alarm_rate"
+            ],
+            "name": "consumed_v2_test",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.005767989087937707,
+                "median_abs_cents_error": 6.321484835245894,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.9169342160616164,
+                "voicing_false_alarm_rate": 0.10118613660361374,
+                "voicing_recall": 0.9221553301024956
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.013950374274943942,
+                "median_abs_cents_error": 6.659740681268506,
+                "octave_error_rate": 0.000980392156862745,
+                "raw_pitch_accuracy": 0.8522442913966892,
+                "voicing_false_alarm_rate": 0.09097851324484772,
+                "voicing_recall": 0.8640239684868006
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.0036268603076347436,
+                "median_abs_cents_error": 5.663010077416036,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.9357463950151669,
+                "voicing_false_alarm_rate": 0.07458473913581068,
+                "voicing_recall": 0.9391540206442492
+              }
+            }
+          }
+        ],
+        "eligible": false,
+        "objective": {
+          "maximum_false_voicing": 0.10118613660361374,
+          "minimum_pitch_accuracy": 0.8058316052706206
+        },
+        "parameters": {
+          "local_periodicity_threshold": 0.25,
+          "max_internal_gap_s": 0.02,
+          "voicing_guard_s": 0.01
+        }
+      },
+      {
+        "development_sets": [
+          {
+            "failed_gates": [],
+            "name": "original_development",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.013070182356415818,
+                "median_abs_cents_error": 5.881637247452185,
+                "octave_error_rate": 0.006996268656716418,
+                "raw_pitch_accuracy": 0.8712348713747756,
+                "voicing_false_alarm_rate": 0.05371241921070954,
+                "voicing_recall": 0.8830557560413218
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.01679045448792264,
+                "median_abs_cents_error": 6.094980140822215,
+                "octave_error_rate": 0.007204610951008646,
+                "raw_pitch_accuracy": 0.8084798216554621,
+                "voicing_false_alarm_rate": 0.025040326059364165,
+                "voicing_recall": 0.822736648730921
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.007331383359980792,
+                "median_abs_cents_error": 5.52315638060848,
+                "octave_error_rate": 0.0041592394533571005,
+                "raw_pitch_accuracy": 0.8949350761752873,
+                "voicing_false_alarm_rate": 0.05321022739970949,
+                "voicing_recall": 0.9017899620355109
+              }
+            }
+          },
+          {
+            "failed_gates": [
+              "mixture_0db.voicing_false_alarm_rate"
+            ],
+            "name": "consumed_v2_test",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.006180333949753861,
+                "median_abs_cents_error": 6.332863385258686,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.9223797544707649,
+                "voicing_false_alarm_rate": 0.11065595339174522,
+                "voicing_recall": 0.9280201668199912
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.014246951181567727,
+                "median_abs_cents_error": 6.7286552356456575,
+                "octave_error_rate": 0.0009578544061302681,
+                "raw_pitch_accuracy": 0.8605303375560726,
+                "voicing_false_alarm_rate": 0.09473400868368659,
+                "voicing_recall": 0.8727337434597432
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.003616667906446011,
+                "median_abs_cents_error": 5.6638070171144905,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.9377938888206344,
+                "voicing_false_alarm_rate": 0.08737031389960458,
+                "voicing_recall": 0.9412015144497167
+              }
+            }
+          }
+        ],
+        "eligible": false,
+        "objective": {
+          "maximum_false_voicing": 0.11065595339174522,
+          "minimum_pitch_accuracy": 0.8084798216554621
+        },
+        "parameters": {
+          "local_periodicity_threshold": 0.25,
+          "max_internal_gap_s": 0.04,
+          "voicing_guard_s": 0.01
+        }
+      },
+      {
+        "development_sets": [
+          {
+            "failed_gates": [
+              "mixture_minus6db.raw_pitch_accuracy",
+              "mixture_minus6db.voicing_recall"
+            ],
+            "name": "original_development",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.011374217065927611,
+                "median_abs_cents_error": 5.796671267503343,
+                "octave_error_rate": 0.00630715862503942,
+                "raw_pitch_accuracy": 0.8387960412395562,
+                "voicing_false_alarm_rate": 0.04040487718823767,
+                "voicing_recall": 0.8489329768329021
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.014048392760132538,
+                "median_abs_cents_error": 5.9709916252270405,
+                "octave_error_rate": 0.006574621959237344,
+                "raw_pitch_accuracy": 0.7698361968388324,
+                "voicing_false_alarm_rate": 0.02025894825686622,
+                "voicing_recall": 0.7814326283278615
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.006773518835485898,
+                "median_abs_cents_error": 5.434279400111521,
+                "octave_error_rate": 0.004098360655737705,
+                "raw_pitch_accuracy": 0.8596127940755266,
+                "voicing_false_alarm_rate": 0.034619521516615265,
+                "voicing_recall": 0.865781967238323
+              }
+            }
+          },
+          {
+            "failed_gates": [],
+            "name": "consumed_v2_test",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.003910683811438785,
+                "median_abs_cents_error": 6.221493442805113,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.8837498207758188,
+                "voicing_false_alarm_rate": 0.08333573304905273,
+                "voicing_recall": 0.8871436186628272
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.013073734620064899,
+                "median_abs_cents_error": 6.5208863083826065,
+                "octave_error_rate": 0.0010427528675703858,
+                "raw_pitch_accuracy": 0.8089379473682626,
+                "voicing_false_alarm_rate": 0.07444969509692363,
+                "voicing_recall": 0.8193132995313505
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.0034364055932114474,
+                "median_abs_cents_error": 5.5904695019237245,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.9045958846791979,
+                "voicing_false_alarm_rate": 0.05814972562130169,
+                "voicing_recall": 0.9077252237662131
+              }
+            }
+          }
+        ],
+        "eligible": false,
+        "objective": {
+          "maximum_false_voicing": 0.08333573304905273,
+          "minimum_pitch_accuracy": 0.7698361968388324
+        },
+        "parameters": {
+          "local_periodicity_threshold": 0.25,
+          "max_internal_gap_s": 0.02,
+          "voicing_guard_s": 0.02
+        }
+      },
+      {
+        "development_sets": [
+          {
+            "failed_gates": [
+              "mixture_minus6db.raw_pitch_accuracy",
+              "mixture_minus6db.voicing_recall"
+            ],
+            "name": "original_development",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.012218180023489351,
+                "median_abs_cents_error": 5.81969947565198,
+                "octave_error_rate": 0.006735588972431077,
+                "raw_pitch_accuracy": 0.843580564625522,
+                "voicing_false_alarm_rate": 0.04196276255434073,
+                "voicing_recall": 0.854532260207885
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.015068555535642346,
+                "median_abs_cents_error": 6.0061088389900545,
+                "octave_error_rate": 0.006971465629053177,
+                "raw_pitch_accuracy": 0.7751659508438347,
+                "voicing_false_alarm_rate": 0.020713080863587384,
+                "voicing_recall": 0.7877445522668323
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.007298851878128082,
+                "median_abs_cents_error": 5.464543732679591,
+                "octave_error_rate": 0.004189108318372233,
+                "raw_pitch_accuracy": 0.8688664854164448,
+                "voicing_false_alarm_rate": 0.04602463593532378,
+                "voicing_recall": 0.8755897230407547
+              }
+            }
+          },
+          {
+            "failed_gates": [],
+            "name": "consumed_v2_test",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.0048039468640213795,
+                "median_abs_cents_error": 6.260796776520721,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.8947988360943859,
+                "voicing_false_alarm_rate": 0.09884003656098712,
+                "voicing_recall": 0.899041337010833
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.013368829183223034,
+                "median_abs_cents_error": 6.569642226295571,
+                "octave_error_rate": 0.0009940357852882703,
+                "raw_pitch_accuracy": 0.825525849854614,
+                "voicing_false_alarm_rate": 0.08066476401666205,
+                "voicing_recall": 0.8364558551570008
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.003408955716371394,
+                "median_abs_cents_error": 5.599053722934734,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.9097037822534881,
+                "voicing_false_alarm_rate": 0.07915747514406031,
+                "voicing_recall": 0.9128331213405031
+              }
+            }
+          }
+        ],
+        "eligible": false,
+        "objective": {
+          "maximum_false_voicing": 0.09884003656098712,
+          "minimum_pitch_accuracy": 0.7751659508438347
+        },
+        "parameters": {
+          "local_periodicity_threshold": 0.25,
+          "max_internal_gap_s": 0.04,
+          "voicing_guard_s": 0.02
+        }
+      },
+      {
+        "development_sets": [
+          {
+            "failed_gates": [],
+            "name": "original_development",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.012296825079695109,
+                "median_abs_cents_error": 5.862434638472006,
+                "octave_error_rate": 0.006635071090047393,
+                "raw_pitch_accuracy": 0.8645515068458924,
+                "voicing_false_alarm_rate": 0.047487314547940744,
+                "voicing_recall": 0.8755410511410647
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.015572722289182184,
+                "median_abs_cents_error": 6.044126546976428,
+                "octave_error_rate": 0.006842619745845552,
+                "raw_pitch_accuracy": 0.8010634346798491,
+                "voicing_false_alarm_rate": 0.02179105832594626,
+                "voicing_recall": 0.8140998263936532
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.00623940177983413,
+                "median_abs_cents_error": 5.484892462363335,
+                "octave_error_rate": 0.00409090909090909,
+                "raw_pitch_accuracy": 0.8860999252426356,
+                "voicing_false_alarm_rate": 0.037602850723279985,
+                "voicing_recall": 0.8918409929329773
+              }
+            }
+          },
+          {
+            "failed_gates": [],
+            "name": "consumed_v2_test",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.005798082870210206,
+                "median_abs_cents_error": 6.298148689025818,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.9116503106122429,
+                "voicing_false_alarm_rate": 0.09887458485578748,
+                "voicing_recall": 0.9168714246531223
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.013684905650217469,
+                "median_abs_cents_error": 6.615251303157607,
+                "octave_error_rate": 0.0009861932938856016,
+                "raw_pitch_accuracy": 0.8479842516844108,
+                "voicing_false_alarm_rate": 0.08822289629780161,
+                "voicing_recall": 0.859481442898816
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.003480215233645957,
+                "median_abs_cents_error": 5.651300528204665,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.932232635635646,
+                "voicing_false_alarm_rate": 0.06948915193745299,
+                "voicing_recall": 0.9354928990484006
+              }
+            }
+          }
+        ],
+        "eligible": true,
+        "objective": {
+          "maximum_false_voicing": 0.09887458485578748,
+          "minimum_pitch_accuracy": 0.8010634346798491
+        },
+        "parameters": {
+          "local_periodicity_threshold": 0.5,
+          "max_internal_gap_s": 0.02,
+          "voicing_guard_s": 0.01
+        }
+      },
+      {
+        "development_sets": [
+          {
+            "failed_gates": [],
+            "name": "original_development",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.012397356562869452,
+                "median_abs_cents_error": 5.868107111556221,
+                "octave_error_rate": 0.0066100094428706326,
+                "raw_pitch_accuracy": 0.8672164977972371,
+                "voicing_false_alarm_rate": 0.047487314547940744,
+                "voicing_recall": 0.878337690328323
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.01617265212225366,
+                "median_abs_cents_error": 6.061818021463396,
+                "octave_error_rate": 0.006842619745845552,
+                "raw_pitch_accuracy": 0.803488938138257,
+                "voicing_false_alarm_rate": 0.02179105832594626,
+                "voicing_recall": 0.8170460730782554
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.0065302485973538936,
+                "median_abs_cents_error": 5.504704103708968,
+                "octave_error_rate": 0.004079782411604714,
+                "raw_pitch_accuracy": 0.89020967213311,
+                "voicing_false_alarm_rate": 0.04537939964444531,
+                "voicing_recall": 0.8962332176219595
+              }
+            }
+          },
+          {
+            "failed_gates": [
+              "mixture_0db.voicing_false_alarm_rate"
+            ],
+            "name": "consumed_v2_test",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.006213994721199813,
+                "median_abs_cents_error": 6.321290805712471,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.9168034513605728,
+                "voicing_false_alarm_rate": 0.10805852399955075,
+                "voicing_recall": 0.922443863709799
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.013682379579787999,
+                "median_abs_cents_error": 6.695223864308374,
+                "octave_error_rate": 0.0009652509652509652,
+                "raw_pitch_accuracy": 0.8561286948984527,
+                "voicing_false_alarm_rate": 0.09283749826585012,
+                "voicing_recall": 0.8677671290507112
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.003468893315648142,
+                "median_abs_cents_error": 5.654876350121088,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.9344213723789664,
+                "voicing_false_alarm_rate": 0.08239902966060138,
+                "voicing_recall": 0.937681635791721
+              }
+            }
+          }
+        ],
+        "eligible": false,
+        "objective": {
+          "maximum_false_voicing": 0.10805852399955075,
+          "minimum_pitch_accuracy": 0.803488938138257
+        },
+        "parameters": {
+          "local_periodicity_threshold": 0.5,
+          "max_internal_gap_s": 0.04,
+          "voicing_guard_s": 0.01
+        }
+      },
+      {
+        "development_sets": [
+          {
+            "failed_gates": [
+              "mixture_minus6db.raw_pitch_accuracy",
+              "mixture_minus6db.voicing_recall"
+            ],
+            "name": "original_development",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.011064203457928122,
+                "median_abs_cents_error": 5.784071084153525,
+                "octave_error_rate": 0.006428801028608165,
+                "raw_pitch_accuracy": 0.8323349919750075,
+                "voicing_false_alarm_rate": 0.03751617087499319,
+                "voicing_recall": 0.8420604024782556
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.013565840985493864,
+                "median_abs_cents_error": 5.976015779878588,
+                "octave_error_rate": 0.00665335994677312,
+                "raw_pitch_accuracy": 0.7639297621630253,
+                "voicing_false_alarm_rate": 0.018247903585241598,
+                "voicing_recall": 0.7750371472746114
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.006111711975224085,
+                "median_abs_cents_error": 5.40497468103079,
+                "octave_error_rate": 0.004178272980501393,
+                "raw_pitch_accuracy": 0.8535716376539999,
+                "voicing_false_alarm_rate": 0.027309537623973475,
+                "voicing_recall": 0.8590494088725142
+              }
+            }
+          },
+          {
+            "failed_gates": [],
+            "name": "consumed_v2_test",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.00393010710000186,
+                "median_abs_cents_error": 6.208209201255841,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.8775347698537721,
+                "voicing_false_alarm_rate": 0.08277266998598967,
+                "voicing_recall": 0.8809285677407807
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.012794638546326684,
+                "median_abs_cents_error": 6.504059455180999,
+                "octave_error_rate": 0.0010504201680672268,
+                "raw_pitch_accuracy": 0.8047169027156348,
+                "voicing_false_alarm_rate": 0.07120534199103828,
+                "voicing_recall": 0.8148097690030166
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.0032805825130030083,
+                "median_abs_cents_error": 5.589902651300563,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.9001325670389545,
+                "voicing_false_alarm_rate": 0.05354216927028351,
+                "voicing_recall": 0.9031145439096417
+              }
+            }
+          }
+        ],
+        "eligible": false,
+        "objective": {
+          "maximum_false_voicing": 0.08277266998598967,
+          "minimum_pitch_accuracy": 0.7639297621630253
+        },
+        "parameters": {
+          "local_periodicity_threshold": 0.5,
+          "max_internal_gap_s": 0.02,
+          "voicing_guard_s": 0.02
+        }
+      },
+      {
+        "development_sets": [
+          {
+            "failed_gates": [
+              "mixture_minus6db.raw_pitch_accuracy",
+              "mixture_minus6db.voicing_recall"
+            ],
+            "name": "original_development",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.01142976779805449,
+                "median_abs_cents_error": 5.807135836827001,
+                "octave_error_rate": 0.006379585326953748,
+                "raw_pitch_accuracy": 0.838060994443632,
+                "voicing_false_alarm_rate": 0.03751617087499319,
+                "voicing_recall": 0.8481813496546212
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.014337020577456104,
+                "median_abs_cents_error": 5.997395388340569,
+                "octave_error_rate": 0.00665335994677312,
+                "raw_pitch_accuracy": 0.7685056314971009,
+                "voicing_false_alarm_rate": 0.018247903585241598,
+                "voicing_recall": 0.7802528925487243
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.006527655177577564,
+                "median_abs_cents_error": 5.4326194839668185,
+                "octave_error_rate": 0.004143646408839779,
+                "raw_pitch_accuracy": 0.8620232449985769,
+                "voicing_false_alarm_rate": 0.0398087439464019,
+                "voicing_recall": 0.8679151422515128
+              }
+            }
+          },
+          {
+            "failed_gates": [],
+            "name": "consumed_v2_test",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.004833463618045804,
+                "median_abs_cents_error": 6.249957189719699,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.8878577469128487,
+                "voicing_false_alarm_rate": 0.09827697349792407,
+                "voicing_recall": 0.892100247829296
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.0127846855435748,
+                "median_abs_cents_error": 6.565069816465805,
+                "octave_error_rate": 0.0010030090270812437,
+                "raw_pitch_accuracy": 0.8213048052019861,
+                "voicing_false_alarm_rate": 0.07913862396919595,
+                "voicing_recall": 0.8316698387529605
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.003249903206429743,
+                "median_abs_cents_error": 5.598261807009654,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.905664193426804,
+                "voicing_false_alarm_rate": 0.07522807797635594,
+                "voicing_recall": 0.9086461702974913
+              }
+            }
+          }
+        ],
+        "eligible": false,
+        "objective": {
+          "maximum_false_voicing": 0.09827697349792407,
+          "minimum_pitch_accuracy": 0.7685056314971009
+        },
+        "parameters": {
+          "local_periodicity_threshold": 0.5,
+          "max_internal_gap_s": 0.04,
+          "voicing_guard_s": 0.02
+        }
+      },
+      {
+        "development_sets": [
+          {
+            "failed_gates": [
+              "mixture_minus6db.raw_pitch_accuracy"
+            ],
+            "name": "original_development",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.01141128470298827,
+                "median_abs_cents_error": 5.817288377045537,
+                "octave_error_rate": 0.006391818472355385,
+                "raw_pitch_accuracy": 0.8523590661939763,
+                "voicing_false_alarm_rate": 0.04070685761885493,
+                "voicing_recall": 0.8624030315444439
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.014469013023610625,
+                "median_abs_cents_error": 6.003217567011851,
+                "octave_error_rate": 0.006123800066203244,
+                "raw_pitch_accuracy": 0.7910004525429798,
+                "voicing_false_alarm_rate": 0.021058443438245658,
+                "voicing_recall": 0.8029347465026305
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.005404258378602144,
+                "median_abs_cents_error": 5.425821924075369,
+                "octave_error_rate": 0.003656307129798903,
+                "raw_pitch_accuracy": 0.8744005720867708,
+                "voicing_false_alarm_rate": 0.025627738174793534,
+                "voicing_recall": 0.8793185895969168
+              }
+            }
+          },
+          {
+            "failed_gates": [],
+            "name": "consumed_v2_test",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.005009404263934084,
+                "median_abs_cents_error": 6.238267015676428,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.8926141975776983,
+                "voicing_false_alarm_rate": 0.09110485829994701,
+                "voicing_recall": 0.8969817347129845
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.013644261971113512,
+                "median_abs_cents_error": 6.580483215175991,
+                "octave_error_rate": 0.0010626992561105207,
+                "raw_pitch_accuracy": 0.8290493736562503,
+                "voicing_false_alarm_rate": 0.08012769841133514,
+                "voicing_recall": 0.8400003659147806
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.0026751255601329383,
+                "median_abs_cents_error": 5.567938899581333,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.9082409473708045,
+                "voicing_false_alarm_rate": 0.055845684158903335,
+                "voicing_recall": 0.9106404345770267
+              }
+            }
+          }
+        ],
+        "eligible": false,
+        "objective": {
+          "maximum_false_voicing": 0.09110485829994701,
+          "minimum_pitch_accuracy": 0.7910004525429798
+        },
+        "parameters": {
+          "local_periodicity_threshold": 0.75,
+          "max_internal_gap_s": 0.02,
+          "voicing_guard_s": 0.01
+        }
+      },
+      {
+        "development_sets": [
+          {
+            "failed_gates": [
+              "mixture_minus6db.raw_pitch_accuracy"
+            ],
+            "name": "original_development",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.011771850587347652,
+                "median_abs_cents_error": 5.834464426955354,
+                "octave_error_rate": 0.006343165239454488,
+                "raw_pitch_accuracy": 0.8555842254938022,
+                "voicing_false_alarm_rate": 0.041436252221334874,
+                "voicing_recall": 0.8660231355520108
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.014758151019909328,
+                "median_abs_cents_error": 6.021784881986367,
+                "octave_error_rate": 0.006099571381470491,
+                "raw_pitch_accuracy": 0.7943431078512856,
+                "voicing_false_alarm_rate": 0.021058443438245658,
+                "voicing_recall": 0.8065598796094443
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.005843299232616449,
+                "median_abs_cents_error": 5.456328067546413,
+                "octave_error_rate": 0.0036429872495446266,
+                "raw_pitch_accuracy": 0.8782316304747706,
+                "voicing_false_alarm_rate": 0.03094395541373333,
+                "voicing_recall": 0.8835637740193382
+              }
+            }
+          },
+          {
+            "failed_gates": [],
+            "name": "consumed_v2_test",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.005302721442860997,
+                "median_abs_cents_error": 6.247954375673611,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.8986385530520691,
+                "voicing_false_alarm_rate": 0.09630964076796981,
+                "voicing_recall": 0.9032935319556176
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.013692113036360282,
+                "median_abs_cents_error": 6.597481856455491,
+                "octave_error_rate": 0.001044932079414838,
+                "raw_pitch_accuracy": 0.8349623656485653,
+                "voicing_false_alarm_rate": 0.0817946104213844,
+                "voicing_recall": 0.8460546008449489
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.0028062371887338836,
+                "median_abs_cents_error": 5.585764903786636,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.9134296222688069,
+                "voicing_false_alarm_rate": 0.06150760216618217,
+                "voicing_recall": 0.9159703524128822
+              }
+            }
+          }
+        ],
+        "eligible": false,
+        "objective": {
+          "maximum_false_voicing": 0.09630964076796981,
+          "minimum_pitch_accuracy": 0.7943431078512856
+        },
+        "parameters": {
+          "local_periodicity_threshold": 0.75,
+          "max_internal_gap_s": 0.04,
+          "voicing_guard_s": 0.01
+        }
+      },
+      {
+        "development_sets": [
+          {
+            "failed_gates": [
+              "mixture_minus6db.raw_pitch_accuracy",
+              "mixture_minus6db.voicing_recall"
+            ],
+            "name": "original_development",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.010468639697512891,
+                "median_abs_cents_error": 5.742221624032133,
+                "octave_error_rate": 0.006196999347684279,
+                "raw_pitch_accuracy": 0.8192461681718911,
+                "voicing_false_alarm_rate": 0.03252066749976997,
+                "voicing_recall": 0.828289296202262
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.012756280549190929,
+                "median_abs_cents_error": 5.909144213552822,
+                "octave_error_rate": 0.0059101654846335705,
+                "raw_pitch_accuracy": 0.7537243085421652,
+                "voicing_false_alarm_rate": 0.017879985998780965,
+                "voicing_recall": 0.7639920630911986
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.005411089174789462,
+                "median_abs_cents_error": 5.371140407685853,
+                "octave_error_rate": 0.003734827264239029,
+                "raw_pitch_accuracy": 0.8407581295938336,
+                "voicing_false_alarm_rate": 0.01814174464327042,
+                "voicing_recall": 0.8455449135081791
+              }
+            }
+          },
+          {
+            "failed_gates": [
+              "mixture_minus6db.raw_pitch_accuracy",
+              "mixture_minus6db.voicing_recall"
+            ],
+            "name": "consumed_v2_test",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.0032015446842390757,
+                "median_abs_cents_error": 6.152938682309435,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.8556232537133018,
+                "voicing_false_alarm_rate": 0.07827730609756879,
+                "voicing_recall": 0.8583047176325702
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.013034268856259057,
+                "median_abs_cents_error": 6.464296168187256,
+                "octave_error_rate": 0.0011389521640091116,
+                "raw_pitch_accuracy": 0.7855632776272071,
+                "voicing_false_alarm_rate": 0.06645095183035081,
+                "voicing_recall": 0.7953736580388826
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.002137273212007952,
+                "median_abs_cents_error": 5.524178375246247,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.8722468063804282,
+                "voicing_false_alarm_rate": 0.04421470909230787,
+                "voicing_recall": 0.8740851611613888
+              }
+            }
+          }
+        ],
+        "eligible": false,
+        "objective": {
+          "maximum_false_voicing": 0.07827730609756879,
+          "minimum_pitch_accuracy": 0.7537243085421652
+        },
+        "parameters": {
+          "local_periodicity_threshold": 0.75,
+          "max_internal_gap_s": 0.02,
+          "voicing_guard_s": 0.02
+        }
+      },
+      {
+        "development_sets": [
+          {
+            "failed_gates": [
+              "mixture_minus6db.raw_pitch_accuracy",
+              "mixture_minus6db.voicing_recall"
+            ],
+            "name": "original_development",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.01079830565625447,
+                "median_abs_cents_error": 5.778060593145503,
+                "octave_error_rate": 0.006107360977177757,
+                "raw_pitch_accuracy": 0.8259529835504996,
+                "voicing_false_alarm_rate": 0.03325006210224991,
+                "voicing_recall": 0.8353910562886114
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.01303646344671955,
+                "median_abs_cents_error": 5.935915873360126,
+                "octave_error_rate": 0.005868544600938968,
+                "raw_pitch_accuracy": 0.7597562777212583,
+                "voicing_false_alarm_rate": 0.017879985998780965,
+                "voicing_recall": 0.7703065100687995
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.005840238958691831,
+                "median_abs_cents_error": 5.384593394625793,
+                "octave_error_rate": 0.003700277520814061,
+                "raw_pitch_accuracy": 0.8481174767986287,
+                "voicing_false_alarm_rate": 0.02590801480445018,
+                "voicing_recall": 0.8533183867473957
+              }
+            }
+          },
+          {
+            "failed_gates": [
+              "mixture_minus6db.raw_pitch_accuracy"
+            ],
+            "name": "consumed_v2_test",
+            "summary": {
+              "backing": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "mixture_0db": {
+                "gross_pitch_error_rate": 0.004000508110802859,
+                "median_abs_cents_error": 6.179118137053916,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.8669675026271846,
+                "voicing_false_alarm_rate": 0.08809282703270767,
+                "voicing_recall": 0.8703658130358073
+              },
+              "mixture_minus6db": {
+                "gross_pitch_error_rate": 0.013131868856191603,
+                "median_abs_cents_error": 6.517743781888185,
+                "octave_error_rate": 0.0011013215859030838,
+                "raw_pitch_accuracy": 0.7973954731822855,
+                "voicing_false_alarm_rate": 0.0701478840566948,
+                "voicing_recall": 0.8074780208575537
+              },
+              "silence": {
+                "gross_pitch_error_rate": null,
+                "median_abs_cents_error": null,
+                "octave_error_rate": null,
+                "raw_pitch_accuracy": null,
+                "voicing_false_alarm_rate": 0.0,
+                "voicing_recall": null
+              },
+              "solo": {
+                "gross_pitch_error_rate": 0.0025727787366694663,
+                "median_abs_cents_error": 5.5326420214760645,
+                "octave_error_rate": 0.0,
+                "raw_pitch_accuracy": 0.8821988674255258,
+                "voicing_false_alarm_rate": 0.05556480238827744,
+                "voicing_recall": 0.8844613110275338
+              }
+            }
+          }
+        ],
+        "eligible": false,
+        "objective": {
+          "maximum_false_voicing": 0.08809282703270767,
+          "minimum_pitch_accuracy": 0.7597562777212583
+        },
+        "parameters": {
+          "local_periodicity_threshold": 0.75,
+          "max_internal_gap_s": 0.04,
+          "voicing_guard_s": 0.02
+        }
+      }
+    ],
+    "profiles_verified": 12,
+    "prospective_data_read": false,
+    "protocol_caveat": "Frozen method.acceptance retains v4 no-temporal-erosion text; complete temporal_envelope field governs implemented v6 method. Clarify prospective protocol without rewriting frozen development history.",
+    "raw_artifacts_verified": 60,
+    "report_sha256": "eb92e52b2a6157b3b616a2be005fc0a9176e191986e3b8608f91de8b2d11d255",
+    "schema": "IndependentVocalF0HybridReview/v1",
+    "scientific_verdict": "One profile passes consumed development gates narrowly; not independent qualification. Prospective verification remains required.",
+    "script_sha256": "45f5fc7ad682de281251f1f2dfb73d5609298c182a8d5c10763d6294a36f8c85",
+    "selected_artifacts_verified": 60,
+    "selected_objective": {
+      "maximum_false_voicing": 0.09887458485578748,
+      "minimum_pitch_accuracy": 0.8010634346798491
+    },
+    "selected_parameters": {
+      "local_periodicity_threshold": 0.5,
+      "max_internal_gap_s": 0.02,
+      "voicing_guard_s": 0.01
+    },
+    "source_hashes": {
+      "/private/tmp/natural-features-vocal-f0/scripts/calibrate_vocal_f0.py": "f24e7bc77388e3dbe6b897a830972841a45c4ad06b6e71e275198d155332fb86",
+      "/private/tmp/natural-features-vocal-f0/scripts/calibrate_vocal_f0_hybrid.py": "94266357eee0a7811abef965b7d01147f75190fb72534a85fc8f889e9830823e",
+      "/private/tmp/natural-features-vocal-f0/src/natural_features/features/audio/vocal_f0.py": "cf166895a44398808cefe86e2da41559f4c8dd1ae61e10d9462b95bd9c1b4d2c",
+      "/private/tmp/natural-features-vocal-f0/tests/benchmarks/reports/vocal_f0_development_v4.json": "38b7525aeadd4f6b1c351daae0f770f816d942eccea43f2b73bb89cfc1dc7de0",
+      "/private/tmp/natural-features-vocal-f0/tests/benchmarks/thresholds/vocal_f0_development_v6.json": "53b78c2009c7e214449bae9b7cc3561b3d58e133340ef330ea02317afd508b67"
+    }
+  },
+  "independent_prospective_receipt": {
+    "development_report_sha256": "eb92e52b2a6157b3b616a2be005fc0a9176e191986e3b8608f91de8b2d11d255",
+    "development_review_receipt_sha256": "3154a5e6900ea32de808375f223c04583ad360a147774c82dbfd311aff1f4413",
+    "errors": [],
+    "frozen_sources": {
+      "scripts/qualify_vocal_f0.py": "139656428df7324df65b00ecc6c8a42156bb6752c33e1a2a2f826de2d6a08d48",
+      "src/natural_features/features/audio/vocal_f0.py": "cf166895a44398808cefe86e2da41559f4c8dd1ae61e10d9462b95bd9c1b4d2c",
+      "src/natural_features/features/audio/vocal_f0_benchmark.py": "23670160c8e70b605a304281d6be653e39178b6ae5dc7a8facdc7cfbc35bcdde"
+    },
+    "named_prospective_report_exists": false,
+    "passed": true,
+    "prospective_audio_annotations_or_predictions_opened": false,
+    "protocol_sha256": "c3f9820c1eaaa542e78bdcb4b05734724259721b92dda28bbc45b86ddd195565",
+    "schema": "IndependentVocalF0ProspectiveManifestReview/v1",
+    "script_sha256": "fabfaff21183486998f3d7c6cddce4d01d453f874aaa346beaf8871e8302b78d",
+    "selected_parameters": {
+      "local_periodicity_threshold": 0.5,
+      "max_internal_gap_s": 0.02,
+      "voicing_guard_s": 0.01
+    },
+    "verdict": "Manifest matches reviewed candidate, original gates, reserved unseen singers and unambiguous hybrid rule. Source guard precedes asset preparation. This review consumed no prospective data; flag/report absence is not a global audit of other sessions."
+  },
+  "direct_replay_receipt": {
+    "passed": true,
+    "excerpt_id": 1,
+    "condition": "mixture_minus6db",
+    "all_columns_equal": true,
+    "native_times_equal": true,
+    "input_hash": "aadc6584a75e9b96121df5fd4f8f33faae6f6198633529794e3cbe73b9506437",
+    "source_sha256": "cf166895a44398808cefe86e2da41559f4c8dd1ae61e10d9462b95bd9c1b4d2c",
+    "original_artifact_sha256": "1d3c0fcf95ea03873037078a9018160b14728857fb2af0add6e62205ff1fe234",
+    "parameters": {
+      "local_periodicity_threshold": 0.5,
+      "voicing_guard_s": 0.01,
+      "max_internal_gap_s": 0.02
+    }
+  },
+  "supporting_files": [
+    {
+      "path": "/private/tmp/natural-features-vocal-assets/v5-independent-review/rescore.py",
+      "sha256": "30e5170b79cd1cdbeccceab877f28151649d1dde71ae3fa59b90410f2fc0d21d"
+    },
+    {
+      "path": "/private/tmp/natural-features-vocal-assets/v5-independent-review/receipt.json",
+      "sha256": "2c91fa85623c14a23461940fbe16e7bfaa44cf8923f4ec9a44541f931cf451df"
+    },
+    {
+      "path": "/private/tmp/natural-features-vocal-assets/v6-independent-review/rescore.py",
+      "sha256": "45f5fc7ad682de281251f1f2dfb73d5609298c182a8d5c10763d6294a36f8c85"
+    },
+    {
+      "path": "/private/tmp/natural-features-vocal-assets/v6-independent-review/receipt.json",
+      "sha256": "3154a5e6900ea32de808375f223c04583ad360a147774c82dbfd311aff1f4413"
+    },
+    {
+      "path": "/private/tmp/natural-features-vocal-assets/v6-independent-review/check_prospective.py",
+      "sha256": "fabfaff21183486998f3d7c6cddce4d01d453f874aaa346beaf8871e8302b78d"
+    },
+    {
+      "path": "/private/tmp/natural-features-vocal-assets/v6-independent-review/prospective-receipt.json",
+      "sha256": "8263e47a27e77f6b3194cdc8d0228dd0d0d60e1bbfdac20b37e7246bea3ab49f"
+    },
+    {
+      "path": "/private/tmp/nf-v6-direct-check.py",
+      "sha256": "c287fc3ab4951b40003b3186155cfc812c95b9836d4c5d40da2c9902c2d76f71"
+    },
+    {
+      "path": "/private/tmp/nf-v6-direct-check.json",
+      "sha256": "c52c5cb0a362cfb9703d80767ad9424d852ae4f9bda69b1a3ec781a685cf1864"
+    }
+  ],
+  "checks": {
+    "unit": "595 passed, 3 skipped; known pre-existing live R comparison excluded with NF_PARITY_NO_R_COMPARE=1",
+    "source_freeze_protocol_tests": "5 passed after runner freeze guard added",
+    "static_public_contracts": 49,
+    "lint": "passed",
+    "prior_v1_to_v5_protocols_and_reports": "byte-identical to local commit f6377985fe76e5d2a0c14fabf3cbfe59efa4eb12"
+  },
+  "caveats": [
+    "Adaptive development used both consumed groups; narrow margin is not independent qualification.",
+    "Frozen development method.acceptance has stale no-erosion wording; method.temporal_envelope defines full hybrid and prospective acceptance is unambiguous.",
+    "Defaults retain unqualified v2 framewise decisions."
+  ]
+}
