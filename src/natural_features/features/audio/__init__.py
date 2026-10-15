@@ -25,8 +25,12 @@ from .opensmile import egemaps_lld
 from .periodicity import audio_periodicity
 from .phonetic import audio_formants, audio_harmonicity
 from .prosody import audio_pitch, prosody_features
+from .vocals import SeparatedAudio, separate_vocals, source_pitch_crepe
 
 __all__ = [
+    "SeparatedAudio",
+    "separate_vocals",
+    "source_pitch_crepe",
     "audio_ast_embeddings",
     "audio_clap_embeddings",
     "audio_envelope",
