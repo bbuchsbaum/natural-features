@@ -27,8 +27,8 @@ silence label. Retain native rows and validity when pooling downstream.
 | `f0_hz` | Accepted dominant pitch in the selected stem, or NaN |
 | `confidence` | CREPE periodicity, not calibrated vocal probability |
 | `source_support` | Vocal-stem energy divided by summed separated-stem energies in the pitch window |
-| `source_supported` | Energy share at least 0.1 and vocal RMS at least 0.001 |
-| `voiced`, `missing` | Acceptance additionally requires periodicity at least 0.21; missing is its complement |
+| `source_supported` | Energy share at least 0.03 and vocal RMS at least 0.01 |
+| `voiced`, `missing` | Acceptance additionally requires periodicity at least 0.65; missing is its complement |
 | `range_edge` | Estimate within 20 cents of a search boundary; not proof the true pitch is out of range |
 | `octave_jump` | Adjacent accepted estimates differ by 1200 ± 100 cents; genuine intervals can trigger it |
 | `padded` | CREPE window extends outside supplied audio |
@@ -37,7 +37,7 @@ silence label. Retain native rows and validity when pooling downstream.
 
 Confidence comparisons use float32; source support and RMS comparisons use float64, preserved in the diagnostic output.
 
-These thresholds are fixed engineering heuristics. Source support is not a
+These defaults are the development-selected v2 profile (0.65, 0.03, 0.01). They are engineering heuristics. Source support is not a
 singing detector probability, and periodic instruments can leak into the stem.
 The default search range is 50–1000 Hz. F0 outside that range is not recovered
 by adding an octave correction. Changing thresholds or the range requires
@@ -120,7 +120,7 @@ Only a profile satisfying every original development gate may proceed to a
 test on singer-disjoint IDs 7, 10, 11, 12, 13 and 14. Those IDs were selected
 from singer metadata alone; the instrumental test windows start at ten seconds.
 The grid is not expanded after outcomes, and the test set is not replaced.
-Calibration and holdout status are recorded in their separate reports.
+Calibration passed: five profiles met all development gates, and the frozen ranking selected (0.65, 0.03, 0.01). The original threshold profile reproduced the retained v1 predictions and scores. The selected profile is frozen in `tests/benchmarks/thresholds/vocal_f0_holdout_v2.json`; independent qualification remains pending until its holdout report passes. Calibration and holdout status are recorded in their separate reports.
 
 Qualification applies to the named excerpts and controlled mixtures only.
 It does not establish performance on commercial mixes, choirs, every singer,

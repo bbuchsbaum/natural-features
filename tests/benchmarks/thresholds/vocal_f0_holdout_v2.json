@@ -1,0 +1,55 @@
+{
+  "schema": "VocalF0QualificationProtocol/v2",
+  "selection": "First track of each of first six unseen singers scanning numeric IDs after6; metadata-only selection frozen before inference",
+  "source_dataset": "https://zenodo.org/records/5578807",
+  "archive_md5": "dea40fd18f14d899643c4ba221b33a46",
+  "conditions": [
+    "solo",
+    "mixture_0db",
+    "mixture_minus6db"
+  ],
+  "negative_conditions": [
+    "backing",
+    "silence"
+  ],
+  "averaging": "equal-weight macro across six excerpts, separately per condition",
+  "gates": {
+    "raw_pitch_accuracy_min": 0.8,
+    "voicing_recall_min": 0.8,
+    "voicing_false_alarm_rate_max": 0.1,
+    "median_abs_cents_error_max": 50.0,
+    "octave_error_rate_max": 0.05,
+    "backing_false_alarm_rate_max": 0.05,
+    "silence_false_alarm_rate_max": 0.0,
+    "analytic_median_abs_cents_error_max": 50.0
+  },
+  "extractor": {
+    "demucs": "4.0.1",
+    "torchcrepe": "0.0.24",
+    "separator_sha256": "8726e21a993978c7ba086d3872e7608d7d5bfca646ca4aca459ffda844faa8b4",
+    "crepe_sha256": "133225604dedd2e4005f8bbd1bd0a2ec073ba8b7a6cd31ff6d5edbbfa3539986",
+    "decoder": "local weighted +/-4 bins, undithered",
+    "hop_s": 0.01,
+    "fmin": 50.0,
+    "fmax": 1000.0,
+    "confidence_threshold": 0.65,
+    "source_threshold": 0.03,
+    "min_source_rms": 0.01
+  },
+  "scope": "Six named singer-disjoint Vocadito excerpts (7,10,11,12,13,14), first10s solo and constructed0/-6dB mixtures, with two backing windows10-20s and silence. No population, commercial-mix, choir, singer-identity, calibrated-probability or training-independence claim.",
+  "purpose": "Untouched singer-disjoint qualification after frozen development calibration",
+  "excerpt_ids": [
+    7,
+    10,
+    11,
+    12,
+    13,
+    14
+  ],
+  "backing_start_s": 10,
+  "stop_rule": "Evaluate once; no threshold changes or replacement holdout after outcomes.",
+  "calibration_report_sha256": "958a4b8f652b3b47998df8e6137216a1c32a085ee3ad4386d822bb687566e30a",
+  "calibration_protocol_sha256": "a5c033bfad65738f4d64ebb480271cf546e20a524f1503e4baa8f4161c04408a",
+  "singer_metadata_sha256": "22266a2deb232e6783cc5ebfbba5e4c7639d7c614e9e248e780a0bee8678a41c",
+  "extractor_source_sha256": "ea4bf42060f27e50b2f60d7949fd07ee1b2e6015eb164505a7012cfe1a3df482"
+}

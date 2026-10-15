@@ -1386,9 +1386,9 @@ extractors:
       hop_s: { type: float, default: 0.01 }
       fmin: { type: float, default: 50.0 }
       fmax: { type: float, default: 1000.0 }
-      confidence_threshold: { type: float, default: 0.21 }
-      source_threshold: { type: float, default: 0.1 }
-      min_source_rms: { type: float, default: 0.001 }
+      confidence_threshold: { type: float, default: 0.65 }
+      source_threshold: { type: float, default: 0.03 }
+      min_source_rms: { type: float, default: 0.01 }
     outputs:
       default:
         schema: FeatureSeries/v1

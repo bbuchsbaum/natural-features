@@ -188,8 +188,8 @@ def audio_vocal_f0(
     stimulus: AudioStimulus, *, separator_checkpoint: str | None = None,
     cache_dir: str | None = None, local_files_only: bool = True, device: str = "cpu",
     hop_s: float = 0.01, fmin: float = 50.0, fmax: float = 1000.0,
-    confidence_threshold: float = 0.21, source_threshold: float = 0.1,
-    min_source_rms: float = 0.001,
+    confidence_threshold: float = 0.65, source_threshold: float = 0.03,
+    min_source_rms: float = 0.01,
 ) -> FeatureSeries:
     """Estimate dominant F0 of Demucs' selected vocal stem, with missingness.
 

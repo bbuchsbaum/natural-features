@@ -1,0 +1,4550 @@
+{
+  "all_tuples": [
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.3795446230995583",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.4056935919422384",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.32299675080677126"
+      ],
+      "objective": {
+        "backing_fa": 0.002,
+        "max_fa": 0.4056935919422384,
+        "min_rpa": 0.9249689442256349
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.002,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.031247049573995645,
+          "median_abs_cents_error": 6.375587095357041,
+          "octave_error_rate": 0.011783077796706417,
+          "raw_pitch_accuracy": 0.9604173690977342,
+          "voicing_false_alarm_rate": 0.4056935919422384,
+          "voicing_recall": 0.9913421230709885
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.035236770321096005,
+          "median_abs_cents_error": 6.684230729310857,
+          "octave_error_rate": 0.011100327127269263,
+          "raw_pitch_accuracy": 0.9249689442256349,
+          "voicing_false_alarm_rate": 0.32299675080677126,
+          "voicing_recall": 0.9586598103597691
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.015649839958110746,
+          "median_abs_cents_error": 5.838666916716167,
+          "octave_error_rate": 0.005387947774316879,
+          "raw_pitch_accuracy": 0.980932576865179,
+          "voicing_false_alarm_rate": 0.3795446230995583,
+          "voicing_recall": 0.9965343438782593
+        }
+      },
+      "tuple": [
+        0.21,
+        0.01,
+        0.001
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.34259079971622675",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.3878554721106806",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.3028292798976216"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.3878554721106806,
+        "min_rpa": 0.9240285851933233
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.03126065663362239,
+          "median_abs_cents_error": 6.3650739822229125,
+          "octave_error_rate": 0.011783077796706417,
+          "raw_pitch_accuracy": 0.9592731080177092,
+          "voicing_false_alarm_rate": 0.3878554721106806,
+          "voicing_recall": 0.9901978619909634
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.03480976955541757,
+          "median_abs_cents_error": 6.672833901126016,
+          "octave_error_rate": 0.011105332956915445,
+          "raw_pitch_accuracy": 0.9240285851933233,
+          "voicing_false_alarm_rate": 0.3028292798976216,
+          "voicing_recall": 0.9572669626396747
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.015328736815417082,
+          "median_abs_cents_error": 5.828222943370701,
+          "octave_error_rate": 0.005391271676078963,
+          "raw_pitch_accuracy": 0.9798236974418999,
+          "voicing_false_alarm_rate": 0.34259079971622675,
+          "voicing_recall": 0.9950884236730456
+        }
+      },
+      "tuple": [
+        0.21,
+        0.01,
+        0.003
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.23369493112810305",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.2652160928940754",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.17145736242848617"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.2652160928940754,
+        "min_rpa": 0.8882543630574977
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.027835488945194914,
+          "median_abs_cents_error": 6.176379650161471,
+          "octave_error_rate": 0.011976911976911976,
+          "raw_pitch_accuracy": 0.917090837211552,
+          "voicing_false_alarm_rate": 0.2652160928940754,
+          "voicing_recall": 0.9440525109844193
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.031118289429669755,
+          "median_abs_cents_error": 6.4870786946638175,
+          "octave_error_rate": 0.010393134888710109,
+          "raw_pitch_accuracy": 0.8882543630574977,
+          "voicing_false_alarm_rate": 0.17145736242848617,
+          "voicing_recall": 0.9173383810837348
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.012757049646051876,
+          "median_abs_cents_error": 5.709827010830583,
+          "octave_error_rate": 0.004515946937623483,
+          "raw_pitch_accuracy": 0.9389608027921056,
+          "voicing_false_alarm_rate": 0.23369493112810305,
+          "voicing_recall": 0.9513066948488412
+        }
+      },
+      "tuple": [
+        0.21,
+        0.01,
+        0.01
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.3795446230995583",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.3391128486830879",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.23093875911074177"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.3795446230995583,
+        "min_rpa": 0.8855186985506721
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.026096710749209415,
+          "median_abs_cents_error": 6.306814354705974,
+          "octave_error_rate": 0.010535557506584725,
+          "raw_pitch_accuracy": 0.9525061716172628,
+          "voicing_false_alarm_rate": 0.3391128486830879,
+          "voicing_recall": 0.9778304000103336
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.026909605363515814,
+          "median_abs_cents_error": 6.4659804283603854,
+          "octave_error_rate": 0.00810854957864647,
+          "raw_pitch_accuracy": 0.8855186985506721,
+          "voicing_false_alarm_rate": 0.23093875911074177,
+          "voicing_recall": 0.9099502523185993
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.015649839958110746,
+          "median_abs_cents_error": 5.838666916716167,
+          "octave_error_rate": 0.005387947774316879,
+          "raw_pitch_accuracy": 0.980932576865179,
+          "voicing_false_alarm_rate": 0.3795446230995583,
+          "voicing_recall": 0.9965343438782593
+        }
+      },
+      "tuple": [
+        0.21,
+        0.03,
+        0.001
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.34259079971622675",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.3282446400054367",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.2135442795343173"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.34259079971622675,
+        "min_rpa": 0.8855186985506721
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.026102321953887366,
+          "median_abs_cents_error": 6.301508347221407,
+          "octave_error_rate": 0.010535557506584725,
+          "raw_pitch_accuracy": 0.9522045124920743,
+          "voicing_false_alarm_rate": 0.3282446400054367,
+          "voicing_recall": 0.9775287408851451
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.026909605363515814,
+          "median_abs_cents_error": 6.4659804283603854,
+          "octave_error_rate": 0.00810854957864647,
+          "raw_pitch_accuracy": 0.8855186985506721,
+          "voicing_false_alarm_rate": 0.2135442795343173,
+          "voicing_recall": 0.9099502523185993
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.015328736815417082,
+          "median_abs_cents_error": 5.828222943370701,
+          "octave_error_rate": 0.005391271676078963,
+          "raw_pitch_accuracy": 0.9798236974418999,
+          "voicing_false_alarm_rate": 0.34259079971622675,
+          "voicing_recall": 0.9950884236730456
+        }
+      },
+      "tuple": [
+        0.21,
+        0.03,
+        0.003
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.23369493112810305",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.2382550583860483",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.13404807390505313"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.2382550583860483,
+        "min_rpa": 0.85952843155642
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.02397737585200499,
+          "median_abs_cents_error": 6.150813029193967,
+          "octave_error_rate": 0.010572687224669605,
+          "raw_pitch_accuracy": 0.9139238212497564,
+          "voicing_false_alarm_rate": 0.2382550583860483,
+          "voicing_recall": 0.936803486427204
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.024467374196384475,
+          "median_abs_cents_error": 6.367265472821912,
+          "octave_error_rate": 0.007471790179932907,
+          "raw_pitch_accuracy": 0.85952843155642,
+          "voicing_false_alarm_rate": 0.13404807390505313,
+          "voicing_recall": 0.881346901717757
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.012757049646051876,
+          "median_abs_cents_error": 5.709827010830583,
+          "octave_error_rate": 0.004515946937623483,
+          "raw_pitch_accuracy": 0.9389608027921056,
+          "voicing_false_alarm_rate": 0.23369493112810305,
+          "voicing_recall": 0.9513066948488412
+        }
+      },
+      "tuple": [
+        0.21,
+        0.03,
+        0.01
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.3795446230995583",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.2883515324379909",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.1885087485771819"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.3795446230995583,
+        "min_rpa": 0.8440833623928717
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.024520041317064385,
+          "median_abs_cents_error": 6.242488222930429,
+          "octave_error_rate": 0.010572687224669605,
+          "raw_pitch_accuracy": 0.942454369419664,
+          "voicing_false_alarm_rate": 0.2883515324379909,
+          "voicing_recall": 0.9660268164327753
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.023813112069507602,
+          "median_abs_cents_error": 6.336243059512881,
+          "octave_error_rate": 0.008221962860070466,
+          "raw_pitch_accuracy": 0.8440833623928717,
+          "voicing_false_alarm_rate": 0.1885087485771819,
+          "voicing_recall": 0.8644069184011659
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.015649839958110746,
+          "median_abs_cents_error": 5.838666916716167,
+          "octave_error_rate": 0.005387947774316879,
+          "raw_pitch_accuracy": 0.980932576865179,
+          "voicing_false_alarm_rate": 0.3795446230995583,
+          "voicing_recall": 0.9965343438782593
+        }
+      },
+      "tuple": [
+        0.21,
+        0.05,
+        0.001
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.34259079971622675",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.27992447023206735",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.1711142690007574"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.34259079971622675,
+        "min_rpa": 0.8440833623928717
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.024520041317064385,
+          "median_abs_cents_error": 6.242488222930429,
+          "octave_error_rate": 0.010572687224669605,
+          "raw_pitch_accuracy": 0.942454369419664,
+          "voicing_false_alarm_rate": 0.27992447023206735,
+          "voicing_recall": 0.9660268164327753
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.023813112069507602,
+          "median_abs_cents_error": 6.336243059512881,
+          "octave_error_rate": 0.008221962860070466,
+          "raw_pitch_accuracy": 0.8440833623928717,
+          "voicing_false_alarm_rate": 0.1711142690007574,
+          "voicing_recall": 0.8644069184011659
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.015328736815417082,
+          "median_abs_cents_error": 5.828222943370701,
+          "octave_error_rate": 0.005391271676078963,
+          "raw_pitch_accuracy": 0.9798236974418999,
+          "voicing_false_alarm_rate": 0.34259079971622675,
+          "voicing_recall": 0.9950884236730456
+        }
+      },
+      "tuple": [
+        0.21,
+        0.05,
+        0.003
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.23369493112810305",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.20733424546551538",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.11671406298361285"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.23369493112810305,
+        "min_rpa": 0.8235490383731495
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.02290579103254728,
+          "median_abs_cents_error": 6.108620716674397,
+          "octave_error_rate": 0.010572687224669605,
+          "raw_pitch_accuracy": 0.9079217199283516,
+          "voicing_false_alarm_rate": 0.20733424546551538,
+          "voicing_recall": 0.9296311397052125
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.022439478744066085,
+          "median_abs_cents_error": 6.27620522896584,
+          "octave_error_rate": 0.007874015748031496,
+          "raw_pitch_accuracy": 0.8235490383731495,
+          "voicing_false_alarm_rate": 0.11671406298361285,
+          "voicing_recall": 0.8424443650046033
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.012757049646051876,
+          "median_abs_cents_error": 5.709827010830583,
+          "octave_error_rate": 0.004515946937623483,
+          "raw_pitch_accuracy": 0.9389608027921056,
+          "voicing_false_alarm_rate": 0.23369493112810305,
+          "voicing_recall": 0.9513066948488412
+        }
+      },
+      "tuple": [
+        0.21,
+        0.05,
+        0.01
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.3795446230995583",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.22844189556127326",
+        "mixture_minus6db.raw_pitch_accuracy >= 0.8 failed: 0.7453649841097824",
+        "mixture_minus6db.voicing_recall >= 0.8 failed: 0.7610549246843258",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.13106473153549744"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.3795446230995583,
+        "min_rpa": 0.7453649841097824
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.020244672118812115,
+          "median_abs_cents_error": 6.147404982796058,
+          "octave_error_rate": 0.007943782462572564,
+          "raw_pitch_accuracy": 0.9152755561803475,
+          "voicing_false_alarm_rate": 0.22844189556127326,
+          "voicing_recall": 0.9339579715556613
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.02079151032817972,
+          "median_abs_cents_error": 6.136024917741728,
+          "octave_error_rate": 0.008600519798728085,
+          "raw_pitch_accuracy": 0.7453649841097824,
+          "voicing_false_alarm_rate": 0.13106473153549744,
+          "voicing_recall": 0.7610549246843258
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.015649839958110746,
+          "median_abs_cents_error": 5.838666916716167,
+          "octave_error_rate": 0.005387947774316879,
+          "raw_pitch_accuracy": 0.980932576865179,
+          "voicing_false_alarm_rate": 0.3795446230995583,
+          "voicing_recall": 0.9965343438782593
+        }
+      },
+      "tuple": [
+        0.21,
+        0.1,
+        0.001
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.34259079971622675",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.220923098568792",
+        "mixture_minus6db.raw_pitch_accuracy >= 0.8 failed: 0.7453649841097824",
+        "mixture_minus6db.voicing_recall >= 0.8 failed: 0.7610549246843258",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.11367025195907293"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.34259079971622675,
+        "min_rpa": 0.7453649841097824
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.020244672118812115,
+          "median_abs_cents_error": 6.147404982796058,
+          "octave_error_rate": 0.007943782462572564,
+          "raw_pitch_accuracy": 0.9152755561803475,
+          "voicing_false_alarm_rate": 0.220923098568792,
+          "voicing_recall": 0.9339579715556613
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.02079151032817972,
+          "median_abs_cents_error": 6.136024917741728,
+          "octave_error_rate": 0.008600519798728085,
+          "raw_pitch_accuracy": 0.7453649841097824,
+          "voicing_false_alarm_rate": 0.11367025195907293,
+          "voicing_recall": 0.7610549246843258
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.015328736815417082,
+          "median_abs_cents_error": 5.828222943370701,
+          "octave_error_rate": 0.005391271676078963,
+          "raw_pitch_accuracy": 0.9798236974418999,
+          "voicing_false_alarm_rate": 0.34259079971622675,
+          "voicing_recall": 0.9950884236730456
+        }
+      },
+      "tuple": [
+        0.21,
+        0.1,
+        0.003
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.23369493112810305",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.16435575680668127",
+        "mixture_minus6db.raw_pitch_accuracy >= 0.8 failed: 0.7332306009172894",
+        "mixture_minus6db.voicing_recall >= 0.8 failed: 0.7481310120221155"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.23369493112810305,
+        "min_rpa": 0.7332306009172894
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.019173142752710867,
+          "median_abs_cents_error": 6.03599027898083,
+          "octave_error_rate": 0.007943782462572564,
+          "raw_pitch_accuracy": 0.885746360975782,
+          "voicing_false_alarm_rate": 0.16435575680668127,
+          "voicing_recall": 0.9031690673652227
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.019958014104137067,
+          "median_abs_cents_error": 6.099956358444608,
+          "octave_error_rate": 0.008212019410227697,
+          "raw_pitch_accuracy": 0.7332306009172894,
+          "voicing_false_alarm_rate": 0.08318449645774392,
+          "voicing_recall": 0.7481310120221155
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.012757049646051876,
+          "median_abs_cents_error": 5.709827010830583,
+          "octave_error_rate": 0.004515946937623483,
+          "raw_pitch_accuracy": 0.9389608027921056,
+          "voicing_false_alarm_rate": 0.23369493112810305,
+          "voicing_recall": 0.9513066948488412
+        }
+      },
+      "tuple": [
+        0.21,
+        0.1,
+        0.01
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.30113699537393773",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.3275331832092234",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.2675588645340376"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.3275331832092234,
+        "min_rpa": 0.9224186843934273
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.028680050903260576,
+          "median_abs_cents_error": 6.342966458911133,
+          "octave_error_rate": 0.011833475905332192,
+          "raw_pitch_accuracy": 0.9591362844754929,
+          "voicing_false_alarm_rate": 0.3275331832092234,
+          "voicing_recall": 0.9874075807567674
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.03350115913824506,
+          "median_abs_cents_error": 6.658168357690516,
+          "octave_error_rate": 0.011117671496940923,
+          "raw_pitch_accuracy": 0.9224186843934273,
+          "voicing_false_alarm_rate": 0.2675588645340376,
+          "voicing_recall": 0.9543354173674161
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.014896683890450907,
+          "median_abs_cents_error": 5.8297458458802724,
+          "octave_error_rate": 0.0053896066952054305,
+          "raw_pitch_accuracy": 0.9808134441513358,
+          "voicing_false_alarm_rate": 0.30113699537393773,
+          "voicing_recall": 0.9956573785434498
+        }
+      },
+      "tuple": [
+        0.35,
+        0.01,
+        0.001
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.27731268134342413",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.3141261492711955",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.25528618504281503"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.3141261492711955,
+        "min_rpa": 0.9217799844863043
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.0286879224787086,
+          "median_abs_cents_error": 6.338669912901994,
+          "octave_error_rate": 0.011833475905332192,
+          "raw_pitch_accuracy": 0.9584975845683696,
+          "voicing_false_alarm_rate": 0.3141261492711955,
+          "voicing_recall": 0.9867688808496441
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.03305881352874079,
+          "median_abs_cents_error": 6.641865766710683,
+          "octave_error_rate": 0.011121300662424482,
+          "raw_pitch_accuracy": 0.9217799844863043,
+          "voicing_false_alarm_rate": 0.25528618504281503,
+          "voicing_recall": 0.9532442287725101
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.014742483075231636,
+          "median_abs_cents_error": 5.816711374516409,
+          "octave_error_rate": 0.005392942750203634,
+          "raw_pitch_accuracy": 0.9797045647280568,
+          "voicing_false_alarm_rate": 0.27731268134342413,
+          "voicing_recall": 0.9943799787292034
+        }
+      },
+      "tuple": [
+        0.35,
+        0.01,
+        0.003
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.19730562898053491",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.2237196944033344",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.14581618864503035"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.2237196944033344,
+        "min_rpa": 0.8876378937750328
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.025785959205098217,
+          "median_abs_cents_error": 6.162390590575238,
+          "octave_error_rate": 0.012008101851851851,
+          "raw_pitch_accuracy": 0.9169717044977088,
+          "voicing_false_alarm_rate": 0.2237196944033344,
+          "voicing_recall": 0.9418791473863419
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.029741557822749957,
+          "median_abs_cents_error": 6.476499305366559,
+          "octave_error_rate": 0.010404146496706608,
+          "raw_pitch_accuracy": 0.8876378937750328,
+          "voicing_false_alarm_rate": 0.14581618864503035,
+          "voicing_recall": 0.9154002673289071
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.012431128480709605,
+          "median_abs_cents_error": 5.704516150051956,
+          "octave_error_rate": 0.004515946937623483,
+          "raw_pitch_accuracy": 0.9388416700782626,
+          "voicing_false_alarm_rate": 0.19730562898053491,
+          "voicing_recall": 0.9508999090301874
+        }
+      },
+      "tuple": [
+        0.35,
+        0.01,
+        0.01
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.30113699537393773",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.2737118722658927",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.1996295437433526"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.30113699537393773,
+        "min_rpa": 0.8841293723500897
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.024393172472003885,
+          "median_abs_cents_error": 6.283831571954173,
+          "octave_error_rate": 0.01054481546572935,
+          "raw_pitch_accuracy": 0.9517306481679233,
+          "voicing_false_alarm_rate": 0.2737118722658927,
+          "voicing_recall": 0.9753427724828269
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.0263447840432836,
+          "median_abs_cents_error": 6.449137091500623,
+          "octave_error_rate": 0.00811600205667276,
+          "raw_pitch_accuracy": 0.8841293723500897,
+          "voicing_false_alarm_rate": 0.1996295437433526,
+          "voicing_recall": 0.9080033107367688
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.014896683890450907,
+          "median_abs_cents_error": 5.8297458458802724,
+          "octave_error_rate": 0.0053896066952054305,
+          "raw_pitch_accuracy": 0.9808134441513358,
+          "voicing_false_alarm_rate": 0.30113699537393773,
+          "voicing_recall": 0.9956573785434498
+        }
+      },
+      "tuple": [
+        0.35,
+        0.03,
+        0.001
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.27731268134342413",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.2656852853582472",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.18735686425213005"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.27731268134342413,
+        "min_rpa": 0.8841293723500897
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.02439852273243485,
+          "median_abs_cents_error": 6.280718284828262,
+          "octave_error_rate": 0.01054481546572935,
+          "raw_pitch_accuracy": 0.9514289890427348,
+          "voicing_false_alarm_rate": 0.2656852853582472,
+          "voicing_recall": 0.9750411133576383
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.0263447840432836,
+          "median_abs_cents_error": 6.449137091500623,
+          "octave_error_rate": 0.00811600205667276,
+          "raw_pitch_accuracy": 0.8841293723500897,
+          "voicing_false_alarm_rate": 0.18735686425213005,
+          "voicing_recall": 0.9080033107367688
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.014742483075231636,
+          "median_abs_cents_error": 5.816711374516409,
+          "octave_error_rate": 0.005392942750203634,
+          "raw_pitch_accuracy": 0.9797045647280568,
+          "voicing_false_alarm_rate": 0.27731268134342413,
+          "voicing_recall": 0.9943799787292034
+        }
+      },
+      "tuple": [
+        0.35,
+        0.03,
+        0.003
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.19730562898053491",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.19910299026412948",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.11803946378214669"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.19910299026412948,
+        "min_rpa": 0.8591502277016416
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.022556654904541118,
+          "median_abs_cents_error": 6.140433599871215,
+          "octave_error_rate": 0.010582010582010581,
+          "raw_pitch_accuracy": 0.9138046885359131,
+          "voicing_false_alarm_rate": 0.19910299026412948,
+          "voicing_recall": 0.9352915995887551
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.023849704332832622,
+          "median_abs_cents_error": 6.362451473924053,
+          "octave_error_rate": 0.007478632478632479,
+          "raw_pitch_accuracy": 0.8591502277016416,
+          "voicing_false_alarm_rate": 0.11803946378214669,
+          "voicing_recall": 0.8804110824817303
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.012431128480709605,
+          "median_abs_cents_error": 5.704516150051956,
+          "octave_error_rate": 0.004515946937623483,
+          "raw_pitch_accuracy": 0.9388416700782626,
+          "voicing_false_alarm_rate": 0.19730562898053491,
+          "voicing_recall": 0.9508999090301874
+        }
+      },
+      "tuple": [
+        0.35,
+        0.03,
+        0.01
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.30113699537393773",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.23755596886548655",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.16682865768907154"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.30113699537393773,
+        "min_rpa": 0.8426940361922893
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.0227967477495947,
+          "median_abs_cents_error": 6.224984721213873,
+          "octave_error_rate": 0.010582010582010581,
+          "raw_pitch_accuracy": 0.9418296755329189,
+          "voicing_false_alarm_rate": 0.23755596886548655,
+          "voicing_recall": 0.9636900184678628
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.023525835506291837,
+          "median_abs_cents_error": 6.329362093726996,
+          "octave_error_rate": 0.008229720511053749,
+          "raw_pitch_accuracy": 0.8426940361922893,
+          "voicing_false_alarm_rate": 0.16682865768907154,
+          "voicing_recall": 0.8627299390957731
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.014896683890450907,
+          "median_abs_cents_error": 5.8297458458802724,
+          "octave_error_rate": 0.0053896066952054305,
+          "raw_pitch_accuracy": 0.9808134441513358,
+          "voicing_false_alarm_rate": 0.30113699537393773,
+          "voicing_recall": 0.9956573785434498
+        }
+      },
+      "tuple": [
+        0.35,
+        0.05,
+        0.001
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.27731268134342413",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.23052288889034434",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.15455597819784903"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.27731268134342413,
+        "min_rpa": 0.8426940361922893
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.0227967477495947,
+          "median_abs_cents_error": 6.224984721213873,
+          "octave_error_rate": 0.010582010582010581,
+          "raw_pitch_accuracy": 0.9418296755329189,
+          "voicing_false_alarm_rate": 0.23052288889034434,
+          "voicing_recall": 0.9636900184678628
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.023525835506291837,
+          "median_abs_cents_error": 6.329362093726996,
+          "octave_error_rate": 0.008229720511053749,
+          "raw_pitch_accuracy": 0.8426940361922893,
+          "voicing_false_alarm_rate": 0.15455597819784903,
+          "voicing_recall": 0.8627299390957731
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.014742483075231636,
+          "median_abs_cents_error": 5.816711374516409,
+          "octave_error_rate": 0.005392942750203634,
+          "raw_pitch_accuracy": 0.9797045647280568,
+          "voicing_false_alarm_rate": 0.27731268134342413,
+          "voicing_recall": 0.9943799787292034
+        }
+      },
+      "tuple": [
+        0.35,
+        0.05,
+        0.003
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.19730562898053491",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.1742054972179267",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.1062047085871935"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.19730562898053491,
+        "min_rpa": 0.8231708345183709
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.02147624483268648,
+          "median_abs_cents_error": 6.097210106306587,
+          "octave_error_rate": 0.010582010582010581,
+          "raw_pitch_accuracy": 0.9078025872145083,
+          "voicing_false_alarm_rate": 0.1742054972179267,
+          "voicing_recall": 0.9281192528667637
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.022113946435297346,
+          "median_abs_cents_error": 6.273849426106221,
+          "octave_error_rate": 0.00788177339901478,
+          "raw_pitch_accuracy": 0.8231708345183709,
+          "voicing_false_alarm_rate": 0.1062047085871935,
+          "voicing_recall": 0.8417785080450141
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.012431128480709605,
+          "median_abs_cents_error": 5.704516150051956,
+          "octave_error_rate": 0.004515946937623483,
+          "raw_pitch_accuracy": 0.9388416700782626,
+          "voicing_false_alarm_rate": 0.19730562898053491,
+          "voicing_recall": 0.9508999090301874
+        }
+      },
+      "tuple": [
+        0.35,
+        0.05,
+        0.01
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.30113699537393773",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.1886266334168438",
+        "mixture_minus6db.raw_pitch_accuracy >= 0.8 failed: 0.7442633110140106",
+        "mixture_minus6db.voicing_recall >= 0.8 failed: 0.7597847311975867",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.11557958441441736"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.30113699537393773,
+        "min_rpa": 0.7442633110140106
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.019475864411827342,
+          "median_abs_cents_error": 6.134547237327502,
+          "octave_error_rate": 0.007951070336391438,
+          "raw_pitch_accuracy": 0.9146508622936024,
+          "voicing_false_alarm_rate": 0.1886266334168438,
+          "voicing_recall": 0.9326059321502459
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.02060780230220959,
+          "median_abs_cents_error": 6.130143559566233,
+          "octave_error_rate": 0.008609726098515335,
+          "raw_pitch_accuracy": 0.7442633110140106,
+          "voicing_false_alarm_rate": 0.11557958441441736,
+          "voicing_recall": 0.7597847311975867
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.014896683890450907,
+          "median_abs_cents_error": 5.8297458458802724,
+          "octave_error_rate": 0.0053896066952054305,
+          "raw_pitch_accuracy": 0.9808134441513358,
+          "voicing_false_alarm_rate": 0.30113699537393773,
+          "voicing_recall": 0.9956573785434498
+        }
+      },
+      "tuple": [
+        0.35,
+        0.1,
+        0.001
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.27731268134342413",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.18204768604842272",
+        "mixture_minus6db.raw_pitch_accuracy >= 0.8 failed: 0.7442633110140106",
+        "mixture_minus6db.voicing_recall >= 0.8 failed: 0.7597847311975867",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.10330690492319483"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.27731268134342413,
+        "min_rpa": 0.7442633110140106
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.019475864411827342,
+          "median_abs_cents_error": 6.134547237327502,
+          "octave_error_rate": 0.007951070336391438,
+          "raw_pitch_accuracy": 0.9146508622936024,
+          "voicing_false_alarm_rate": 0.18204768604842272,
+          "voicing_recall": 0.9326059321502459
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.02060780230220959,
+          "median_abs_cents_error": 6.130143559566233,
+          "octave_error_rate": 0.008609726098515335,
+          "raw_pitch_accuracy": 0.7442633110140106,
+          "voicing_false_alarm_rate": 0.10330690492319483,
+          "voicing_recall": 0.7597847311975867
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.014742483075231636,
+          "median_abs_cents_error": 5.816711374516409,
+          "octave_error_rate": 0.005392942750203634,
+          "raw_pitch_accuracy": 0.9797045647280568,
+          "voicing_false_alarm_rate": 0.27731268134342413,
+          "voicing_recall": 0.9943799787292034
+        }
+      },
+      "tuple": [
+        0.35,
+        0.1,
+        0.003
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.19730562898053491",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.13979676897166124",
+        "mixture_minus6db.raw_pitch_accuracy >= 0.8 failed: 0.732971529776354",
+        "mixture_minus6db.voicing_recall >= 0.8 failed: 0.7477034204902129"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.19730562898053491,
+        "min_rpa": 0.732971529776354
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.018550354108508724,
+          "median_abs_cents_error": 6.03352213232746,
+          "octave_error_rate": 0.007951070336391438,
+          "raw_pitch_accuracy": 0.8856272282619387,
+          "voicing_false_alarm_rate": 0.13979676897166124,
+          "voicing_recall": 0.9024911095236763
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.019745169380787936,
+          "median_abs_cents_error": 6.095776972872233,
+          "octave_error_rate": 0.008221225710014947,
+          "raw_pitch_accuracy": 0.732971529776354,
+          "voicing_false_alarm_rate": 0.07597655312470987,
+          "voicing_recall": 0.7477034204902129
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.012431128480709605,
+          "median_abs_cents_error": 5.704516150051956,
+          "octave_error_rate": 0.004515946937623483,
+          "raw_pitch_accuracy": 0.9388416700782626,
+          "voicing_false_alarm_rate": 0.19730562898053491,
+          "voicing_recall": 0.9508999090301874
+        }
+      },
+      "tuple": [
+        0.35,
+        0.1,
+        0.01
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.2102522310344103",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.2456849351851139",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.20964894294310524"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.2456849351851139,
+        "min_rpa": 0.915360801173533
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.024884855214093362,
+          "median_abs_cents_error": 6.270513129109044,
+          "octave_error_rate": 0.011634671320535195,
+          "raw_pitch_accuracy": 0.9528373235843716,
+          "voicing_false_alarm_rate": 0.2456849351851139,
+          "voicing_recall": 0.9769988895392481
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.03062521609621142,
+          "median_abs_cents_error": 6.594225450986346,
+          "octave_error_rate": 0.010929789785735245,
+          "raw_pitch_accuracy": 0.915360801173533,
+          "voicing_false_alarm_rate": 0.20964894294310524,
+          "voicing_recall": 0.9442550790538117
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.013269001359361305,
+          "median_abs_cents_error": 5.784070942943888,
+          "octave_error_rate": 0.005420666436352392,
+          "raw_pitch_accuracy": 0.975612455858196,
+          "voicing_false_alarm_rate": 0.2102522310344103,
+          "voicing_recall": 0.988748753353747
+        }
+      },
+      "tuple": [
+        0.5,
+        0.01,
+        0.001
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.19803030455346224",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.23497867361839053",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.20087701311854386"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.23497867361839053,
+        "min_rpa": 0.9150237603915984
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.024889704487272887,
+          "median_abs_cents_error": 6.269672555506972,
+          "octave_error_rate": 0.011634671320535195,
+          "raw_pitch_accuracy": 0.952535664459183,
+          "voicing_false_alarm_rate": 0.23497867361839053,
+          "voicing_recall": 0.9766972304140595
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.030166149537105735,
+          "median_abs_cents_error": 6.586744012804011,
+          "octave_error_rate": 0.01093203379378495,
+          "raw_pitch_accuracy": 0.9150237603915984,
+          "voicing_false_alarm_rate": 0.20087701311854386,
+          "voicing_recall": 0.9434655495840943
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.013106126689999081,
+          "median_abs_cents_error": 5.776986199489449,
+          "octave_error_rate": 0.005422362221055565,
+          "raw_pitch_accuracy": 0.9748052355601056,
+          "voicing_false_alarm_rate": 0.19803030455346224,
+          "voicing_recall": 0.9877730126646892
+        }
+      },
+      "tuple": [
+        0.5,
+        0.01,
+        0.003
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.14117180378097566",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.1670401074813832",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.11224211892126622"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.1670401074813832,
+        "min_rpa": 0.8824430377913887
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.023329230845376803,
+          "median_abs_cents_error": 6.12661667811604,
+          "octave_error_rate": 0.01170617500731636,
+          "raw_pitch_accuracy": 0.9123808498376121,
+          "voicing_false_alarm_rate": 0.1670401074813832,
+          "voicing_recall": 0.9347188616556158
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.027425385874440333,
+          "median_abs_cents_error": 6.434926487767338,
+          "octave_error_rate": 0.010203061618215369,
+          "raw_pitch_accuracy": 0.8824430377913887,
+          "voicing_false_alarm_rate": 0.11224211892126622,
+          "voicing_recall": 0.9078216561586762
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.010831322858304295,
+          "median_abs_cents_error": 5.683305750579055,
+          "octave_error_rate": 0.0045390070921985815,
+          "raw_pitch_accuracy": 0.9355213998497461,
+          "voicing_false_alarm_rate": 0.14117180378097566,
+          "voicing_recall": 0.9460228314677024
+        }
+      },
+      "tuple": [
+        0.5,
+        0.01,
+        0.01
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.2102522310344103",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.19842165732047456",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.15239971895107027"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.2102522310344103,
+        "min_rpa": 0.8791679532405178
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.022074423673520662,
+          "median_abs_cents_error": 6.230315299772996,
+          "octave_error_rate": 0.010351966873706004,
+          "raw_pitch_accuracy": 0.9463110721045219,
+          "voicing_false_alarm_rate": 0.19842165732047456,
+          "voicing_recall": 0.9674636313137049
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.024429899061405986,
+          "median_abs_cents_error": 6.406985809955246,
+          "octave_error_rate": 0.00817611886911926,
+          "raw_pitch_accuracy": 0.8791679532405178,
+          "voicing_false_alarm_rate": 0.15239971895107027,
+          "voicing_recall": 0.9011574441484883
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.013269001359361305,
+          "median_abs_cents_error": 5.784070942943888,
+          "octave_error_rate": 0.005420666436352392,
+          "raw_pitch_accuracy": 0.975612455858196,
+          "voicing_false_alarm_rate": 0.2102522310344103,
+          "voicing_recall": 0.988748753353747
+        }
+      },
+      "tuple": [
+        0.5,
+        0.03,
+        0.001
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.19803030455346224",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.19309584278413372",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.14362778912650886"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.19803030455346224,
+        "min_rpa": 0.8791679532405178
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.022079272946700187,
+          "median_abs_cents_error": 6.229474726170924,
+          "octave_error_rate": 0.010351966873706004,
+          "raw_pitch_accuracy": 0.9460094129793334,
+          "voicing_false_alarm_rate": 0.19309584278413372,
+          "voicing_recall": 0.9671619721885164
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.024429899061405986,
+          "median_abs_cents_error": 6.406985809955246,
+          "octave_error_rate": 0.00817611886911926,
+          "raw_pitch_accuracy": 0.8791679532405178,
+          "voicing_false_alarm_rate": 0.14362778912650886,
+          "voicing_recall": 0.9011574441484883
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.013106126689999081,
+          "median_abs_cents_error": 5.776986199489449,
+          "octave_error_rate": 0.005422362221055565,
+          "raw_pitch_accuracy": 0.9748052355601056,
+          "voicing_false_alarm_rate": 0.19803030455346224,
+          "voicing_recall": 0.9877730126646892
+        }
+      },
+      "tuple": [
+        0.5,
+        0.03,
+        0.003
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.14117180378097566",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.1456532748748629"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.1456532748748629,
+        "min_rpa": 0.8552976880153486
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.020431936522107782,
+          "median_abs_cents_error": 6.10341148359455,
+          "octave_error_rate": 0.01037037037037037,
+          "raw_pitch_accuracy": 0.9097561779216017,
+          "voicing_false_alarm_rate": 0.1456532748748629,
+          "voicing_recall": 0.9290851829939121
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.02257490300604073,
+          "median_abs_cents_error": 6.324661959100191,
+          "octave_error_rate": 0.007533825338253382,
+          "raw_pitch_accuracy": 0.8552976880153486,
+          "voicing_false_alarm_rate": 0.08821387925372409,
+          "voicing_recall": 0.8753127952238519
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.010831322858304295,
+          "median_abs_cents_error": 5.683305750579055,
+          "octave_error_rate": 0.0045390070921985815,
+          "raw_pitch_accuracy": 0.9355213998497461,
+          "voicing_false_alarm_rate": 0.14117180378097566,
+          "voicing_recall": 0.9460228314677024
+        }
+      },
+      "tuple": [
+        0.5,
+        0.03,
+        0.01
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.2102522310344103",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.17362072469684584",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.12757244104772356"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.2102522310344103,
+        "min_rpa": 0.8386858383897877
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.02080502764812411,
+          "median_abs_cents_error": 6.188244466354056,
+          "octave_error_rate": 0.01037037037037037,
+          "raw_pitch_accuracy": 0.937329437623626,
+          "voicing_false_alarm_rate": 0.17362072469684584,
+          "voicing_recall": 0.957111815358294
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.021647131468783717,
+          "median_abs_cents_error": 6.294391864296382,
+          "octave_error_rate": 0.008293795284857847,
+          "raw_pitch_accuracy": 0.8386858383897877,
+          "voicing_false_alarm_rate": 0.12757244104772356,
+          "voicing_recall": 0.8569881233771568
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.013269001359361305,
+          "median_abs_cents_error": 5.784070942943888,
+          "octave_error_rate": 0.005420666436352392,
+          "raw_pitch_accuracy": 0.975612455858196,
+          "voicing_false_alarm_rate": 0.2102522310344103,
+          "voicing_recall": 0.988748753353747
+        }
+      },
+      "tuple": [
+        0.5,
+        0.05,
+        0.001
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.19803030455346224",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.16829491016050493",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.11880051122316215"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.19803030455346224,
+        "min_rpa": 0.8386858383897877
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.02080502764812411,
+          "median_abs_cents_error": 6.188244466354056,
+          "octave_error_rate": 0.01037037037037037,
+          "raw_pitch_accuracy": 0.937329437623626,
+          "voicing_false_alarm_rate": 0.16829491016050493,
+          "voicing_recall": 0.957111815358294
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.021647131468783717,
+          "median_abs_cents_error": 6.294391864296382,
+          "octave_error_rate": 0.008293795284857847,
+          "raw_pitch_accuracy": 0.8386858383897877,
+          "voicing_false_alarm_rate": 0.11880051122316215,
+          "voicing_recall": 0.8569881233771568
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.013106126689999081,
+          "median_abs_cents_error": 5.776986199489449,
+          "octave_error_rate": 0.005422362221055565,
+          "raw_pitch_accuracy": 0.9748052355601056,
+          "voicing_false_alarm_rate": 0.19803030455346224,
+          "voicing_recall": 0.9877730126646892
+        }
+      },
+      "tuple": [
+        0.5,
+        0.05,
+        0.003
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.14117180378097566",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.12837036582838837"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.14117180378097566,
+        "min_rpa": 0.820120686576554
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.019715470695061434,
+          "median_abs_cents_error": 6.07181081544627,
+          "octave_error_rate": 0.01037037037037037,
+          "raw_pitch_accuracy": 0.9042427083375272,
+          "voicing_false_alarm_rate": 0.12837036582838837,
+          "voicing_recall": 0.922783067914695
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.020747586049458196,
+          "median_abs_cents_error": 6.242777778219352,
+          "octave_error_rate": 0.007944389275074478,
+          "raw_pitch_accuracy": 0.820120686576554,
+          "voicing_false_alarm_rate": 0.08171512489083839,
+          "voicing_recall": 0.8374826125316117
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.010831322858304295,
+          "median_abs_cents_error": 5.683305750579055,
+          "octave_error_rate": 0.0045390070921985815,
+          "raw_pitch_accuracy": 0.9355213998497461,
+          "voicing_false_alarm_rate": 0.14117180378097566,
+          "voicing_recall": 0.9460228314677024
+        }
+      },
+      "tuple": [
+        0.5,
+        0.05,
+        0.01
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.2102522310344103",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.13720951207905183",
+        "mixture_minus6db.raw_pitch_accuracy >= 0.8 failed: 0.7418225181963946",
+        "mixture_minus6db.voicing_recall >= 0.8 failed: 0.7561737855625646"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.2102522310344103,
+        "min_rpa": 0.7418225181963946
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.018241091251007237,
+          "median_abs_cents_error": 6.114036300297907,
+          "octave_error_rate": 0.008002462296091105,
+          "raw_pitch_accuracy": 0.9106271552396824,
+          "voicing_false_alarm_rate": 0.13720951207905183,
+          "voicing_recall": 0.9273173954984987
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.019184824748854645,
+          "median_abs_cents_error": 6.103202109332085,
+          "octave_error_rate": 0.00868503404237324,
+          "raw_pitch_accuracy": 0.7418225181963946,
+          "voicing_false_alarm_rate": 0.09385626480990732,
+          "voicing_recall": 0.7561737855625646
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.013269001359361305,
+          "median_abs_cents_error": 5.784070942943888,
+          "octave_error_rate": 0.005420666436352392,
+          "raw_pitch_accuracy": 0.975612455858196,
+          "voicing_false_alarm_rate": 0.2102522310344103,
+          "voicing_recall": 0.988748753353747
+        }
+      },
+      "tuple": [
+        0.5,
+        0.1,
+        0.001
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.19803030455346224",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.13188369754271098",
+        "mixture_minus6db.raw_pitch_accuracy >= 0.8 failed: 0.7418225181963946",
+        "mixture_minus6db.voicing_recall >= 0.8 failed: 0.7561737855625646"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.19803030455346224,
+        "min_rpa": 0.7418225181963946
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.018241091251007237,
+          "median_abs_cents_error": 6.114036300297907,
+          "octave_error_rate": 0.008002462296091105,
+          "raw_pitch_accuracy": 0.9106271552396824,
+          "voicing_false_alarm_rate": 0.13188369754271098,
+          "voicing_recall": 0.9273173954984987
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.019184824748854645,
+          "median_abs_cents_error": 6.103202109332085,
+          "octave_error_rate": 0.00868503404237324,
+          "raw_pitch_accuracy": 0.7418225181963946,
+          "voicing_false_alarm_rate": 0.08508433498534591,
+          "voicing_recall": 0.7561737855625646
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.013106126689999081,
+          "median_abs_cents_error": 5.776986199489449,
+          "octave_error_rate": 0.005422362221055565,
+          "raw_pitch_accuracy": 0.9748052355601056,
+          "voicing_false_alarm_rate": 0.19803030455346224,
+          "voicing_recall": 0.9877730126646892
+        }
+      },
+      "tuple": [
+        0.5,
+        0.1,
+        0.003
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.14117180378097566",
+        "mixture_minus6db.raw_pitch_accuracy >= 0.8 failed: 0.731018607303267",
+        "mixture_minus6db.voicing_recall >= 0.8 failed: 0.7448996951532812"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.14117180378097566,
+        "min_rpa": 0.731018607303267
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.017403609216709543,
+          "median_abs_cents_error": 6.016018545791845,
+          "octave_error_rate": 0.008002462296091105,
+          "raw_pitch_accuracy": 0.8825438802403306,
+          "voicing_false_alarm_rate": 0.09974761050870799,
+          "voicing_recall": 0.8982937614668352
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.018704669652215164,
+          "median_abs_cents_error": 6.07461507789224,
+          "octave_error_rate": 0.008295625942684766,
+          "raw_pitch_accuracy": 0.731018607303267,
+          "voicing_false_alarm_rate": 0.0628834470088185,
+          "voicing_recall": 0.7448996951532812
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.010831322858304295,
+          "median_abs_cents_error": 5.683305750579055,
+          "octave_error_rate": 0.0045390070921985815,
+          "raw_pitch_accuracy": 0.9355213998497461,
+          "voicing_false_alarm_rate": 0.14117180378097566,
+          "voicing_recall": 0.9460228314677024
+        }
+      },
+      "tuple": [
+        0.5,
+        0.1,
+        0.01
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.1187672218436469",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.16146817791693535",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.12832824470634063"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.16146817791693535,
+        "min_rpa": 0.8927868565492846
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.019032129156657262,
+          "median_abs_cents_error": 6.159652019562006,
+          "octave_error_rate": 0.0091324200913242,
+          "raw_pitch_accuracy": 0.9342901018064643,
+          "voicing_false_alarm_rate": 0.16146817791693535,
+          "voicing_recall": 0.9521317719279286
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.025062801180953814,
+          "median_abs_cents_error": 6.4354181551476595,
+          "octave_error_rate": 0.009610412404869961,
+          "raw_pitch_accuracy": 0.8927868565492846,
+          "voicing_false_alarm_rate": 0.12832824470634063,
+          "voicing_recall": 0.9157090793900763
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.010003507619038237,
+          "median_abs_cents_error": 5.662109059731783,
+          "octave_error_rate": 0.004876143072114828,
+          "raw_pitch_accuracy": 0.9568287640701372,
+          "voicing_false_alarm_rate": 0.1187672218436469,
+          "voicing_recall": 0.9664546102446655
+        }
+      },
+      "tuple": [
+        0.65,
+        0.01,
+        0.001
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.11108872095546102",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.15358146522239244",
+        "mixture_minus6db.voicing_false_alarm_rate <= 0.1 failed: 0.12300243016999979"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.15358146522239244,
+        "min_rpa": 0.8927868565492846
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.019032129156657262,
+          "median_abs_cents_error": 6.159652019562006,
+          "octave_error_rate": 0.0091324200913242,
+          "raw_pitch_accuracy": 0.9342901018064643,
+          "voicing_false_alarm_rate": 0.15358146522239244,
+          "voicing_recall": 0.9521317719279286
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.025062801180953814,
+          "median_abs_cents_error": 6.4354181551476595,
+          "octave_error_rate": 0.009610412404869961,
+          "raw_pitch_accuracy": 0.8927868565492846,
+          "voicing_false_alarm_rate": 0.12300243016999979,
+          "voicing_recall": 0.9157090793900763
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.009833228604739808,
+          "median_abs_cents_error": 5.65532517794911,
+          "octave_error_rate": 0.004877629203536402,
+          "raw_pitch_accuracy": 0.9560215437720467,
+          "voicing_false_alarm_rate": 0.11108872095546102,
+          "voicing_recall": 0.9654788695556077
+        }
+      },
+      "tuple": [
+        0.65,
+        0.01,
+        0.003
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.11082673817071949"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.11082673817071949,
+        "min_rpa": 0.8638502170340527
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.017984066845847007,
+          "median_abs_cents_error": 6.047498248241191,
+          "octave_error_rate": 0.009157509157509158,
+          "raw_pitch_accuracy": 0.8990504923372757,
+          "voicing_false_alarm_rate": 0.11082673817071949,
+          "voicing_recall": 0.9156896174006172
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.02317337306051175,
+          "median_abs_cents_error": 6.318094378728418,
+          "octave_error_rate": 0.009181720184872212,
+          "raw_pitch_accuracy": 0.8638502170340527,
+          "voicing_false_alarm_rate": 0.06585872992966156,
+          "voicing_recall": 0.8847193731186668
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.008409636574512812,
+          "median_abs_cents_error": 5.58556149884571,
+          "octave_error_rate": 0.00412614205717654,
+          "raw_pitch_accuracy": 0.9203836962850859,
+          "voicing_false_alarm_rate": 0.08414955432002662,
+          "voicing_recall": 0.9283150356143312
+        }
+      },
+      "tuple": [
+        0.65,
+        0.01,
+        0.01
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.1187672218436469",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.12624187894529437"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.12624187894529437,
+        "min_rpa": 0.8609835056620282
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.016714084679026058,
+          "median_abs_cents_error": 6.123028581248714,
+          "octave_error_rate": 0.007687576875768758,
+          "raw_pitch_accuracy": 0.9290170588091523,
+          "voicing_false_alarm_rate": 0.12624187894529437,
+          "voicing_recall": 0.9445407094890922
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.020761864348905316,
+          "median_abs_cents_error": 6.29222082992933,
+          "octave_error_rate": 0.007596122515477355,
+          "raw_pitch_accuracy": 0.8609835056620282,
+          "voicing_false_alarm_rate": 0.09339198574060559,
+          "voicing_recall": 0.8791679323946265
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.010003507619038237,
+          "median_abs_cents_error": 5.662109059731783,
+          "octave_error_rate": 0.004876143072114828,
+          "raw_pitch_accuracy": 0.9568287640701372,
+          "voicing_false_alarm_rate": 0.1187672218436469,
+          "voicing_recall": 0.9664546102446655
+        }
+      },
+      "tuple": [
+        0.65,
+        0.03,
+        0.001
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.11108872095546102",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.12373561328113396"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.12373561328113396,
+        "min_rpa": 0.8609835056620282
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.016714084679026058,
+          "median_abs_cents_error": 6.123028581248714,
+          "octave_error_rate": 0.007687576875768758,
+          "raw_pitch_accuracy": 0.9290170588091523,
+          "voicing_false_alarm_rate": 0.12373561328113396,
+          "voicing_recall": 0.9445407094890922
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.020761864348905316,
+          "median_abs_cents_error": 6.29222082992933,
+          "octave_error_rate": 0.007596122515477355,
+          "raw_pitch_accuracy": 0.8609835056620282,
+          "voicing_false_alarm_rate": 0.08806617120426473,
+          "voicing_recall": 0.8791679323946265
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.009833228604739808,
+          "median_abs_cents_error": 5.65532517794911,
+          "octave_error_rate": 0.004877629203536402,
+          "raw_pitch_accuracy": 0.9560215437720467,
+          "voicing_false_alarm_rate": 0.11108872095546102,
+          "voicing_recall": 0.9654788695556077
+        }
+      },
+      "tuple": [
+        0.65,
+        0.03,
+        0.003
+      ]
+    },
+    {
+      "eligible": true,
+      "failures": [],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.09714326016513103,
+        "min_rpa": 0.8401382195815074
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.015636658103098094,
+          "median_abs_cents_error": 6.022837881008772,
+          "octave_error_rate": 0.007701786814540974,
+          "raw_pitch_accuracy": 0.8969507548044674,
+          "voicing_false_alarm_rate": 0.09714326016513103,
+          "voicing_recall": 0.9112718604262843
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.019603144254865618,
+          "median_abs_cents_error": 6.20902110899281,
+          "octave_error_rate": 0.007273877292852625,
+          "raw_pitch_accuracy": 0.8401382195815074,
+          "voicing_false_alarm_rate": 0.053291851354910415,
+          "voicing_recall": 0.8571201012559829
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.008409636574512812,
+          "median_abs_cents_error": 5.58556149884571,
+          "octave_error_rate": 0.00412614205717654,
+          "raw_pitch_accuracy": 0.9203836962850859,
+          "voicing_false_alarm_rate": 0.08414955432002662,
+          "voicing_recall": 0.9283150356143312
+        }
+      },
+      "tuple": [
+        0.65,
+        0.03,
+        0.01
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.1187672218436469",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.11097955194053806"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.1187672218436469,
+        "min_rpa": 0.8238853354891691
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.016098237006628754,
+          "median_abs_cents_error": 6.094127415823233,
+          "octave_error_rate": 0.007701786814540974,
+          "raw_pitch_accuracy": 0.9212957398378626,
+          "voicing_false_alarm_rate": 0.11097955194053806,
+          "voicing_recall": 0.9361445689558772
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.0181767738250663,
+          "median_abs_cents_error": 6.187907134751481,
+          "octave_error_rate": 0.007653061224489797,
+          "raw_pitch_accuracy": 0.8238853354891691,
+          "voicing_false_alarm_rate": 0.0809333533046968,
+          "voicing_recall": 0.8388154490221552
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.010003507619038237,
+          "median_abs_cents_error": 5.662109059731783,
+          "octave_error_rate": 0.004876143072114828,
+          "raw_pitch_accuracy": 0.9568287640701372,
+          "voicing_false_alarm_rate": 0.1187672218436469,
+          "voicing_recall": 0.9664546102446655
+        }
+      },
+      "tuple": [
+        0.65,
+        0.05,
+        0.001
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.11108872095546102",
+        "mixture_0db.voicing_false_alarm_rate <= 0.1 failed: 0.10847328627637765"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.11108872095546102,
+        "min_rpa": 0.8238853354891691
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.016098237006628754,
+          "median_abs_cents_error": 6.094127415823233,
+          "octave_error_rate": 0.007701786814540974,
+          "raw_pitch_accuracy": 0.9212957398378626,
+          "voicing_false_alarm_rate": 0.10847328627637765,
+          "voicing_recall": 0.9361445689558772
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.0181767738250663,
+          "median_abs_cents_error": 6.187907134751481,
+          "octave_error_rate": 0.007653061224489797,
+          "raw_pitch_accuracy": 0.8238853354891691,
+          "voicing_false_alarm_rate": 0.07560753876835595,
+          "voicing_recall": 0.8388154490221552
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.009833228604739808,
+          "median_abs_cents_error": 5.65532517794911,
+          "octave_error_rate": 0.004877629203536402,
+          "raw_pitch_accuracy": 0.9560215437720467,
+          "voicing_false_alarm_rate": 0.11108872095546102,
+          "voicing_recall": 0.9654788695556077
+        }
+      },
+      "tuple": [
+        0.65,
+        0.05,
+        0.003
+      ]
+    },
+    {
+      "eligible": true,
+      "failures": [],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.08553705528836042,
+        "min_rpa": 0.8072539742256778
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.015297468531712174,
+          "median_abs_cents_error": 6.000606344491083,
+          "octave_error_rate": 0.007701786814540974,
+          "raw_pitch_accuracy": 0.8920942824796217,
+          "voicing_false_alarm_rate": 0.08553705528836042,
+          "voicing_recall": 0.9060204433936977
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.01809238859684253,
+          "median_abs_cents_error": 6.150078676200894,
+          "octave_error_rate": 0.007653061224489797,
+          "raw_pitch_accuracy": 0.8072539742256778,
+          "voicing_false_alarm_rate": 0.05150689780104783,
+          "voicing_recall": 0.8220155673676967
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.008409636574512812,
+          "median_abs_cents_error": 5.58556149884571,
+          "octave_error_rate": 0.00412614205717654,
+          "raw_pitch_accuracy": 0.9203836962850859,
+          "voicing_false_alarm_rate": 0.08414955432002662,
+          "voicing_recall": 0.9283150356143312
+        }
+      },
+      "tuple": [
+        0.65,
+        0.05,
+        0.01
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.1187672218436469",
+        "mixture_minus6db.raw_pitch_accuracy >= 0.8 failed: 0.7308363205120182",
+        "mixture_minus6db.voicing_recall >= 0.8 failed: 0.7431644117188424"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.1187672218436469,
+        "min_rpa": 0.7308363205120182
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.014319930837327821,
+          "median_abs_cents_error": 5.993946258273229,
+          "octave_error_rate": 0.0062082139446036294,
+          "raw_pitch_accuracy": 0.8959033155097176,
+          "voicing_false_alarm_rate": 0.08761226482915836,
+          "voicing_recall": 0.908639576141525
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.016911664469060103,
+          "median_abs_cents_error": 6.008313650145616,
+          "octave_error_rate": 0.00795498641831587,
+          "raw_pitch_accuracy": 0.7308363205120182,
+          "voicing_false_alarm_rate": 0.06062344155808987,
+          "voicing_recall": 0.7431644117188424
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.010003507619038237,
+          "median_abs_cents_error": 5.662109059731783,
+          "octave_error_rate": 0.004876143072114828,
+          "raw_pitch_accuracy": 0.9568287640701372,
+          "voicing_false_alarm_rate": 0.1187672218436469,
+          "voicing_recall": 0.9664546102446655
+        }
+      },
+      "tuple": [
+        0.65,
+        0.1,
+        0.001
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "solo.voicing_false_alarm_rate <= 0.1 failed: 0.11108872095546102",
+        "mixture_minus6db.raw_pitch_accuracy >= 0.8 failed: 0.7308363205120182",
+        "mixture_minus6db.voicing_recall >= 0.8 failed: 0.7431644117188424"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.11108872095546102,
+        "min_rpa": 0.7308363205120182
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.014319930837327821,
+          "median_abs_cents_error": 5.993946258273229,
+          "octave_error_rate": 0.0062082139446036294,
+          "raw_pitch_accuracy": 0.8959033155097176,
+          "voicing_false_alarm_rate": 0.08510599916499799,
+          "voicing_recall": 0.908639576141525
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.016911664469060103,
+          "median_abs_cents_error": 6.008313650145616,
+          "octave_error_rate": 0.00795498641831587,
+          "raw_pitch_accuracy": 0.7308363205120182,
+          "voicing_false_alarm_rate": 0.05529762702174903,
+          "voicing_recall": 0.7431644117188424
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.009833228604739808,
+          "median_abs_cents_error": 5.65532517794911,
+          "octave_error_rate": 0.004877629203536402,
+          "raw_pitch_accuracy": 0.9560215437720467,
+          "voicing_false_alarm_rate": 0.11108872095546102,
+          "voicing_recall": 0.9654788695556077
+        }
+      },
+      "tuple": [
+        0.65,
+        0.1,
+        0.003
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "mixture_minus6db.raw_pitch_accuracy >= 0.8 failed: 0.7211589798705426",
+        "mixture_minus6db.voicing_recall >= 0.8 failed: 0.7334870710773669"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.08414955432002662,
+        "min_rpa": 0.7211589798705426
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.01379234023076229,
+          "median_abs_cents_error": 5.911363286453199,
+          "octave_error_rate": 0.0062082139446036294,
+          "raw_pitch_accuracy": 0.870764953405912,
+          "voicing_false_alarm_rate": 0.06647551045762716,
+          "voicing_recall": 0.8828802049589696
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.016989738869149656,
+          "median_abs_cents_error": 5.979519453913604,
+          "octave_error_rate": 0.00795498641831587,
+          "raw_pitch_accuracy": 0.7211589798705426,
+          "voicing_false_alarm_rate": 0.04119455686089707,
+          "voicing_recall": 0.7334870710773669
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.008409636574512812,
+          "median_abs_cents_error": 5.58556149884571,
+          "octave_error_rate": 0.00412614205717654,
+          "raw_pitch_accuracy": 0.9203836962850859,
+          "voicing_false_alarm_rate": 0.08414955432002662,
+          "voicing_recall": 0.9283150356143312
+        }
+      },
+      "tuple": [
+        0.65,
+        0.1,
+        0.01
+      ]
+    },
+    {
+      "eligible": true,
+      "failures": [],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.08243603056116178,
+        "min_rpa": 0.8234692115894467
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.005321487162491108,
+          "median_abs_cents_error": 5.820120762858015,
+          "octave_error_rate": 0.0018822724161533199,
+          "raw_pitch_accuracy": 0.8773715343227072,
+          "voicing_false_alarm_rate": 0.08243603056116178,
+          "voicing_recall": 0.88190031577671
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.012337101717255453,
+          "median_abs_cents_error": 5.997622068879044,
+          "octave_error_rate": 0.0031055900621118015,
+          "raw_pitch_accuracy": 0.8234692115894467,
+          "voicing_false_alarm_rate": 0.06881940496553986,
+          "voicing_recall": 0.8336298274146161
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.002413293805026725,
+          "median_abs_cents_error": 5.3955030134268,
+          "octave_error_rate": 0.00083166999334664,
+          "raw_pitch_accuracy": 0.8996350990452765,
+          "voicing_false_alarm_rate": 0.04019165914537131,
+          "voicing_recall": 0.9018108760173765
+        }
+      },
+      "tuple": [
+        0.8,
+        0.01,
+        0.001
+      ]
+    },
+    {
+      "eligible": true,
+      "failures": [],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.07742349923284098,
+        "min_rpa": 0.8234692115894467
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.005321487162491108,
+          "median_abs_cents_error": 5.820120762858015,
+          "octave_error_rate": 0.0018822724161533199,
+          "raw_pitch_accuracy": 0.8773715343227072,
+          "voicing_false_alarm_rate": 0.07742349923284098,
+          "voicing_recall": 0.88190031577671
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.012337101717255453,
+          "median_abs_cents_error": 5.997622068879044,
+          "octave_error_rate": 0.0031055900621118015,
+          "raw_pitch_accuracy": 0.8234692115894467,
+          "voicing_false_alarm_rate": 0.06756627213345966,
+          "voicing_recall": 0.8336298274146161
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.002413725226300971,
+          "median_abs_cents_error": 5.393857845203044,
+          "octave_error_rate": 0.00083166999334664,
+          "raw_pitch_accuracy": 0.899298058263342,
+          "voicing_false_alarm_rate": 0.035699647645829044,
+          "voicing_recall": 0.9014738352354419
+        }
+      },
+      "tuple": [
+        0.8,
+        0.01,
+        0.003
+      ]
+    },
+    {
+      "eligible": true,
+      "failures": [],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.05683391888740833,
+        "min_rpa": 0.8014521260823314
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.005186250160077398,
+          "median_abs_cents_error": 5.724147969952987,
+          "octave_error_rate": 0.0018822724161533199,
+          "raw_pitch_accuracy": 0.8486234806950961,
+          "voicing_false_alarm_rate": 0.05683391888740833,
+          "voicing_recall": 0.8530014325865046
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.010692436784262821,
+          "median_abs_cents_error": 5.893504880255336,
+          "octave_error_rate": 0.0031282586027111575,
+          "raw_pitch_accuracy": 0.8014521260823314,
+          "voicing_false_alarm_rate": 0.03169666767236671,
+          "voicing_recall": 0.8101806842300731
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.0007300359380149447,
+          "median_abs_cents_error": 5.34942446453639,
+          "octave_error_rate": 0.0,
+          "raw_pitch_accuracy": 0.8684327692514318,
+          "voicing_false_alarm_rate": 0.028745165528686712,
+          "voicing_recall": 0.8690825597692159
+        }
+      },
+      "tuple": [
+        0.8,
+        0.01,
+        0.01
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "mixture_minus6db.raw_pitch_accuracy >= 0.8 failed: 0.7983284814243237"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.05991810897779451,
+        "min_rpa": 0.7983284814243237
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.004327285036868882,
+          "median_abs_cents_error": 5.800772210807956,
+          "octave_error_rate": 0.0008608815426997245,
+          "raw_pitch_accuracy": 0.8738117732766603,
+          "voicing_false_alarm_rate": 0.05991810897779451,
+          "voicing_recall": 0.8775009241681104
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.010565982290086451,
+          "median_abs_cents_error": 5.89782669421495,
+          "octave_error_rate": 0.0023000707714083512,
+          "raw_pitch_accuracy": 0.7983284814243237,
+          "voicing_false_alarm_rate": 0.04399281845596841,
+          "voicing_recall": 0.8066960121911704
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.002413293805026725,
+          "median_abs_cents_error": 5.3955030134268,
+          "octave_error_rate": 0.00083166999334664,
+          "raw_pitch_accuracy": 0.8996350990452765,
+          "voicing_false_alarm_rate": 0.04019165914537131,
+          "voicing_recall": 0.9018108760173765
+        }
+      },
+      "tuple": [
+        0.8,
+        0.03,
+        0.001
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "mixture_minus6db.raw_pitch_accuracy >= 0.8 failed: 0.7983284814243237"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.0592915425617544,
+        "min_rpa": 0.7983284814243237
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.004327285036868882,
+          "median_abs_cents_error": 5.800772210807956,
+          "octave_error_rate": 0.0008608815426997245,
+          "raw_pitch_accuracy": 0.8738117732766603,
+          "voicing_false_alarm_rate": 0.0592915425617544,
+          "voicing_recall": 0.8775009241681104
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.010565982290086451,
+          "median_abs_cents_error": 5.89782669421495,
+          "octave_error_rate": 0.0023000707714083512,
+          "raw_pitch_accuracy": 0.7983284814243237,
+          "voicing_false_alarm_rate": 0.04273968562388821,
+          "voicing_recall": 0.8066960121911704
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.002413725226300971,
+          "median_abs_cents_error": 5.393857845203044,
+          "octave_error_rate": 0.00083166999334664,
+          "raw_pitch_accuracy": 0.899298058263342,
+          "voicing_false_alarm_rate": 0.035699647645829044,
+          "voicing_recall": 0.9014738352354419
+        }
+      },
+      "tuple": [
+        0.8,
+        0.03,
+        0.003
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "mixture_minus6db.raw_pitch_accuracy >= 0.8 failed: 0.7817855743026977",
+        "mixture_minus6db.voicing_recall >= 0.8 failed: 0.7894207395275773"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.048425044442346105,
+        "min_rpa": 0.7817855743026977
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.004189600522462362,
+          "median_abs_cents_error": 5.713520124201758,
+          "octave_error_rate": 0.0008608815426997245,
+          "raw_pitch_accuracy": 0.8469174439496894,
+          "voicing_false_alarm_rate": 0.048425044442346105,
+          "voicing_recall": 0.8504557652785455
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.009700853529918263,
+          "median_abs_cents_error": 5.822970559364054,
+          "octave_error_rate": 0.002304964539007092,
+          "raw_pitch_accuracy": 0.7817855743026977,
+          "voicing_false_alarm_rate": 0.02500036905488237,
+          "voicing_recall": 0.7894207395275773
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.0007300359380149447,
+          "median_abs_cents_error": 5.34942446453639,
+          "octave_error_rate": 0.0,
+          "raw_pitch_accuracy": 0.8684327692514318,
+          "voicing_false_alarm_rate": 0.028745165528686712,
+          "voicing_recall": 0.8690825597692159
+        }
+      },
+      "tuple": [
+        0.8,
+        0.03,
+        0.01
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "mixture_minus6db.raw_pitch_accuracy >= 0.8 failed: 0.7688377295687934",
+        "mixture_minus6db.voicing_recall >= 0.8 failed: 0.7749762669718919"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.05237077813740763,
+        "min_rpa": 0.7688377295687934
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.004374161269280805,
+          "median_abs_cents_error": 5.766846934913313,
+          "octave_error_rate": 0.0008608815426997245,
+          "raw_pitch_accuracy": 0.8663529214969713,
+          "voicing_false_alarm_rate": 0.05237077813740763,
+          "voicing_recall": 0.8700420723884216
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.008290480713131992,
+          "median_abs_cents_error": 5.841264481957912,
+          "octave_error_rate": 0.002277904328018223,
+          "raw_pitch_accuracy": 0.7688377295687934,
+          "voicing_false_alarm_rate": 0.03643393700492873,
+          "voicing_recall": 0.7749762669718919
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.002413293805026725,
+          "median_abs_cents_error": 5.3955030134268,
+          "octave_error_rate": 0.00083166999334664,
+          "raw_pitch_accuracy": 0.8996350990452765,
+          "voicing_false_alarm_rate": 0.04019165914537131,
+          "voicing_recall": 0.9018108760173765
+        }
+      },
+      "tuple": [
+        0.8,
+        0.05,
+        0.001
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "mixture_minus6db.raw_pitch_accuracy >= 0.8 failed: 0.7688377295687934",
+        "mixture_minus6db.voicing_recall >= 0.8 failed: 0.7749762669718919"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.051744211721367527,
+        "min_rpa": 0.7688377295687934
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.004374161269280805,
+          "median_abs_cents_error": 5.766846934913313,
+          "octave_error_rate": 0.0008608815426997245,
+          "raw_pitch_accuracy": 0.8663529214969713,
+          "voicing_false_alarm_rate": 0.051744211721367527,
+          "voicing_recall": 0.8700420723884216
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.008290480713131992,
+          "median_abs_cents_error": 5.841264481957912,
+          "octave_error_rate": 0.002277904328018223,
+          "raw_pitch_accuracy": 0.7688377295687934,
+          "voicing_false_alarm_rate": 0.03518080417284853,
+          "voicing_recall": 0.7749762669718919
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.002413725226300971,
+          "median_abs_cents_error": 5.393857845203044,
+          "octave_error_rate": 0.00083166999334664,
+          "raw_pitch_accuracy": 0.899298058263342,
+          "voicing_false_alarm_rate": 0.035699647645829044,
+          "voicing_recall": 0.9014738352354419
+        }
+      },
+      "tuple": [
+        0.8,
+        0.05,
+        0.003
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "mixture_minus6db.raw_pitch_accuracy >= 0.8 failed: 0.7551512812008486",
+        "mixture_minus6db.voicing_recall >= 0.8 failed: 0.7612898186039471"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.042608032777381226,
+        "min_rpa": 0.7551512812008486
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.004232568601086134,
+          "median_abs_cents_error": 5.682088095628234,
+          "octave_error_rate": 0.0008608815426997245,
+          "raw_pitch_accuracy": 0.8423234388164448,
+          "voicing_false_alarm_rate": 0.042608032777381226,
+          "voicing_recall": 0.8458617601453008
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.008297708253973975,
+          "median_abs_cents_error": 5.7898152965585545,
+          "octave_error_rate": 0.002277904328018223,
+          "raw_pitch_accuracy": 0.7551512812008486,
+          "voicing_false_alarm_rate": 0.024264533881961106,
+          "voicing_recall": 0.7612898186039471
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.0007300359380149447,
+          "median_abs_cents_error": 5.34942446453639,
+          "octave_error_rate": 0.0,
+          "raw_pitch_accuracy": 0.8684327692514318,
+          "voicing_false_alarm_rate": 0.028745165528686712,
+          "voicing_recall": 0.8690825597692159
+        }
+      },
+      "tuple": [
+        0.8,
+        0.05,
+        0.01
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "mixture_minus6db.raw_pitch_accuracy >= 0.8 failed: 0.6887032728679762",
+        "mixture_minus6db.voicing_recall >= 0.8 failed: 0.6932143634936061"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.04019165914537131,
+        "min_rpa": 0.6887032728679762
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.004208991499260983,
+          "median_abs_cents_error": 5.708296979523875,
+          "octave_error_rate": 0.0007032348804500702,
+          "raw_pitch_accuracy": 0.8459734266856266,
+          "voicing_false_alarm_rate": 0.039009469558178106,
+          "voicing_recall": 0.8493718095873904
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.006840576281344812,
+          "median_abs_cents_error": 5.705693898641769,
+          "octave_error_rate": 0.002175805047867711,
+          "raw_pitch_accuracy": 0.6887032728679762,
+          "voicing_false_alarm_rate": 0.028113815865497965,
+          "voicing_recall": 0.6932143634936061
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.002413293805026725,
+          "median_abs_cents_error": 5.3955030134268,
+          "octave_error_rate": 0.00083166999334664,
+          "raw_pitch_accuracy": 0.8996350990452765,
+          "voicing_false_alarm_rate": 0.04019165914537131,
+          "voicing_recall": 0.9018108760173765
+        }
+      },
+      "tuple": [
+        0.8,
+        0.1,
+        0.001
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "mixture_minus6db.raw_pitch_accuracy >= 0.8 failed: 0.6887032728679762",
+        "mixture_minus6db.voicing_recall >= 0.8 failed: 0.6932143634936061"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.03838290314213801,
+        "min_rpa": 0.6887032728679762
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.004208991499260983,
+          "median_abs_cents_error": 5.708296979523875,
+          "octave_error_rate": 0.0007032348804500702,
+          "raw_pitch_accuracy": 0.8459734266856266,
+          "voicing_false_alarm_rate": 0.03838290314213801,
+          "voicing_recall": 0.8493718095873904
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.006840576281344812,
+          "median_abs_cents_error": 5.705693898641769,
+          "octave_error_rate": 0.002175805047867711,
+          "raw_pitch_accuracy": 0.6887032728679762,
+          "voicing_false_alarm_rate": 0.026860683033417765,
+          "voicing_recall": 0.6932143634936061
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.002413725226300971,
+          "median_abs_cents_error": 5.393857845203044,
+          "octave_error_rate": 0.00083166999334664,
+          "raw_pitch_accuracy": 0.899298058263342,
+          "voicing_false_alarm_rate": 0.035699647645829044,
+          "voicing_recall": 0.9014738352354419
+        }
+      },
+      "tuple": [
+        0.8,
+        0.1,
+        0.003
+      ]
+    },
+    {
+      "eligible": false,
+      "failures": [
+        "mixture_minus6db.raw_pitch_accuracy >= 0.8 failed: 0.6803210228691201",
+        "mixture_minus6db.voicing_recall >= 0.8 failed: 0.6848321134947497"
+      ],
+      "objective": {
+        "backing_fa": 0.0,
+        "max_fa": 0.029873290614191805,
+        "min_rpa": 0.6803210228691201
+      },
+      "summary": {
+        "backing": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "mixture_0db": {
+          "gross_pitch_error_rate": 0.0042352262925470395,
+          "median_abs_cents_error": 5.628388697414349,
+          "octave_error_rate": 0.0007032348804500702,
+          "raw_pitch_accuracy": 0.824197084508404,
+          "voicing_false_alarm_rate": 0.029873290614191805,
+          "voicing_recall": 0.827595467410168
+        },
+        "mixture_minus6db": {
+          "gross_pitch_error_rate": 0.006846688330485687,
+          "median_abs_cents_error": 5.668160176894053,
+          "octave_error_rate": 0.002175805047867711,
+          "raw_pitch_accuracy": 0.6803210228691201,
+          "voicing_false_alarm_rate": 0.01974138615361608,
+          "voicing_recall": 0.6848321134947497
+        },
+        "silence": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        },
+        "solo": {
+          "gross_pitch_error_rate": 0.0007300359380149447,
+          "median_abs_cents_error": 5.34942446453639,
+          "octave_error_rate": 0.0,
+          "raw_pitch_accuracy": 0.8684327692514318,
+          "voicing_false_alarm_rate": 0.028745165528686712,
+          "voicing_recall": 0.8690825597692159
+        }
+      },
+      "tuple": [
+        0.8,
+        0.1,
+        0.01
+      ]
+    }
+  ],
+  "baseline_replay": {
+    "verified_first_nine_columns": true,
+    "verified_input_identity": true,
+    "verified_scores": true
+  },
+  "baseline_report": "tests/benchmarks/reports/vocal_f0_v1.json",
+  "baseline_report_sha256": "734fa68237f522c34c06c4de73b41a43125d6edf73a999c4f26ab8bb33c41db9",
+  "calibration_passed": true,
+  "calibration_source_sha256": "474600cc27f18c3dd07d0f142d0361718cb7c03faee0117079bc10ba1fed9888",
+  "development_report": "tests/benchmarks/reports/vocal_f0_development_v2.json",
+  "development_report_sha256": "a1dd10d4ed93c8b0a6a30de1f35be6ab6ae54bc1d43f5a7d889afecf6a00c4ba",
+  "holdout_consumed": false,
+  "model_revision": "demucs:sha256:8726e21a993978c7ba086d3872e7608d7d5bfca646ca4aca459ffda844faa8b4;crepe:sha256:133225604dedd2e4005f8bbd1bd0a2ec073ba8b7a6cd31ff6d5edbbfa3539986",
+  "protocol_sha256": "a5c033bfad65738f4d64ebb480271cf546e20a524f1503e4baa8f4161c04408a",
+  "qualified": false,
+  "schema": "VocalF0Calibration/v2",
+  "selected": {
+    "eligible": true,
+    "failures": [],
+    "objective": {
+      "backing_fa": 0.0,
+      "max_fa": 0.09714326016513103,
+      "min_rpa": 0.8401382195815074
+    },
+    "per_excerpt": [
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/943ad5f3de96dece3937131003dc537e3b0018cde1e346de7e700febebd35a11.npz",
+          "artifact_sha256": "e0efee7e9396292c76c37d18b3ac23e2630cdbd318fc7608bc36aed215936990",
+          "cache_key": "943ad5f3de96dece3937131003dc537e3b0018cde1e346de7e700febebd35a11",
+          "cached": true
+        },
+        "condition": "solo",
+        "excerpt_id": 1,
+        "input_hashes": {
+          "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+          "reference_sha256": "dd10beba57b94d37b1d3263f5deca3b780adc7ec90f1d43bb00099b02c2878e5",
+          "rendered_16khz_mono_sha256": "1a0eb964dc0d9efc69fd5a4bde676d98b6048b9d9c70fe34e3fa186c3a55be7e",
+          "source_audio_sha256": "b509768315efad8120183b48e01d6090f1649d5bcc691241940dc7a100274ab8"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": 0.0019940179461615153,
+          "median_abs_cents_error": 5.85173382562045,
+          "n_joint_voiced": 1003,
+          "n_reference": 1723,
+          "n_reference_unvoiced": 618,
+          "n_reference_voiced": 1105,
+          "n_scored": 1723,
+          "n_unmatched": 0,
+          "octave_error_rate": 0.0,
+          "raw_pitch_accuracy": 0.9058823529411765,
+          "voicing_false_alarm_rate": 0.009708737864077669,
+          "voicing_recall": 0.9076923076923077
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/e794bec960584d7e33ed7dc8d8f904e92e2a3cc4f49a18ca38bf1baab1a36f5d.npz",
+          "artifact_sha256": "b7fb9e295b75f8767be8adf070aa82f611787d22fdcdf6b71cb66610187bd3d7",
+          "cache_key": "e794bec960584d7e33ed7dc8d8f904e92e2a3cc4f49a18ca38bf1baab1a36f5d",
+          "cached": true
+        },
+        "condition": "backing",
+        "excerpt_id": 1,
+        "input_hashes": {
+          "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+          "reference_sha256": "dd10beba57b94d37b1d3263f5deca3b780adc7ec90f1d43bb00099b02c2878e5",
+          "rendered_16khz_mono_sha256": "e561ded6fba2884f8eef1b96e3f8866efd5cbbb070a9f3aa19cfa6e826ddc8cf",
+          "source_audio_sha256": "b509768315efad8120183b48e01d6090f1649d5bcc691241940dc7a100274ab8"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "n_joint_voiced": 0,
+          "n_reference": 1000,
+          "n_reference_unvoiced": 1000,
+          "n_reference_voiced": 0,
+          "n_scored": 1000,
+          "n_unmatched": 0,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/319034d641c300bf0f7b8c36a9c6c404fabff2f76b95fbf6d569b55836678d98.npz",
+          "artifact_sha256": "134ff6eaa4ef25e905df8f6bb0a3e516b719568269e527ac676cc8f453b537f2",
+          "cache_key": "319034d641c300bf0f7b8c36a9c6c404fabff2f76b95fbf6d569b55836678d98",
+          "cached": true
+        },
+        "condition": "silence",
+        "excerpt_id": 1,
+        "input_hashes": {
+          "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+          "reference_sha256": "dd10beba57b94d37b1d3263f5deca3b780adc7ec90f1d43bb00099b02c2878e5",
+          "rendered_16khz_mono_sha256": "3d00ed86b663cd1b8ac82b105257cd109412f92dca442048532439f920a7f645",
+          "source_audio_sha256": "b509768315efad8120183b48e01d6090f1649d5bcc691241940dc7a100274ab8"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "n_joint_voiced": 0,
+          "n_reference": 1000,
+          "n_reference_unvoiced": 1000,
+          "n_reference_voiced": 0,
+          "n_scored": 1000,
+          "n_unmatched": 0,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/4f996ede324f96fb09c31e21288f9c7700abf2a923c8accf72055594ff84cd01.npz",
+          "artifact_sha256": "03f882c43a9a21caf6dae3b4696d184f2179cc16d0586410a86475af126da042",
+          "cache_key": "4f996ede324f96fb09c31e21288f9c7700abf2a923c8accf72055594ff84cd01",
+          "cached": true
+        },
+        "condition": "mixture_0db",
+        "excerpt_id": 1,
+        "input_hashes": {
+          "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+          "reference_sha256": "dd10beba57b94d37b1d3263f5deca3b780adc7ec90f1d43bb00099b02c2878e5",
+          "rendered_16khz_mono_sha256": "a3b9d50bd3f49d11d7f1dfa95f124a559a1bc98a2f93d2d0e0e5e65af64fae00",
+          "source_audio_sha256": "b509768315efad8120183b48e01d6090f1649d5bcc691241940dc7a100274ab8"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": 0.008072653884964682,
+          "median_abs_cents_error": 6.096001150513464,
+          "n_joint_voiced": 991,
+          "n_reference": 1723,
+          "n_reference_unvoiced": 618,
+          "n_reference_voiced": 1105,
+          "n_scored": 1723,
+          "n_unmatched": 0,
+          "octave_error_rate": 0.0,
+          "raw_pitch_accuracy": 0.8895927601809954,
+          "voicing_false_alarm_rate": 0.008090614886731391,
+          "voicing_recall": 0.8968325791855204
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/ea48253232583a5d89aaea6a07f2cc098f1a28430e70349a8f6f9d8763f03174.npz",
+          "artifact_sha256": "1d3c0fcf95ea03873037078a9018160b14728857fb2af0add6e62205ff1fe234",
+          "cache_key": "ea48253232583a5d89aaea6a07f2cc098f1a28430e70349a8f6f9d8763f03174",
+          "cached": true
+        },
+        "condition": "mixture_minus6db",
+        "excerpt_id": 1,
+        "input_hashes": {
+          "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+          "reference_sha256": "dd10beba57b94d37b1d3263f5deca3b780adc7ec90f1d43bb00099b02c2878e5",
+          "rendered_16khz_mono_sha256": "aadc6584a75e9b96121df5fd4f8f33faae6f6198633529794e3cbe73b9506437",
+          "source_audio_sha256": "b509768315efad8120183b48e01d6090f1649d5bcc691241940dc7a100274ab8"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": 0.010570824524312896,
+          "median_abs_cents_error": 6.196022048196824,
+          "n_joint_voiced": 946,
+          "n_reference": 1723,
+          "n_reference_unvoiced": 618,
+          "n_reference_voiced": 1105,
+          "n_scored": 1723,
+          "n_unmatched": 0,
+          "octave_error_rate": 0.0,
+          "raw_pitch_accuracy": 0.8470588235294118,
+          "voicing_false_alarm_rate": 0.009708737864077669,
+          "voicing_recall": 0.8561085972850678
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/8bdd51ea8897e06be1f3260633b6e8af3a0d594f974ad426ee67283b4ef869eb.npz",
+          "artifact_sha256": "9fd7d63fb3c7a5eefa0f94a6d09767d0f897dc488f17489ffc252b36c3a2384f",
+          "cache_key": "8bdd51ea8897e06be1f3260633b6e8af3a0d594f974ad426ee67283b4ef869eb",
+          "cached": true
+        },
+        "condition": "solo",
+        "excerpt_id": 2,
+        "input_hashes": {
+          "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+          "reference_sha256": "4d515029c036312e8d04545470c3d5dc5db3132dec54813624faee7d84cd6363",
+          "rendered_16khz_mono_sha256": "6a346a968c0cf342a22a31fd103d74fa00e11f2fac2e8cd20335e7cbf699a0f6",
+          "source_audio_sha256": "8dcc99c3b08a9a5800b793e3d65cccfb4464961f15cf8ccde25bd4c8b853d519"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": 0.029177718832891247,
+          "median_abs_cents_error": 5.186286516911582,
+          "n_joint_voiced": 1131,
+          "n_reference": 1723,
+          "n_reference_unvoiced": 532,
+          "n_reference_voiced": 1191,
+          "n_scored": 1723,
+          "n_unmatched": 0,
+          "octave_error_rate": 0.02475685234305924,
+          "raw_pitch_accuracy": 0.9219143576826196,
+          "voicing_false_alarm_rate": 0.12030075187969924,
+          "voicing_recall": 0.9496221662468514
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/d63f79de9f01f2734e4268e8fc9158c3c9e65a830e811a1af1da6c8e3bbd9a73.npz",
+          "artifact_sha256": "4e0e7920aeac445e79de0d8e6a73e74f9d41744c27d35b2b6e68f9d22b44109d",
+          "cache_key": "d63f79de9f01f2734e4268e8fc9158c3c9e65a830e811a1af1da6c8e3bbd9a73",
+          "cached": true
+        },
+        "condition": "backing",
+        "excerpt_id": 2,
+        "input_hashes": {
+          "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+          "reference_sha256": "4d515029c036312e8d04545470c3d5dc5db3132dec54813624faee7d84cd6363",
+          "rendered_16khz_mono_sha256": "9a4214f6cc8b45170dce2ba25222eb944ee01b37cb511d79508268a92f8ac1b1",
+          "source_audio_sha256": "8dcc99c3b08a9a5800b793e3d65cccfb4464961f15cf8ccde25bd4c8b853d519"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "n_joint_voiced": 0,
+          "n_reference": 1000,
+          "n_reference_unvoiced": 1000,
+          "n_reference_voiced": 0,
+          "n_scored": 1000,
+          "n_unmatched": 0,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/319034d641c300bf0f7b8c36a9c6c404fabff2f76b95fbf6d569b55836678d98.npz",
+          "artifact_sha256": "134ff6eaa4ef25e905df8f6bb0a3e516b719568269e527ac676cc8f453b537f2",
+          "cache_key": "319034d641c300bf0f7b8c36a9c6c404fabff2f76b95fbf6d569b55836678d98",
+          "cached": true
+        },
+        "condition": "silence",
+        "excerpt_id": 2,
+        "input_hashes": {
+          "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+          "reference_sha256": "4d515029c036312e8d04545470c3d5dc5db3132dec54813624faee7d84cd6363",
+          "rendered_16khz_mono_sha256": "3d00ed86b663cd1b8ac82b105257cd109412f92dca442048532439f920a7f645",
+          "source_audio_sha256": "8dcc99c3b08a9a5800b793e3d65cccfb4464961f15cf8ccde25bd4c8b853d519"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "n_joint_voiced": 0,
+          "n_reference": 1000,
+          "n_reference_unvoiced": 1000,
+          "n_reference_voiced": 0,
+          "n_scored": 1000,
+          "n_unmatched": 0,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/a808a98a5dfc32b73754f17d53ac57c89dbab7411bd5d8a7407d40fb2a4f69e5.npz",
+          "artifact_sha256": "0961589e54d4f9d65c2f2312ca5a5625f879c3654d3067d2922120a4d3ddeaaf",
+          "cache_key": "a808a98a5dfc32b73754f17d53ac57c89dbab7411bd5d8a7407d40fb2a4f69e5",
+          "cached": true
+        },
+        "condition": "mixture_0db",
+        "excerpt_id": 2,
+        "input_hashes": {
+          "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+          "reference_sha256": "4d515029c036312e8d04545470c3d5dc5db3132dec54813624faee7d84cd6363",
+          "rendered_16khz_mono_sha256": "2dcb71ed7fca18c79b0e9ddfc4fab438cfa6d962854c0a461d902685bcc7e63f",
+          "source_audio_sha256": "8dcc99c3b08a9a5800b793e3d65cccfb4464961f15cf8ccde25bd4c8b853d519"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": 0.05545286506469501,
+          "median_abs_cents_error": 6.306808580058082,
+          "n_joint_voiced": 1082,
+          "n_reference": 1723,
+          "n_reference_unvoiced": 532,
+          "n_reference_voiced": 1191,
+          "n_scored": 1723,
+          "n_unmatched": 0,
+          "octave_error_rate": 0.04621072088724584,
+          "raw_pitch_accuracy": 0.8581024349286314,
+          "voicing_false_alarm_rate": 0.17857142857142858,
+          "voicing_recall": 0.90848026868178
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/e73bcedadd98ec3d51e585ea4f120be13238d3f857e9fbe66f02c58f88b68201.npz",
+          "artifact_sha256": "1b67badc546a7bbd63354abd3872d03453cc59a9117d2663e5c0caf4b2bf2baf",
+          "cache_key": "e73bcedadd98ec3d51e585ea4f120be13238d3f857e9fbe66f02c58f88b68201",
+          "cached": true
+        },
+        "condition": "mixture_minus6db",
+        "excerpt_id": 2,
+        "input_hashes": {
+          "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+          "reference_sha256": "4d515029c036312e8d04545470c3d5dc5db3132dec54813624faee7d84cd6363",
+          "rendered_16khz_mono_sha256": "62976461d3302686f93e3988f11b2c9151cbb3e783af16fe1182cf90a2814391",
+          "source_audio_sha256": "8dcc99c3b08a9a5800b793e3d65cccfb4464961f15cf8ccde25bd4c8b853d519"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": 0.06546489563567362,
+          "median_abs_cents_error": 6.309387165319888,
+          "n_joint_voiced": 1054,
+          "n_reference": 1723,
+          "n_reference_unvoiced": 532,
+          "n_reference_voiced": 1191,
+          "n_scored": 1723,
+          "n_unmatched": 0,
+          "octave_error_rate": 0.04364326375711575,
+          "raw_pitch_accuracy": 0.8270361041141897,
+          "voicing_false_alarm_rate": 0.05075187969924812,
+          "voicing_recall": 0.8849706129303107
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/524822e3b3188f70bc651c00a4c735a8adea688f34faa69cd46ce7fd8b368706.npz",
+          "artifact_sha256": "5d84befd59e58dc6c020feef6f0223e9004f2685b1458029c200e29c787683fd",
+          "cache_key": "524822e3b3188f70bc651c00a4c735a8adea688f34faa69cd46ce7fd8b368706",
+          "cached": true
+        },
+        "condition": "solo",
+        "excerpt_id": 3,
+        "input_hashes": {
+          "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+          "reference_sha256": "18f48fc77df7dd43c1e4bc588a79482b1d330768d63b76b90e82998573582b6a",
+          "rendered_16khz_mono_sha256": "4eba9725d9903297e53dba1612fedc6cc8de9b4ef5ab94050a023ed047ea2ee6",
+          "source_audio_sha256": "73b6fe13bc3435ae9173ee1bdec247e2943526c70cd9b69ab2b35002fa4cb04d"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": 0.003861003861003861,
+          "median_abs_cents_error": 5.1105283969506115,
+          "n_joint_voiced": 777,
+          "n_reference": 1723,
+          "n_reference_unvoiced": 734,
+          "n_reference_voiced": 989,
+          "n_scored": 1723,
+          "n_unmatched": 0,
+          "octave_error_rate": 0.0,
+          "raw_pitch_accuracy": 0.782608695652174,
+          "voicing_false_alarm_rate": 0.0027247956403269754,
+          "voicing_recall": 0.7856420626895855
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/e794bec960584d7e33ed7dc8d8f904e92e2a3cc4f49a18ca38bf1baab1a36f5d.npz",
+          "artifact_sha256": "b7fb9e295b75f8767be8adf070aa82f611787d22fdcdf6b71cb66610187bd3d7",
+          "cache_key": "e794bec960584d7e33ed7dc8d8f904e92e2a3cc4f49a18ca38bf1baab1a36f5d",
+          "cached": true
+        },
+        "condition": "backing",
+        "excerpt_id": 3,
+        "input_hashes": {
+          "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+          "reference_sha256": "18f48fc77df7dd43c1e4bc588a79482b1d330768d63b76b90e82998573582b6a",
+          "rendered_16khz_mono_sha256": "e561ded6fba2884f8eef1b96e3f8866efd5cbbb070a9f3aa19cfa6e826ddc8cf",
+          "source_audio_sha256": "73b6fe13bc3435ae9173ee1bdec247e2943526c70cd9b69ab2b35002fa4cb04d"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "n_joint_voiced": 0,
+          "n_reference": 1000,
+          "n_reference_unvoiced": 1000,
+          "n_reference_voiced": 0,
+          "n_scored": 1000,
+          "n_unmatched": 0,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/319034d641c300bf0f7b8c36a9c6c404fabff2f76b95fbf6d569b55836678d98.npz",
+          "artifact_sha256": "134ff6eaa4ef25e905df8f6bb0a3e516b719568269e527ac676cc8f453b537f2",
+          "cache_key": "319034d641c300bf0f7b8c36a9c6c404fabff2f76b95fbf6d569b55836678d98",
+          "cached": true
+        },
+        "condition": "silence",
+        "excerpt_id": 3,
+        "input_hashes": {
+          "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+          "reference_sha256": "18f48fc77df7dd43c1e4bc588a79482b1d330768d63b76b90e82998573582b6a",
+          "rendered_16khz_mono_sha256": "3d00ed86b663cd1b8ac82b105257cd109412f92dca442048532439f920a7f645",
+          "source_audio_sha256": "73b6fe13bc3435ae9173ee1bdec247e2943526c70cd9b69ab2b35002fa4cb04d"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "n_joint_voiced": 0,
+          "n_reference": 1000,
+          "n_reference_unvoiced": 1000,
+          "n_reference_voiced": 0,
+          "n_scored": 1000,
+          "n_unmatched": 0,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/e1779f858fab7b18d0ae5dce82d3bb9c5bf9e8b33f176e7575478ed0c72019ef.npz",
+          "artifact_sha256": "ae8e1d77227b01865ed08219849abbd3e100eaaef07d1103f3a6890e5e42974e",
+          "cache_key": "e1779f858fab7b18d0ae5dce82d3bb9c5bf9e8b33f176e7575478ed0c72019ef",
+          "cached": true
+        },
+        "condition": "mixture_0db",
+        "excerpt_id": 3,
+        "input_hashes": {
+          "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+          "reference_sha256": "18f48fc77df7dd43c1e4bc588a79482b1d330768d63b76b90e82998573582b6a",
+          "rendered_16khz_mono_sha256": "f1cd53195e37985f30d2c51ae7d6cde27233e020a2dd65a1a34d8cba3645f55c",
+          "source_audio_sha256": "73b6fe13bc3435ae9173ee1bdec247e2943526c70cd9b69ab2b35002fa4cb04d"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": 0.0038412291933418692,
+          "median_abs_cents_error": 5.412758534884886,
+          "n_joint_voiced": 781,
+          "n_reference": 1723,
+          "n_reference_unvoiced": 734,
+          "n_reference_voiced": 989,
+          "n_scored": 1723,
+          "n_unmatched": 0,
+          "octave_error_rate": 0.0,
+          "raw_pitch_accuracy": 0.7866531850353893,
+          "voicing_false_alarm_rate": 0.006811989100817439,
+          "voicing_recall": 0.7896865520728008
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/108bcf85af38da1f54699c6dbc852fae1f689c8038e3aba5d6a2dce46bd99a02.npz",
+          "artifact_sha256": "95c24a3bbaaf03287bd44b9d1a6d64941b1e545305dd735bf81c96d153f8f3bb",
+          "cache_key": "108bcf85af38da1f54699c6dbc852fae1f689c8038e3aba5d6a2dce46bd99a02",
+          "cached": true
+        },
+        "condition": "mixture_minus6db",
+        "excerpt_id": 3,
+        "input_hashes": {
+          "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+          "reference_sha256": "18f48fc77df7dd43c1e4bc588a79482b1d330768d63b76b90e82998573582b6a",
+          "rendered_16khz_mono_sha256": "8bf5478f77546bed3ae29414cce89a64466a3968eaa2e781f0d35c4c55b51c29",
+          "source_audio_sha256": "73b6fe13bc3435ae9173ee1bdec247e2943526c70cd9b69ab2b35002fa4cb04d"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": 0.005134788189987163,
+          "median_abs_cents_error": 5.631609529837523,
+          "n_joint_voiced": 779,
+          "n_reference": 1723,
+          "n_reference_unvoiced": 734,
+          "n_reference_voiced": 989,
+          "n_scored": 1723,
+          "n_unmatched": 0,
+          "octave_error_rate": 0.0,
+          "raw_pitch_accuracy": 0.7836198179979778,
+          "voicing_false_alarm_rate": 0.006811989100817439,
+          "voicing_recall": 0.7876643073811931
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/dcbe994a14490175d52c72c3babb98469c15c6504e338f9cb30b6702ddcadeed.npz",
+          "artifact_sha256": "6ad2af80012509cea9524f117e985fbfe7da7b2343ab112cd0c4d63e1b3c2a8f",
+          "cache_key": "dcbe994a14490175d52c72c3babb98469c15c6504e338f9cb30b6702ddcadeed",
+          "cached": true
+        },
+        "condition": "solo",
+        "excerpt_id": 4,
+        "input_hashes": {
+          "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+          "reference_sha256": "fb0a5b73a66edc0bac5aaec64f82eccd95d5a54781b354ab9020056803cf3d08",
+          "rendered_16khz_mono_sha256": "180ea457d4114d84c4fb0d0bf3f555c03a6c9e32ea25f9cf8485e5a4c4878c79",
+          "source_audio_sha256": "fc07b202eb609c975d1549be5320db116a49be1bd1fc6904e70e31cd7e44ec23"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": 0.007336757153338224,
+          "median_abs_cents_error": 5.698623113242052,
+          "n_joint_voiced": 1363,
+          "n_reference": 1723,
+          "n_reference_unvoiced": 324,
+          "n_reference_voiced": 1399,
+          "n_scored": 1723,
+          "n_unmatched": 0,
+          "octave_error_rate": 0.0,
+          "raw_pitch_accuracy": 0.9671193709792709,
+          "voicing_false_alarm_rate": 0.09567901234567901,
+          "voicing_recall": 0.9742673338098642
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/d63f79de9f01f2734e4268e8fc9158c3c9e65a830e811a1af1da6c8e3bbd9a73.npz",
+          "artifact_sha256": "4e0e7920aeac445e79de0d8e6a73e74f9d41744c27d35b2b6e68f9d22b44109d",
+          "cache_key": "d63f79de9f01f2734e4268e8fc9158c3c9e65a830e811a1af1da6c8e3bbd9a73",
+          "cached": true
+        },
+        "condition": "backing",
+        "excerpt_id": 4,
+        "input_hashes": {
+          "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+          "reference_sha256": "fb0a5b73a66edc0bac5aaec64f82eccd95d5a54781b354ab9020056803cf3d08",
+          "rendered_16khz_mono_sha256": "9a4214f6cc8b45170dce2ba25222eb944ee01b37cb511d79508268a92f8ac1b1",
+          "source_audio_sha256": "fc07b202eb609c975d1549be5320db116a49be1bd1fc6904e70e31cd7e44ec23"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "n_joint_voiced": 0,
+          "n_reference": 1000,
+          "n_reference_unvoiced": 1000,
+          "n_reference_voiced": 0,
+          "n_scored": 1000,
+          "n_unmatched": 0,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/319034d641c300bf0f7b8c36a9c6c404fabff2f76b95fbf6d569b55836678d98.npz",
+          "artifact_sha256": "134ff6eaa4ef25e905df8f6bb0a3e516b719568269e527ac676cc8f453b537f2",
+          "cache_key": "319034d641c300bf0f7b8c36a9c6c404fabff2f76b95fbf6d569b55836678d98",
+          "cached": true
+        },
+        "condition": "silence",
+        "excerpt_id": 4,
+        "input_hashes": {
+          "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+          "reference_sha256": "fb0a5b73a66edc0bac5aaec64f82eccd95d5a54781b354ab9020056803cf3d08",
+          "rendered_16khz_mono_sha256": "3d00ed86b663cd1b8ac82b105257cd109412f92dca442048532439f920a7f645",
+          "source_audio_sha256": "fc07b202eb609c975d1549be5320db116a49be1bd1fc6904e70e31cd7e44ec23"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "n_joint_voiced": 0,
+          "n_reference": 1000,
+          "n_reference_unvoiced": 1000,
+          "n_reference_voiced": 0,
+          "n_scored": 1000,
+          "n_unmatched": 0,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/60f10b312e159d7d859a4a799135a5328748f1e52a3b459c6074c5fbf1797ec8.npz",
+          "artifact_sha256": "7367dc14e422471ef85cf9855040ad4394d6aa84af01b340a6d389543b89e2f2",
+          "cache_key": "60f10b312e159d7d859a4a799135a5328748f1e52a3b459c6074c5fbf1797ec8",
+          "cached": true
+        },
+        "condition": "mixture_0db",
+        "excerpt_id": 4,
+        "input_hashes": {
+          "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+          "reference_sha256": "fb0a5b73a66edc0bac5aaec64f82eccd95d5a54781b354ab9020056803cf3d08",
+          "rendered_16khz_mono_sha256": "81cc1ebcdc4b1431d1a96ac3546ad2e15133bb79c647fd9f14824c67976471fa",
+          "source_audio_sha256": "fc07b202eb609c975d1549be5320db116a49be1bd1fc6904e70e31cd7e44ec23"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": 0.007518796992481203,
+          "median_abs_cents_error": 5.968085285219715,
+          "n_joint_voiced": 1330,
+          "n_reference": 1723,
+          "n_reference_unvoiced": 324,
+          "n_reference_voiced": 1399,
+          "n_scored": 1723,
+          "n_unmatched": 0,
+          "octave_error_rate": 0.0,
+          "raw_pitch_accuracy": 0.9435310936383131,
+          "voicing_false_alarm_rate": 0.06790123456790123,
+          "voicing_recall": 0.9506790564689064
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/cfed416cbaa3bb767e5a81fd8251547f53120bc63bd52a52ac66014a18218634.npz",
+          "artifact_sha256": "a78e4bf171b6b1c69f31fe9ec888048cef2b51333d117da1690ed7e0fbf53f9b",
+          "cache_key": "cfed416cbaa3bb767e5a81fd8251547f53120bc63bd52a52ac66014a18218634",
+          "cached": true
+        },
+        "condition": "mixture_minus6db",
+        "excerpt_id": 4,
+        "input_hashes": {
+          "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+          "reference_sha256": "fb0a5b73a66edc0bac5aaec64f82eccd95d5a54781b354ab9020056803cf3d08",
+          "rendered_16khz_mono_sha256": "0660c8a169681ee4f555ee9694a25576b36f27effe2979b3a29c6166af410f00",
+          "source_audio_sha256": "fc07b202eb609c975d1549be5320db116a49be1bd1fc6904e70e31cd7e44ec23"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": 0.0072231139646869984,
+          "median_abs_cents_error": 6.724282845361492,
+          "n_joint_voiced": 1246,
+          "n_reference": 1723,
+          "n_reference_unvoiced": 324,
+          "n_reference_voiced": 1399,
+          "n_scored": 1723,
+          "n_unmatched": 0,
+          "octave_error_rate": 0.0,
+          "raw_pitch_accuracy": 0.8842030021443888,
+          "voicing_false_alarm_rate": 0.043209876543209874,
+          "voicing_recall": 0.8906361686919227
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/07bcd85dd8cf25a21f77e6d282f322b0e84378e8236f31d183dac53d893c503a.npz",
+          "artifact_sha256": "ae9376472ec4be71bf72b4daa81722a541234e48dd93716c5584eefcf40256a1",
+          "cache_key": "07bcd85dd8cf25a21f77e6d282f322b0e84378e8236f31d183dac53d893c503a",
+          "cached": true
+        },
+        "condition": "solo",
+        "excerpt_id": 5,
+        "input_hashes": {
+          "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+          "reference_sha256": "561eb6ac03530a3219cf1a8eab9f0c14b1c4571185f0e059b61643325e4642ca",
+          "rendered_16khz_mono_sha256": "b5d00bc74ec8bd7d9b517a1c02646469b16c70c1d116f8a915d8d84c3537ddf7",
+          "source_audio_sha256": "7cecfd126a9437f88db0a297cdab3075bb38faeef10f1a98f22ba22a2a939220"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": 0.004878048780487805,
+          "median_abs_cents_error": 5.98281931212971,
+          "n_joint_voiced": 1230,
+          "n_reference": 1723,
+          "n_reference_unvoiced": 457,
+          "n_reference_voiced": 1266,
+          "n_scored": 1723,
+          "n_unmatched": 0,
+          "octave_error_rate": 0.0,
+          "raw_pitch_accuracy": 0.966824644549763,
+          "voicing_false_alarm_rate": 0.18818380743982493,
+          "voicing_recall": 0.9715639810426541
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/e794bec960584d7e33ed7dc8d8f904e92e2a3cc4f49a18ca38bf1baab1a36f5d.npz",
+          "artifact_sha256": "b7fb9e295b75f8767be8adf070aa82f611787d22fdcdf6b71cb66610187bd3d7",
+          "cache_key": "e794bec960584d7e33ed7dc8d8f904e92e2a3cc4f49a18ca38bf1baab1a36f5d",
+          "cached": true
+        },
+        "condition": "backing",
+        "excerpt_id": 5,
+        "input_hashes": {
+          "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+          "reference_sha256": "561eb6ac03530a3219cf1a8eab9f0c14b1c4571185f0e059b61643325e4642ca",
+          "rendered_16khz_mono_sha256": "e561ded6fba2884f8eef1b96e3f8866efd5cbbb070a9f3aa19cfa6e826ddc8cf",
+          "source_audio_sha256": "7cecfd126a9437f88db0a297cdab3075bb38faeef10f1a98f22ba22a2a939220"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "n_joint_voiced": 0,
+          "n_reference": 1000,
+          "n_reference_unvoiced": 1000,
+          "n_reference_voiced": 0,
+          "n_scored": 1000,
+          "n_unmatched": 0,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/319034d641c300bf0f7b8c36a9c6c404fabff2f76b95fbf6d569b55836678d98.npz",
+          "artifact_sha256": "134ff6eaa4ef25e905df8f6bb0a3e516b719568269e527ac676cc8f453b537f2",
+          "cache_key": "319034d641c300bf0f7b8c36a9c6c404fabff2f76b95fbf6d569b55836678d98",
+          "cached": true
+        },
+        "condition": "silence",
+        "excerpt_id": 5,
+        "input_hashes": {
+          "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+          "reference_sha256": "561eb6ac03530a3219cf1a8eab9f0c14b1c4571185f0e059b61643325e4642ca",
+          "rendered_16khz_mono_sha256": "3d00ed86b663cd1b8ac82b105257cd109412f92dca442048532439f920a7f645",
+          "source_audio_sha256": "7cecfd126a9437f88db0a297cdab3075bb38faeef10f1a98f22ba22a2a939220"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "n_joint_voiced": 0,
+          "n_reference": 1000,
+          "n_reference_unvoiced": 1000,
+          "n_reference_voiced": 0,
+          "n_scored": 1000,
+          "n_unmatched": 0,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/0a23564392a7268c0202f8c369b8f036b83862e7b0270480c677962f265e278f.npz",
+          "artifact_sha256": "ecec5bb9a4ff83081bd7c3b5662b92104fb08084cb1aee7cb4ef86bd7f261e80",
+          "cache_key": "0a23564392a7268c0202f8c369b8f036b83862e7b0270480c677962f265e278f",
+          "cached": true
+        },
+        "condition": "mixture_0db",
+        "excerpt_id": 5,
+        "input_hashes": {
+          "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+          "reference_sha256": "561eb6ac03530a3219cf1a8eab9f0c14b1c4571185f0e059b61643325e4642ca",
+          "rendered_16khz_mono_sha256": "9aa7bdb78703dd68beaacfe9f80bbf387028149cd4e808412343c7480d3271c8",
+          "source_audio_sha256": "7cecfd126a9437f88db0a297cdab3075bb38faeef10f1a98f22ba22a2a939220"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": 0.005700325732899023,
+          "median_abs_cents_error": 6.195656134737546,
+          "n_joint_voiced": 1228,
+          "n_reference": 1723,
+          "n_reference_unvoiced": 457,
+          "n_reference_voiced": 1266,
+          "n_scored": 1723,
+          "n_unmatched": 0,
+          "octave_error_rate": 0.0,
+          "raw_pitch_accuracy": 0.9644549763033176,
+          "voicing_false_alarm_rate": 0.09190371991247265,
+          "voicing_recall": 0.9699842022116903
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/806348efd4f5adbdc7c73ac98cf8463e5b47c16350ea279c3b0d84e8e54f1978.npz",
+          "artifact_sha256": "4fd418cf09f52eefe34577cd562c9073bbf248b16d24ee73092858c1826927ee",
+          "cache_key": "806348efd4f5adbdc7c73ac98cf8463e5b47c16350ea279c3b0d84e8e54f1978",
+          "cached": true
+        },
+        "condition": "mixture_minus6db",
+        "excerpt_id": 5,
+        "input_hashes": {
+          "backing_sha256": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+          "reference_sha256": "561eb6ac03530a3219cf1a8eab9f0c14b1c4571185f0e059b61643325e4642ca",
+          "rendered_16khz_mono_sha256": "52ba72649e768e183d7be41b18af34f7c0ee133f425564b97857619dd47fa6ad",
+          "source_audio_sha256": "7cecfd126a9437f88db0a297cdab3075bb38faeef10f1a98f22ba22a2a939220"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": 0.006938421509106678,
+          "median_abs_cents_error": 6.314510623348069,
+          "n_joint_voiced": 1153,
+          "n_reference": 1723,
+          "n_reference_unvoiced": 457,
+          "n_reference_voiced": 1266,
+          "n_scored": 1723,
+          "n_unmatched": 0,
+          "octave_error_rate": 0.0,
+          "raw_pitch_accuracy": 0.9044233807266983,
+          "voicing_false_alarm_rate": 0.05032822757111598,
+          "voicing_recall": 0.9107424960505529
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/f0a78dbbe2b2601a898ee2dc381d3a2fad80c9a552f473fcb1af41896f213dd3.npz",
+          "artifact_sha256": "bf71af74513a75cd94590fd345bcdfbdd9bbb833fd3fe3fe01fb2b6868a93fcf",
+          "cache_key": "f0a78dbbe2b2601a898ee2dc381d3a2fad80c9a552f473fcb1af41896f213dd3",
+          "cached": true
+        },
+        "condition": "solo",
+        "excerpt_id": 6,
+        "input_hashes": {
+          "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+          "reference_sha256": "443e7f37172ef683f687fba39ab87710f22af2227e8fdb9031b2faa3002eb002",
+          "rendered_16khz_mono_sha256": "73a960aae4356d266fc13aebd485b54b45ce532509296252135715399196efe6",
+          "source_audio_sha256": "13816752a6366f2d66f21e71a70d55e22b6a44f0d1712d97abff5390bc0c1f3b"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": 0.0032102728731942215,
+          "median_abs_cents_error": 5.683377828219855,
+          "n_joint_voiced": 1246,
+          "n_reference": 1723,
+          "n_reference_unvoiced": 453,
+          "n_reference_voiced": 1270,
+          "n_scored": 1723,
+          "n_unmatched": 0,
+          "octave_error_rate": 0.0,
+          "raw_pitch_accuracy": 0.9779527559055118,
+          "voicing_false_alarm_rate": 0.08830022075055188,
+          "voicing_recall": 0.9811023622047244
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/d63f79de9f01f2734e4268e8fc9158c3c9e65a830e811a1af1da6c8e3bbd9a73.npz",
+          "artifact_sha256": "4e0e7920aeac445e79de0d8e6a73e74f9d41744c27d35b2b6e68f9d22b44109d",
+          "cache_key": "d63f79de9f01f2734e4268e8fc9158c3c9e65a830e811a1af1da6c8e3bbd9a73",
+          "cached": true
+        },
+        "condition": "backing",
+        "excerpt_id": 6,
+        "input_hashes": {
+          "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+          "reference_sha256": "443e7f37172ef683f687fba39ab87710f22af2227e8fdb9031b2faa3002eb002",
+          "rendered_16khz_mono_sha256": "9a4214f6cc8b45170dce2ba25222eb944ee01b37cb511d79508268a92f8ac1b1",
+          "source_audio_sha256": "13816752a6366f2d66f21e71a70d55e22b6a44f0d1712d97abff5390bc0c1f3b"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "n_joint_voiced": 0,
+          "n_reference": 1000,
+          "n_reference_unvoiced": 1000,
+          "n_reference_voiced": 0,
+          "n_scored": 1000,
+          "n_unmatched": 0,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/319034d641c300bf0f7b8c36a9c6c404fabff2f76b95fbf6d569b55836678d98.npz",
+          "artifact_sha256": "134ff6eaa4ef25e905df8f6bb0a3e516b719568269e527ac676cc8f453b537f2",
+          "cache_key": "319034d641c300bf0f7b8c36a9c6c404fabff2f76b95fbf6d569b55836678d98",
+          "cached": true
+        },
+        "condition": "silence",
+        "excerpt_id": 6,
+        "input_hashes": {
+          "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+          "reference_sha256": "443e7f37172ef683f687fba39ab87710f22af2227e8fdb9031b2faa3002eb002",
+          "rendered_16khz_mono_sha256": "3d00ed86b663cd1b8ac82b105257cd109412f92dca442048532439f920a7f645",
+          "source_audio_sha256": "13816752a6366f2d66f21e71a70d55e22b6a44f0d1712d97abff5390bc0c1f3b"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": null,
+          "median_abs_cents_error": null,
+          "n_joint_voiced": 0,
+          "n_reference": 1000,
+          "n_reference_unvoiced": 1000,
+          "n_reference_voiced": 0,
+          "n_scored": 1000,
+          "n_unmatched": 0,
+          "octave_error_rate": null,
+          "raw_pitch_accuracy": null,
+          "voicing_false_alarm_rate": 0.0,
+          "voicing_recall": null
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/280d57dd5146790f6c9b9a7c1b397b2eac53f1e19007c10a1a04b1600275ad82.npz",
+          "artifact_sha256": "59fb074c5944b2e37991e92f00c998af9043b862cc39dc5f00665d164eaa7b14",
+          "cache_key": "280d57dd5146790f6c9b9a7c1b397b2eac53f1e19007c10a1a04b1600275ad82",
+          "cached": true
+        },
+        "condition": "mixture_0db",
+        "excerpt_id": 6,
+        "input_hashes": {
+          "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+          "reference_sha256": "443e7f37172ef683f687fba39ab87710f22af2227e8fdb9031b2faa3002eb002",
+          "rendered_16khz_mono_sha256": "2a51a538726650190dc8a7fd2989606c45c9249a1b46283235577befa95b86d4",
+          "source_audio_sha256": "13816752a6366f2d66f21e71a70d55e22b6a44f0d1712d97abff5390bc0c1f3b"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": 0.013234077750206782,
+          "median_abs_cents_error": 6.157717600638938,
+          "n_joint_voiced": 1209,
+          "n_reference": 1723,
+          "n_reference_unvoiced": 453,
+          "n_reference_voiced": 1270,
+          "n_scored": 1723,
+          "n_unmatched": 0,
+          "octave_error_rate": 0.0,
+          "raw_pitch_accuracy": 0.9393700787401574,
+          "voicing_false_alarm_rate": 0.22958057395143489,
+          "voicing_recall": 0.9519685039370078
+        }
+      },
+      {
+        "artifact": {
+          "artifact": "/private/tmp/natural-features-vocal-assets/native-v2-development-corrected/647d0f126538815a2b545d25b49f5c5fa3d6b0797bbd6c48c06d32f05401e3c2.npz",
+          "artifact_sha256": "044e798b69521a52ad29adfe90bd764c6d516c9963eab739672f869417152f00",
+          "cache_key": "647d0f126538815a2b545d25b49f5c5fa3d6b0797bbd6c48c06d32f05401e3c2",
+          "cached": true
+        },
+        "condition": "mixture_minus6db",
+        "excerpt_id": 6,
+        "input_hashes": {
+          "backing_sha256": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1",
+          "reference_sha256": "443e7f37172ef683f687fba39ab87710f22af2227e8fdb9031b2faa3002eb002",
+          "rendered_16khz_mono_sha256": "7573c32d6db6adc71ffc37f33a7f0bf2dc82e5b85e2251c3d444759e65ddf569",
+          "source_audio_sha256": "13816752a6366f2d66f21e71a70d55e22b6a44f0d1712d97abff5390bc0c1f3b"
+        },
+        "metrics": {
+          "gross_pitch_error_rate": 0.022286821705426358,
+          "median_abs_cents_error": 6.078314441893065,
+          "n_joint_voiced": 1032,
+          "n_reference": 1723,
+          "n_reference_unvoiced": 453,
+          "n_reference_voiced": 1270,
+          "n_scored": 1723,
+          "n_unmatched": 0,
+          "octave_error_rate": 0.0,
+          "raw_pitch_accuracy": 0.794488188976378,
+          "voicing_false_alarm_rate": 0.15894039735099338,
+          "voicing_recall": 0.8125984251968504
+        }
+      }
+    ],
+    "summary": {
+      "backing": {
+        "gross_pitch_error_rate": null,
+        "median_abs_cents_error": null,
+        "octave_error_rate": null,
+        "raw_pitch_accuracy": null,
+        "voicing_false_alarm_rate": 0.0,
+        "voicing_recall": null
+      },
+      "mixture_0db": {
+        "gross_pitch_error_rate": 0.015636658103098094,
+        "median_abs_cents_error": 6.022837881008772,
+        "octave_error_rate": 0.007701786814540974,
+        "raw_pitch_accuracy": 0.8969507548044674,
+        "voicing_false_alarm_rate": 0.09714326016513103,
+        "voicing_recall": 0.9112718604262843
+      },
+      "mixture_minus6db": {
+        "gross_pitch_error_rate": 0.019603144254865618,
+        "median_abs_cents_error": 6.20902110899281,
+        "octave_error_rate": 0.007273877292852625,
+        "raw_pitch_accuracy": 0.8401382195815074,
+        "voicing_false_alarm_rate": 0.053291851354910415,
+        "voicing_recall": 0.8571201012559829
+      },
+      "silence": {
+        "gross_pitch_error_rate": null,
+        "median_abs_cents_error": null,
+        "octave_error_rate": null,
+        "raw_pitch_accuracy": null,
+        "voicing_false_alarm_rate": 0.0,
+        "voicing_recall": null
+      },
+      "solo": {
+        "gross_pitch_error_rate": 0.008409636574512812,
+        "median_abs_cents_error": 5.58556149884571,
+        "octave_error_rate": 0.00412614205717654,
+        "raw_pitch_accuracy": 0.9203836962850859,
+        "voicing_false_alarm_rate": 0.08414955432002662,
+        "voicing_recall": 0.9283150356143312
+      }
+    },
+    "tuple": [
+      0.65,
+      0.03,
+      0.01
+    ]
+  }
+}
