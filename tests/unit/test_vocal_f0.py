@@ -38,7 +38,7 @@ def test_source_support_clock_offset_missingness_and_context(runtime):
     assert np.all(a.values[:-1, 0] == 220)
     assert np.isnan(a.values[-1, 0]) and a.values[-1, 5] == 1
     assert a.values[0, 8] == 1 and a.values[-1, 8] == 1
-    assert a.metadata["code_version"] == "vocal-f0-v2"
+    assert a.metadata["code_version"] == "vocal-f0-v3"
     assert a.clock == "song"
     assert b.metadata["computation_context"]["dependency_bounds_s"] == [[7.25, 8.25]]
     assert b.metadata["computation_context"]["policy"] == "bidirectional"
@@ -114,7 +114,9 @@ def test_asset_failure_is_not_reported_as_inference(monkeypatch):
 
 @pytest.mark.parametrize("kwargs", [{"fmin": 0}, {"fmax": 3000}, {"hop_s": np.nan},
                                      {"confidence_threshold": 1.1}, {"source_threshold": -1},
-                                     {"min_source_rms": 0}, {"local_files_only": "yes"}])
+                                     {"min_source_rms": 0}, {"local_files_only": "yes"},
+                                     {"voicing_guard_s": -0.01}, {"voicing_guard_s": np.nan},
+                                     {"voicing_guard_s": np.inf}])
 def test_invalid_parameters_rejected(runtime, kwargs):
     with pytest.raises(ValueError):
         vf.audio_vocal_f0(_audio(), **kwargs)
@@ -155,3 +157,60 @@ def test_asset_inspection_errors_are_typed(monkeypatch, tmp_path, failure):
     with pytest.raises(BackendLoadError) as error:
         vf._load_runtime(str(checkpoint), None, True, "cpu")
     assert isinstance(error.value.__cause__, OSError)
+
+
+def test_temporal_core_known_runs_gaps_and_boundaries():
+    # Runs of lengths 1, 5, 8: the short island disappears and the longer
+    # runs lose two native rows at each end. No gap is ever filled.
+    base = np.array([0, 1, 0] + [1] * 5 + [0] + [1] * 8 + [0], dtype=bool)
+    expected = np.zeros(len(base), dtype=bool)
+    expected[[5, 11, 12, 13, 14]] = True
+    np.testing.assert_array_equal(vf._temporal_core(base, 0.02, 0.01), expected)
+    np.testing.assert_array_equal(vf._temporal_core(base, 0, 0.01), base)
+    np.testing.assert_array_equal(vf._temporal_core(np.ones(7), 0.02, 0.01),
+                                  [0, 0, 1, 1, 1, 0, 0])
+    assert not vf._temporal_core(np.ones(4), 0.02, 0.01).any()
+    assert not vf._temporal_core(np.ones(7), 1e308, 0.01).any()
+
+
+def test_temporal_core_rounds_up_on_effective_hop_and_is_reject_only():
+    base = np.ones(11, dtype=bool)
+    np.testing.assert_array_equal(vf._temporal_core(base, 0.02, 117 / 16000),
+                                  [0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0])
+    # Independent explicit-window oracle across differing lengths and radii.
+    rng = np.random.default_rng(21)
+    for n in (0, 1, 4, 19, 101):
+        base = rng.random(n) > 0.2
+        for radius in (1, 2, 5):
+            actual = vf._temporal_core(base, float(radius), 1.0)
+            expected = [i >= radius and i + radius < n
+                        and all(base[i - radius:i + radius + 1]) for i in range(n)]
+            np.testing.assert_array_equal(actual, expected)
+            assert not np.any(actual & ~base)
+
+
+def test_temporal_gate_preserves_candidates_source_clock_and_octave_step(runtime):
+    def pitch(audio, hop, *args):
+        n = 1 + len(audio) // hop
+        f0 = np.where(np.arange(n) < 50, 220.0, 440.0)
+        confidence = np.full(n, .9)
+        confidence[20] = .1
+        return f0, confidence
+    runtime.pitch = pitch
+    base = vf.audio_vocal_f0(_audio(offset=7.25))
+    guarded = vf.audio_vocal_f0(_audio(offset=7.25), voicing_guard_s=.02)
+    expected = np.ones(101, dtype=bool)
+    expected[:2] = False
+    expected[18:23] = False
+    expected[98:] = False
+    np.testing.assert_array_equal(guarded.values[:, 4], expected)
+    np.testing.assert_array_equal(guarded.values[:, 5], ~expected)
+    np.testing.assert_array_equal(guarded.values[:, 11], base.values[:, 4])
+    np.testing.assert_array_equal(guarded.values[:, [1, 2, 3, 6, 8, 9, 10]],
+                                  base.values[:, [1, 2, 3, 6, 8, 9, 10]])
+    np.testing.assert_array_equal(guarded.times_s, base.times_s)
+    np.testing.assert_array_equal(guarded.time_bounds_s, base.time_bounds_s)
+    np.testing.assert_array_equal(guarded.values[expected, 0], base.values[expected, 0])
+    assert np.isnan(guarded.values[~expected, 0]).all()
+    assert guarded.values[50, 7] == 1  # A real interval is not smoothed away.
+    assert guarded.metadata['voicing_guard_s'] == .02

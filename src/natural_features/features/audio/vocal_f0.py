@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 import hashlib
 from importlib.metadata import version
-from math import gcd
+from math import ceil, gcd
 from pathlib import Path
 import tempfile
 from urllib.request import urlopen
@@ -27,7 +27,7 @@ SEPARATOR_SHA256 = "8726e21a993978c7ba086d3872e7608d7d5bfca646ca4aca459ffda844fa
 CREPE_SHA256 = "133225604dedd2e4005f8bbd1bd0a2ec073ba8b7a6cd31ff6d5edbbfa3539986"
 SEPARATOR_FILE = "955717e8-8726e21a.th"
 SEPARATOR_URL = "https://dl.fbaipublicfiles.com/demucs/hybrid_transformer/" + SEPARATOR_FILE
-FEATURES = ["f0_hz", "confidence", "source_support", "source_supported", "voiced", "missing", "range_edge", "octave_jump", "padded", "candidate_f0_hz", "source_rms"]
+FEATURES = ["f0_hz", "confidence", "source_support", "source_supported", "voiced", "missing", "range_edge", "octave_jump", "padded", "candidate_f0_hz", "source_rms", "framewise_voiced"]
 
 
 def _sha256(path):
@@ -184,12 +184,41 @@ def _acceptance_masks(confidence, support, rms, valid, confidence_threshold, sou
     return source, voiced
 
 
+def _temporal_core(framewise_voiced, guard_s, effective_hop_s):
+    """Reject frames without a complete symmetric run of accepted neighbors.
+
+    The radius rounds up on the native grid. Missing neighbors reject, and
+    zero guard is the original framewise gate. Always start from that original
+    gate: applying this operation to its own output would erode twice.
+    """
+    if not np.isfinite(guard_s) or guard_s < 0:
+        raise ValueError("voicing_guard_s must be finite and nonnegative")
+    if not np.isfinite(effective_hop_s) or effective_hop_s <= 0:
+        raise ValueError("effective_hop_s must be finite and positive")
+    base = np.asarray(framewise_voiced, dtype=bool)
+    if base.ndim != 1:
+        raise ValueError("framewise_voiced must be one-dimensional")
+    if guard_s == 0:
+        return base.copy()
+    # Bound before converting to an integer or allocating: arbitrarily large
+    # finite margins simply cannot fit in the supplied input.
+    if guard_s / effective_hop_s >= len(base):
+        return np.zeros_like(base)
+    radius = ceil(guard_s / effective_hop_s)
+    width = 2 * radius + 1
+    result = np.zeros_like(base)
+    if width <= len(base):
+        total = np.concatenate(([0], np.cumsum(base, dtype=np.int64)))
+        result[radius:len(base) - radius] = (total[width:] - total[:-width]) == width
+    return result
+
+
 def audio_vocal_f0(
     stimulus: AudioStimulus, *, separator_checkpoint: str | None = None,
     cache_dir: str | None = None, local_files_only: bool = True, device: str = "cpu",
     hop_s: float = 0.01, fmin: float = 50.0, fmax: float = 1000.0,
     confidence_threshold: float = 0.65, source_threshold: float = 0.03,
-    min_source_rms: float = 0.01,
+    min_source_rms: float = 0.01, voicing_guard_s: float = 0.0,
 ) -> FeatureSeries:
     """Estimate dominant F0 of Demucs' selected vocal stem, with missingness.
 
@@ -197,7 +226,9 @@ def audio_vocal_f0(
     insufficient. ``confidence`` is CREPE periodicity; ``source_support`` is
     vocal-stem/sum-of-stem frame energy, not voice probability. Model,
     decoder and threshold choices must be qualified for the intended domain.
-    This does not resolve individual singers in duets/choirs.
+    An optional symmetric ``voicing_guard_s`` rejects frames without persistent
+    neighboring acceptance. Zero preserves the v2 framewise decision. This
+    does not resolve individual singers in duets/choirs.
     """
     mono = mono_audio(stimulus)
     if not isinstance(local_files_only, bool) or not isinstance(device, str) or not device:
@@ -211,6 +242,8 @@ def audio_vocal_f0(
             raise ValueError(f"{name} must lie in [0, 1]")
     if not np.isfinite(min_source_rms) or min_source_rms <= 0:
         raise ValueError("min_source_rms must be finite and positive")
+    if not np.isfinite(voicing_guard_s) or voicing_guard_s < 0:
+        raise ValueError("voicing_guard_s must be finite and nonnegative")
     runtime = _load_runtime(separator_checkpoint, cache_dir, local_files_only, device)
     x = np.asarray(stimulus.samples, dtype=np.float32)
     if x.ndim == 1:
@@ -246,13 +279,14 @@ def audio_vocal_f0(
     total_energy = sum(_frame_rms(pitch_stems[:, j], centers) ** 2 for j in range(pitch_stems.shape[1]))
     support = source_rms ** 2 / np.maximum(total_energy, 1e-20)
     duration = len(mono) / stimulus.sr_hz
-    source, voiced = _acceptance_masks(confidence, support, source_rms, centers / 16000 < duration, confidence_threshold, source_threshold, min_source_rms)
+    source, framewise = _acceptance_masks(confidence, support, source_rms, centers / 16000 < duration, confidence_threshold, source_threshold, min_source_rms)
+    voiced = _temporal_core(framewise, voicing_guard_s, hop / 16000)
     edge = (1200 * np.log2(f0 / fmin) < 20) | (1200 * np.log2(fmax / f0) < 20)
     jump = np.zeros(len(f0), dtype=bool)
     intervals = np.abs(1200 * np.diff(np.log2(f0)))
     jump[1:] = voiced[1:] & voiced[:-1] & (np.abs(intervals - 1200) <= 100)
     padded = (centers < 512) | ((centers + 512) / 16000 > duration)
-    values = np.column_stack([np.where(voiced, f0, np.nan), confidence, support, source, voiced, ~voiced, edge, jump, padded, f0, source_rms])
+    values = np.column_stack([np.where(voiced, f0, np.nan), confidence, support, source, voiced, ~voiced, edge, jump, padded, f0, source_rms, framewise])
     start = stimulus.start_offset_s
     bounds = start + np.clip(np.column_stack([centers - 512, centers + 512]) / 16000, 0, duration)
     context = computation_context(
@@ -267,9 +301,10 @@ def audio_vocal_f0(
                        "pitch_zero_padding_samples_each_side": 512},
     )
     md = extractor_metadata(
-        "audio.vocal_f0", code_version="vocal-f0-v2",
+        "audio.vocal_f0", code_version="vocal-f0-v3",
         params={"hop_s": hop_s, "fmin": fmin, "fmax": fmax, "confidence_threshold": confidence_threshold,
-                "source_threshold": source_threshold, "min_source_rms": min_source_rms},
+                "source_threshold": source_threshold, "min_source_rms": min_source_rms,
+                "voicing_guard_s": voicing_guard_s},
         model_revision=f"demucs:sha256:{SEPARATOR_SHA256};crepe:sha256:{CREPE_SHA256}",
         extra={"backend": "demucs_htdemucs_crepe_full", "fallback_used": False, "execution_mode": "strict",
                "source_selection": "Demucs vocals; dominant periodic pitch within that stem; no singer identity",
@@ -278,6 +313,9 @@ def audio_vocal_f0(
                "missing_f0": "NaN; never encoded as acoustic silence or phonology",
                "candidate_f0_hz": "raw finite CREPE candidate before acceptance gates; diagnostic only and not vocal-F0 evidence",
                "gate_precision": "float32 confidence; float64 source support and RMS, preserved in output diagnostics",
+               "voicing_rule": "framewise acceptance eroded symmetrically by ceil(voicing_guard_s/effective_hop_s) native rows; missing neighbors reject; zero guard is v2",
+               "voicing_guard_s": voicing_guard_s,
+               "framewise_voiced": "Original confidence/source/RMS acceptance before the optional temporal core; not final supported F0",
                "source_rms": "Exact 1024-sample selected-stem frame RMS used by the source acceptance gate; global stem DC was removed before resampling",
                "octave_jump_semantics": "adjacent supported frames differ by 1200 +/- 100 cents; not proven octave error",
                "pitch_decoder": "local weighted +/-4 bins; undithered centers; no temporal smoothing",

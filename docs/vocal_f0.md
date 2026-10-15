@@ -36,6 +36,7 @@ silence label. Retain native rows and validity when pooling downstream.
 | `padded` | CREPE window extends outside supplied audio |
 | `candidate_f0_hz` | Unaccepted raw pitch candidate, including instrumental/silent frames; not vocal F0 evidence |
 | `source_rms` | Exact vocal-stem frame RMS used by the acceptance gate, retained at float64 precision |
+| `framewise_voiced` | Acceptance before the optional temporal guard; retained so temporal rejection can be distinguished from confidence/source rejection |
 
 Confidence comparisons use float32; source support and RMS comparisons use float64, preserved in the diagnostic output.
 
@@ -44,6 +45,15 @@ singing detector probability, and periodic instruments can leak into the stem.
 The default search range is 50–1000 Hz. F0 outside that range is not recovered
 by adding an octave correction. Changing thresholds or the range requires
 qualification for that configuration.
+
+`voicing_guard_s` defaults to zero, preserving the v2 framewise decision. A
+positive value requires every neighboring frame out to
+`ceil(voicing_guard_s / effective_hop_s)` rows on each side to pass the same
+framewise gate. Missing neighbors reject. For example, 0.02 seconds at the
+default 0.01-second hop requires five consecutive accepted rows. It can only
+remove accepted pitch; it never fills gaps or changes surviving pitch values.
+The optional 20 ms configuration **failed development**, as detailed below.
+It is not a recommended or qualified replacement for the default.
 
 ## Assets, clocks and context
 
@@ -70,6 +80,9 @@ on each side. `time_bounds_s` records its frontend window intersected with the
 real input duration. Centers at or beyond the real input end are retained but
 marked missing. They are not stretched to fit the clip. Only the output clock
 receives `start_offset_s`; the input clock and temporal context are preserved.
+The optional temporal guard uses neighboring decisions as well. The frontend
+bounds remain the central pitch window; the full computation context below
+includes those neighboring dependencies.
 
 These frontend bounds are not the full dependency. Separation and normalization
 can use future audio, so `computation_context` conservatively records the entire
@@ -144,6 +157,57 @@ subsequent test, rather than claiming that the holdout is still unused.
 Reproduce the frozen test with the runner above plus
 `--protocol tests/benchmarks/thresholds/vocal_f0_holdout_v2.json`, retaining a
 separate output report and native artifact directory.
+
+## Version 3 temporal experiment: failed development
+
+A new experiment after the v2 failure tested a fixed 20 ms symmetric temporal
+guard, with the same models, pitch candidates, 0.65/0.03/0.01 thresholds,
+scoring rules and acceptance limits. The original development data and the
+consumed v2 test were both explicitly designated as development data. This
+does not revise or replace the failed v2 qualification.
+
+The protocol in `tests/benchmarks/thresholds/vocal_f0_development_v3.json` was
+frozen before evaluating the new rule. Only this single duration was tested.
+Both groups had to pass every original gate separately before any fresh test.
+The raw cached predictions and original scores reproduced exactly before
+replay. The new report retains all 60 condition results, the original artifact
+identities, and counts of removed true and false positives.
+
+| Development group | Condition | Raw pitch accuracy | Voiced recall | False voicing |
+|---|---|---:|---:|---:|
+| Original IDs 1–6 | Solo | 0.8363 | 0.8391 | 0.0231 |
+| Original IDs 1–6 | 0 dB | 0.8108 | 0.8174 | 0.0391 |
+| Original IDs 1–6 | −6 dB | 0.7528 | 0.7618 | 0.0169 |
+| Consumed v2 test | Solo | 0.8846 | 0.8870 | 0.0421 |
+| Consumed v2 test | 0 dB | 0.8603 | 0.8627 | 0.0752 |
+| Consumed v2 test | −6 dB | 0.7867 | 0.7945 | 0.0712 |
+
+False voicing now falls below 0.10 in every condition, but both groups fail
+the 0.80 pitch-accuracy and recall gates at −6 dB. Backing and silence remain
+at zero false acceptance. The experiment therefore stopped at development;
+the metadata-selected prospective singers (IDs 15, 18, 19, 20, 21, 22) remain
+untested. No duration adjustment, threshold search, or fresh qualification
+was performed after this result. Defaults retain zero temporal guard.
+
+The result shows the cost of rejecting every boundary and short interruption.
+Further work needs evidence that separates false voicing from valid singing
+in difficult mixtures; unconditional temporal rejection is insufficient.
+
+Reproduce this development-only replay using the retained v2 native artifacts
+and reference assets:
+
+```bash
+python scripts/evaluate_vocal_f0_temporal.py \
+  --assets /tmp/vocal-f0-assets \
+  --artifact-dir /tmp/vocal-f0-v3-replay \
+  --out-json /tmp/vocal-f0-v3-development.json
+```
+
+The consumed reports record the native artifact paths and hashes. Restore
+those files at the recorded paths when replaying on another machine. The
+script checks report, artifact and annotation identities and exits nonzero
+for incomplete input or failed development gates. A development pass would
+still not establish qualification.
 
 Evaluation covers the named excerpts and controlled mixtures only.
 It does not establish performance on commercial mixes, choirs, every singer,

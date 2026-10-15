@@ -1,0 +1,97 @@
+{
+  "schema": "VocalF0DevelopmentProtocol/v3",
+  "source_dataset": "https://zenodo.org/records/5578807",
+  "archive_md5": "dea40fd18f14d899643c4ba221b33a46",
+  "conditions": [
+    "solo",
+    "mixture_0db",
+    "mixture_minus6db"
+  ],
+  "negative_conditions": [
+    "backing",
+    "silence"
+  ],
+  "averaging": "equal-weight macro across six excerpts, separately per condition",
+  "gates": {
+    "raw_pitch_accuracy_min": 0.8,
+    "voicing_recall_min": 0.8,
+    "voicing_false_alarm_rate_max": 0.1,
+    "median_abs_cents_error_max": 50.0,
+    "octave_error_rate_max": 0.05,
+    "backing_false_alarm_rate_max": 0.05,
+    "silence_false_alarm_rate_max": 0.0,
+    "analytic_median_abs_cents_error_max": 50.0
+  },
+  "extractor": {
+    "demucs": "4.0.1",
+    "torchcrepe": "0.0.24",
+    "separator_sha256": "8726e21a993978c7ba086d3872e7608d7d5bfca646ca4aca459ffda844faa8b4",
+    "crepe_sha256": "133225604dedd2e4005f8bbd1bd0a2ec073ba8b7a6cd31ff6d5edbbfa3539986",
+    "decoder": "local weighted +/-4 bins, undithered",
+    "hop_s": 0.01,
+    "fmin": 50.0,
+    "fmax": 1000.0,
+    "confidence_threshold": 0.65,
+    "source_threshold": 0.03,
+    "min_source_rms": 0.01,
+    "voicing_guard_s": 0.02
+  },
+  "singer_metadata_sha256": "22266a2deb232e6783cc5ebfbba5e4c7639d7c614e9e248e780a0bee8678a41c",
+  "purpose": "New reject-only temporal voicing experiment after failed v2. Both previous sets are development data; not independent qualification.",
+  "method": {
+    "name": "symmetric_acceptance_core",
+    "voicing_guard_s": 0.02,
+    "definition": "Require all framewise-accepted native rows within ceil(guard_s/effective_hop_s) rows on each side, including the center. Out-of-input rows count as rejected. Zero guard reproduces v2. No gap filling, no pitch interpolation, no confidence/source/RMS threshold changes.",
+    "rationale": "A fixed 20 ms margin tests whether local persistence suppresses short voiced islands and boundary spillover from the centered 64 ms pitch frontend. It is an engineering abstention rule, not a calibrated source detector or full-window uncertainty bound."
+  },
+  "development_sets": [
+    {
+      "name": "original_development",
+      "report": "tests/benchmarks/reports/vocal_f0_development_v2.json",
+      "excerpt_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "report_sha256": "a1dd10d4ed93c8b0a6a30de1f35be6ab6ae54bc1d43f5a7d889afecf6a00c4ba"
+    },
+    {
+      "name": "consumed_v2_test",
+      "report": "tests/benchmarks/reports/vocal_f0_holdout_v2.json",
+      "excerpt_ids": [
+        7,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "report_sha256": "ed328fe19e465a773437beb9358591068ed0c283565f547c3dfb082f2dd301a0"
+    }
+  ],
+  "prospective_test": {
+    "excerpt_ids": [
+      15,
+      18,
+      19,
+      20,
+      21,
+      22
+    ],
+    "singer_ids": [
+      "S12",
+      "S13",
+      "S14",
+      "S15",
+      "S16",
+      "S17"
+    ],
+    "backing_start_s": 20,
+    "selection": "First track of each next six unseen singers in numeric ID order, metadata only; no audio, annotations or model output inspected.",
+    "prerequisite": "Both development sets must pass every original gate separately; verify replay/direct equality and independent review before test inference."
+  },
+  "stop_rule": "One fixed 20ms method, no search over margins or other parameters. If either development set fails, retain failure and do not consume fresh test. If both pass, freeze exact source/protocol and test once; no replacement test or post-result tuning. Original v2 remains a failure; this is a new experiment, not continuation of v2 qualification."
+}

@@ -167,3 +167,44 @@ def test_gate_precision_boundaries():
         0.001,
     )
     assert not source[0]
+
+
+def test_temporal_replay_matches_direct_and_rebuilds_original_gate(monkeypatch):
+    from types import SimpleNamespace
+    from natural_features.core.stimulus import AudioStimulus
+    from natural_features.features.audio import vocal_f0 as vf
+    m = _mod()
+    def separate(x):
+        return np.column_stack([x[:, 0] * .5, x[:, 0] * .5])
+    def pitch(x, hop, *args):
+        n = 1 + len(x) // hop
+        confidence = np.full(n, .9, dtype=np.float32)
+        confidence[10:12] = .5
+        return np.where(np.arange(n) < 30, 220., 440.), confidence
+    monkeypatch.setattr(vf, '_load_runtime', lambda *a: SimpleNamespace(
+        separate=separate, pitch=pitch, sources=['other', 'vocals'], versions={}))
+    samples = (.1 * np.sin(2 * np.pi * 220 * np.arange(16000) / 16000)).astype(np.float32)
+    audio = AudioStimulus.from_array(samples, 16000, start_offset_s=7.25)
+    for hop in (.01, .0073):
+        direct = vf.audio_vocal_f0(audio, hop_s=hop, voicing_guard_s=.02)
+        replayed = m.replay(direct, .65, .03, .01, voicing_guard_s=.02)
+        np.testing.assert_array_equal(replayed.values, direct.values)
+        unguarded = m.replay(direct, .65, .03, .01)
+        np.testing.assert_array_equal(unguarded.values, vf.audio_vocal_f0(audio, hop_s=hop).values)
+
+
+def test_temporal_artifact_keys_do_not_overwrite_repeated_inputs(monkeypatch, tmp_path):
+    import json
+    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[2] / 'scripts'))
+    from evaluate_vocal_f0_temporal import _replay_cache_key
+    source = {'artifact_sha256': 'same-native-input', 'cached': False}
+    hashes = {k: 'frozen' for k in ('protocol_sha256', 'extractor_source_sha256',
+                                   'replay_source_sha256', 'evaluation_source_sha256')}
+    first = _replay_cache_key(source, hashes, 'consumed_v2_test', {'excerpt_id': 7, 'condition': 'silence'})
+    second = _replay_cache_key({**source, 'cached': True}, hashes, 'consumed_v2_test', {'excerpt_id': 12, 'condition': 'silence'})
+    # A second row's provenance must never mutate the file hashed by the first.
+    (tmp_path / first).write_text(json.dumps(source))
+    (tmp_path / second).write_text(json.dumps({**source, 'cached': True}))
+    assert first != second
+    assert json.loads((tmp_path / first).read_text())['cached'] is False
+    assert _replay_cache_key(source, hashes, 'consumed_v2_test', {'excerpt_id': 7, 'condition': 'silence'}) == first
