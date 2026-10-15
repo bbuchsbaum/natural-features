@@ -48,3 +48,19 @@ extract_acoustic_phonetics(
     execution_mode="strict",
 )
 ```
+
+`audio_formants` keeps its requested, sample-rounded formant grid when voicing
+gating is enabled. The 40 ms (or longer) pitch windows have different centers
+from the default 25 ms formant windows: voicing strength is linearly interpolated
+at each formant center before applying the `> 0.3` gate. Centers outside the
+pitch-center range are zero-gated, including short clips with no overlapping
+centers; edge rows are retained. This periodicity gate does not identify vocals
+in polyphonic audio.
+
+Formant metadata records effective framing, the gate policy, and
+`code_version="formants-v2"` to distinguish the corrected output's extractor identity.
+LPC output includes sample-window bounds and short-input padding. The optional
+Praat backend queries its local waveform clock; `start_offset_s` affects only the
+output timestamps. Praat output declares point queries rather than LPC window
+bounds: its [Gaussian analysis windows](https://www.fon.hum.uva.nl/praat/manual/Sound__To_Formant__burg____.html)
+and interpolated estimates have different support.

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any
 
 import numpy as np
@@ -130,10 +131,12 @@ def _formants_parselmouth(
         raise BackendInferenceError(
             "formants", "Praat formant analysis failed"
         ) from exc
-    n = 1 + max(0, int(round((samples.size / float(stimulus.sr_hz) - win_s) / hop_s)))
-    times = times_from_hop(
-        n, hop_s, start_offset_s=stimulus.start_offset_s, center=True, window_s=win_s
-    )
+    hop = max(1, int(round(stimulus.sr_hz * hop_s)))
+    win = max(1, int(round(stimulus.sr_hz * win_s)))
+    n = 1 + max(0, (samples.size - win) // hop)
+    # Sound's clock is local to the waveform. Add the stimulus offset only
+    # when constructing the public output clock, never for Praat queries.
+    times = (np.arange(n) * hop + win / 2.0) / stimulus.sr_hz
     out = np.zeros((n, 6), dtype=np.float64)
     for i, t in enumerate(times):
         for k in range(3):
@@ -159,36 +162,59 @@ def audio_formants(
 
     Default backend is autocorrelation LPC, not Praat. Use
     ``backend="parselmouth"`` for the optional Praat extra.
+
+    Voicing strength from windows of at least 40 ms is linearly interpolated
+    at the sample-derived formant centers, then thresholded at 0.3. Centers
+    outside the pitch-center range are zero-gated (no extrapolation). Gating
+    preserves the formant grid, including its edge rows. This is an acoustic
+    periodicity gate, not a vocal detector for polyphonic audio.
     """
 
     mode, _strict = resolve_execution_mode(
         execution_mode=execution_mode, strict_dependency=strict_dependency
     )
+    if not np.isfinite(hop_s) or not np.isfinite(win_s) or hop_s <= 0 or win_s <= 0:
+        raise ValueError("hop_s and win_s must be finite and positive")
+    hop = max(1, int(round(stimulus.sr_hz * hop_s)))
+    win = max(1, int(round(stimulus.sr_hz * win_s)))
+    effective_hop = hop / stimulus.sr_hz
+    effective_win = win / stimulus.sr_hz
     if backend == "lpc_autocorr":
-        raw = _formants_lpc(stimulus, hop_s=hop_s, win_s=win_s, order=lpc_order)
+        raw = _formants_lpc(stimulus, hop_s=effective_hop, win_s=effective_win, order=lpc_order)
     elif backend == "parselmouth":
-        raw = _formants_parselmouth(stimulus, hop_s=hop_s, win_s=win_s)
+        raw = _formants_parselmouth(stimulus, hop_s=effective_hop, win_s=effective_win)
     else:
         raise ValueError("backend must be 'lpc_autocorr' or 'parselmouth'")
     deltas = np.diff(raw[:, :3], axis=0, prepend=raw[:1, :3])
     values = np.concatenate([raw, deltas], axis=1).astype(np.float32)
+    starts = np.arange(len(raw)) * hop
+    local_times = (starts + win / 2.0) / stimulus.sr_hz
+    bounds = stimulus.start_offset_s + np.column_stack([starts, starts + win]) / stimulus.sr_hz
+    times = stimulus.start_offset_s + local_times
     if voicing_gate:
-        pitch = audio_pitch(stimulus, hop_s=hop_s, win_s=max(win_s, 0.04))
-        n = min(values.shape[0], pitch.values.shape[0])
-        voiced = pitch.values[:n, 1] > 0.3
-        values = values[:n]
-        values[~voiced] = 0.0
-    times = times_from_hop(
-        values.shape[0],
-        hop_s,
-        start_offset_s=stimulus.start_offset_s,
-        center=True,
-        window_s=win_s,
-    )
-    extra: dict[str, Any] = {"backend": backend}
+        pitch_win = max(win, int(round(stimulus.sr_hz * 0.04))) / stimulus.sr_hz
+        pitch = audio_pitch(replace(stimulus, start_offset_s=0.0), hop_s=effective_hop, win_s=pitch_win)
+        # Both clocks use integer or half-integer sample centers. Normalize
+        # floating arithmetic so equal edge centers are not treated as outside.
+        pitch_times = np.rint(pitch.times_s * (2 * stimulus.sr_hz)) / (2 * stimulus.sr_hz)
+        strength = np.interp(
+            local_times, pitch_times,
+            pitch.values[:, 1], left=0.0, right=0.0,
+        )
+        values[strength <= 0.3] = 0.0
+    extra: dict[str, Any] = {
+        "backend": backend,
+        "effective_hop_s": effective_hop,
+        "effective_window_s": effective_win,
+        "right_padding_samples": max(0, win - len(stimulus.samples)) if backend == "lpc_autocorr" else 0,
+        "voicing_alignment": "linear_strength_at_formant_centers_zero_outside" if voicing_gate else "disabled",
+        "voicing_threshold": 0.3 if voicing_gate else None,
+        "voicing_window_s": pitch_win if voicing_gate else None,
+    }
     md = add_execution_provenance(
         extractor_metadata(
             "audio.formants",
+            code_version="formants-v2",
             params={
                 "hop_s": hop_s,
                 "win_s": win_s,
@@ -208,8 +234,12 @@ def audio_formants(
         coords={"feature": list(FORMANT_NAMES)},
         metadata=md,
         timebase=TimebaseSpec(
-            kind="audio_hop", hop_s=hop_s, sampling_rate_hz=1.0 / hop_s
+            kind="audio_hop", hop_s=effective_hop, sampling_rate_hz=1.0 / effective_hop,
+            # Praat values are interpolated queries of its own Gaussian-window
+            # analysis, not summaries of these LPC sample bounds.
+            window_s=effective_win if backend == "lpc_autocorr" else None,
         ),
+        time_bounds_s=bounds if backend == "lpc_autocorr" else None,
     )
 
 
