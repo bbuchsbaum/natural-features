@@ -1,6 +1,6 @@
 # Vocal F0 in mixed music
 
-**Experimental and unqualified:** the frozen v2 profile failed its singer-disjoint test on false voicing. Pitch accuracy alone does not establish supported vocal F0. Do not treat this candidate as a qualified vocal-pitch bank.
+**Experimental and unqualified:** the v2 profile failed its singer-disjoint test on false voicing. The new v6 hybrid passed the false-voicing limits on six fresh singers but failed pitch accuracy and voiced recall in the −6 dB mixtures. Do not treat either configuration as a qualified vocal-pitch bank.
 
 `audio.vocal_f0` selects the `vocals` stem of Demucs 4.0.1 `htdemucs`, then
 estimates its dominant F0 with torchcrepe 0.0.24 `full`. It is a separate optional
@@ -280,12 +280,44 @@ the local candidate veto; `method.temporal_envelope`, the twelve-profile grid,
 and the implementation define the complete v6 operation. The original file
 is preserved unchanged. The prospective protocol states the complete rule.
 
-The selected configuration must pass independent rescoring and exact real-model
-replay checks before its source, runner, scorer and prospective protocol are
-committed. The reserved singer-disjoint IDs are 15, 18, 19, 20, 21 and 22,
-selected from metadata before outcomes; accompaniment starts at 20 seconds.
-Their test is one shot, with unchanged gates and no subsequent tuning or
-replacement test. The public defaults remain the unqualified v2 profile.
+Independent rescoring reproduced all 720 scores and verified all 60 selected
+native artifacts. A fresh real-model run on development excerpt 1 at −6 dB
+matched replay exactly across all 17 columns and native times. The selected
+configuration, extractor, runner, scorer and prospective protocol were frozen
+in commit `061a1c49c9eb6d7545d72365ade26f9b1e5c0f6b` before the new test.
+
+The one-shot singer-disjoint test on IDs 15, 18, 19, 20, 21 and 22 **failed**.
+These IDs were selected from metadata before outcomes, with accompaniment
+starting at 20 seconds. All 30 conditions completed without inference errors;
+all six analytic controls passed. The unchanged 0.80 raw-pitch-accuracy and
+voiced-recall limits failed in the −6 dB mixtures:
+
+| Fresh v6 condition | Raw pitch accuracy | Voiced recall | False voicing |
+|---|---:|---:|---:|
+| Solo | 0.8722 | 0.8803 | 0.0348 |
+| 0 dB mixture | 0.8518 | 0.8659 | 0.0556 |
+| −6 dB mixture | 0.7566 | 0.7808 | 0.0416 |
+
+The remaining gates passed, including zero false acceptance on backing-only
+and digital silence. The new and v2 held-out results use different singers
+and backing windows; they do not establish a paired improvement estimate.
+Independent rescoring reconstructed all 30 rendered inputs byte-for-byte,
+checked 29,385 native prediction rows and reproduced every empirical score
+and the two failed gates. The analytic-control review checked the retained
+aggregate results; it did not independently regenerate their predictions.
+No parameters were changed and no replacement test was run after the result.
+The public defaults remain the unqualified v2 profile. These new singers are
+now consumed data and cannot qualify a later method independently.
+
+The exact protocol and result are
+`tests/benchmarks/thresholds/vocal_f0_holdout_v6.json` and
+`tests/benchmarks/reports/vocal_f0_holdout_v6.json`. Reproduction uses the
+same qualification command with `--protocol` set to that manifest. The
+runner verifies the frozen extractor, scorer and runner hashes before reading
+test assets; historical source commit `061a1c4` retains those identities.
+Further work must recover supported singing in difficult mixtures while
+keeping false voicing controlled. A passing development profile alone was
+insufficient, despite independent replay verification.
 
 Evaluation covers the named excerpts and controlled mixtures only.
 It does not establish performance on commercial mixes, choirs, every singer,

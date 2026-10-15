@@ -1,0 +1,369 @@
+{
+  "schema": "VocalF0HeldoutReviewEvidence/v6",
+  "qualification_passed": false,
+  "independent_review": {
+    "analytic_aggregation_verified": true,
+    "analytic_limitation": "Runner retains aggregate analytic metrics only. Verified six-case completeness, denominators, metric consistency and worst interior median aggregation; did not rerun model or independently reproduce analytic predictions.",
+    "analytic_native_predictions_independently_rescored": false,
+    "denominators": [
+      {
+        "condition": "mixture_0db",
+        "excerpt_id": 15,
+        "n_joint_voiced": 734,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 672,
+        "n_reference_voiced": 1051,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "mixture_minus6db",
+        "excerpt_id": 15,
+        "n_joint_voiced": 566,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 672,
+        "n_reference_voiced": 1051,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "backing",
+        "excerpt_id": 15,
+        "n_joint_voiced": 0,
+        "n_reference": 1000,
+        "n_reference_unvoiced": 1000,
+        "n_reference_voiced": 0,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "silence",
+        "excerpt_id": 15,
+        "n_joint_voiced": 0,
+        "n_reference": 1000,
+        "n_reference_unvoiced": 1000,
+        "n_reference_voiced": 0,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "solo",
+        "excerpt_id": 15,
+        "n_joint_voiced": 808,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 672,
+        "n_reference_voiced": 1051,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "mixture_0db",
+        "excerpt_id": 18,
+        "n_joint_voiced": 709,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 942,
+        "n_reference_voiced": 781,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "mixture_minus6db",
+        "excerpt_id": 18,
+        "n_joint_voiced": 681,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 942,
+        "n_reference_voiced": 781,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "backing",
+        "excerpt_id": 18,
+        "n_joint_voiced": 0,
+        "n_reference": 1000,
+        "n_reference_unvoiced": 1000,
+        "n_reference_voiced": 0,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "silence",
+        "excerpt_id": 18,
+        "n_joint_voiced": 0,
+        "n_reference": 1000,
+        "n_reference_unvoiced": 1000,
+        "n_reference_voiced": 0,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "solo",
+        "excerpt_id": 18,
+        "n_joint_voiced": 717,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 942,
+        "n_reference_voiced": 781,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "mixture_0db",
+        "excerpt_id": 19,
+        "n_joint_voiced": 955,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 700,
+        "n_reference_voiced": 1023,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "mixture_minus6db",
+        "excerpt_id": 19,
+        "n_joint_voiced": 840,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 700,
+        "n_reference_voiced": 1023,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "backing",
+        "excerpt_id": 19,
+        "n_joint_voiced": 0,
+        "n_reference": 1000,
+        "n_reference_unvoiced": 1000,
+        "n_reference_voiced": 0,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "silence",
+        "excerpt_id": 19,
+        "n_joint_voiced": 0,
+        "n_reference": 1000,
+        "n_reference_unvoiced": 1000,
+        "n_reference_voiced": 0,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "solo",
+        "excerpt_id": 19,
+        "n_joint_voiced": 963,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 700,
+        "n_reference_voiced": 1023,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "mixture_0db",
+        "excerpt_id": 20,
+        "n_joint_voiced": 829,
+        "n_reference": 1502,
+        "n_reference_unvoiced": 564,
+        "n_reference_voiced": 938,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "mixture_minus6db",
+        "excerpt_id": 20,
+        "n_joint_voiced": 785,
+        "n_reference": 1502,
+        "n_reference_unvoiced": 564,
+        "n_reference_voiced": 938,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "backing",
+        "excerpt_id": 20,
+        "n_joint_voiced": 0,
+        "n_reference": 872,
+        "n_reference_unvoiced": 872,
+        "n_reference_voiced": 0,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "silence",
+        "excerpt_id": 20,
+        "n_joint_voiced": 0,
+        "n_reference": 872,
+        "n_reference_unvoiced": 872,
+        "n_reference_voiced": 0,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "solo",
+        "excerpt_id": 20,
+        "n_joint_voiced": 836,
+        "n_reference": 1502,
+        "n_reference_unvoiced": 564,
+        "n_reference_voiced": 938,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "mixture_0db",
+        "excerpt_id": 21,
+        "n_joint_voiced": 1106,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 418,
+        "n_reference_voiced": 1305,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "mixture_minus6db",
+        "excerpt_id": 21,
+        "n_joint_voiced": 957,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 418,
+        "n_reference_voiced": 1305,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "backing",
+        "excerpt_id": 21,
+        "n_joint_voiced": 0,
+        "n_reference": 1000,
+        "n_reference_unvoiced": 1000,
+        "n_reference_voiced": 0,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "silence",
+        "excerpt_id": 21,
+        "n_joint_voiced": 0,
+        "n_reference": 1000,
+        "n_reference_unvoiced": 1000,
+        "n_reference_voiced": 0,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "solo",
+        "excerpt_id": 21,
+        "n_joint_voiced": 1123,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 418,
+        "n_reference_voiced": 1305,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "mixture_0db",
+        "excerpt_id": 22,
+        "n_joint_voiced": 855,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 798,
+        "n_reference_voiced": 925,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "mixture_minus6db",
+        "excerpt_id": 22,
+        "n_joint_voiced": 817,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 798,
+        "n_reference_voiced": 925,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "backing",
+        "excerpt_id": 22,
+        "n_joint_voiced": 0,
+        "n_reference": 1000,
+        "n_reference_unvoiced": 1000,
+        "n_reference_voiced": 0,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "silence",
+        "excerpt_id": 22,
+        "n_joint_voiced": 0,
+        "n_reference": 1000,
+        "n_reference_unvoiced": 1000,
+        "n_reference_voiced": 0,
+        "n_unmatched": 0
+      },
+      {
+        "condition": "solo",
+        "excerpt_id": 22,
+        "n_joint_voiced": 834,
+        "n_reference": 1723,
+        "n_reference_unvoiced": 798,
+        "n_reference_voiced": 925,
+        "n_unmatched": 0
+      }
+    ],
+    "empirical_rows_independently_scored": 30,
+    "errors": [],
+    "failed_gates": [
+      "mixture_minus6db.raw_pitch_accuracy",
+      "mixture_minus6db.voicing_recall"
+    ],
+    "freeze_revision": "061a1c49c9eb6d7545d72365ade26f9b1e5c0f6b",
+    "frozen_sources": {
+      "scripts/qualify_vocal_f0.py": "139656428df7324df65b00ecc6c8a42156bb6752c33e1a2a2f826de2d6a08d48",
+      "src/natural_features/features/audio/vocal_f0.py": "cf166895a44398808cefe86e2da41559f4c8dd1ae61e10d9462b95bd9c1b4d2c",
+      "src/natural_features/features/audio/vocal_f0_benchmark.py": "23670160c8e70b605a304281d6be653e39178b6ae5dc7a8facdc7cfbc35bcdde"
+    },
+    "input_renders_verified": 30,
+    "native_rows_verified": 29385,
+    "new_model_inference": false,
+    "passed": true,
+    "protocol_sha256": "c3f9820c1eaaa542e78bdcb4b05734724259721b92dda28bbc45b86ddd195565",
+    "qualification_passed": false,
+    "qualified_scope": "unqualified",
+    "report_sha256": "f62002e2cb0b617c38334bf5f65bcddf8479fe9fce4fea944a574869d4969621",
+    "schema": "IndependentVocalF0HeldoutReview/v1",
+    "scoring_production_modules_imported": false,
+    "script_sha256": "b546f2769f9302e9c6c9a11e5dc591e7bd876e6824e6230f576f61484c18e69e",
+    "summary": {
+      "backing": {
+        "gross_pitch_error_rate": null,
+        "median_abs_cents_error": null,
+        "octave_error_rate": null,
+        "raw_pitch_accuracy": null,
+        "voicing_false_alarm_rate": 0.0,
+        "voicing_recall": null
+      },
+      "mixture_0db": {
+        "gross_pitch_error_rate": 0.016921564835438257,
+        "median_abs_cents_error": 6.275722670097672,
+        "octave_error_rate": 0.010492680499233806,
+        "raw_pitch_accuracy": 0.8518191290142996,
+        "voicing_false_alarm_rate": 0.055592685103472296,
+        "voicing_recall": 0.8658918401692012
+      },
+      "mixture_minus6db": {
+        "gross_pitch_error_rate": 0.032093893729283014,
+        "median_abs_cents_error": 6.645986024613992,
+        "octave_error_rate": 0.019025635956546445,
+        "raw_pitch_accuracy": 0.7566366120520597,
+        "voicing_false_alarm_rate": 0.041597071220197124,
+        "voicing_recall": 0.7808452825666242
+      },
+      "silence": {
+        "gross_pitch_error_rate": null,
+        "median_abs_cents_error": null,
+        "octave_error_rate": null,
+        "raw_pitch_accuracy": null,
+        "voicing_false_alarm_rate": 0.0,
+        "voicing_recall": null
+      },
+      "solo": {
+        "gross_pitch_error_rate": 0.009569061969341137,
+        "median_abs_cents_error": 5.7976351566853,
+        "octave_error_rate": 0.0078269555408463,
+        "raw_pitch_accuracy": 0.8721594743394195,
+        "voicing_false_alarm_rate": 0.03477810348903012,
+        "voicing_recall": 0.8802683989437151
+      }
+    },
+    "versions": {
+      "demucs": "4.0.1",
+      "scipy": "1.17.0",
+      "torch": "2.14.1",
+      "torchcrepe": "0.0.24"
+    },
+    "waveform_limitation": "Native artifacts retain local A/B/C and support, not separated waveform. Verified statistic arithmetic and support geometry; did not rerun separation or independently reconstruct heldout local A/B/C from stems."
+  },
+  "review_receipt": {
+    "path": "/private/tmp/natural-features-vocal-assets/v6-holdout-independent-review/receipt.json",
+    "sha256": "9d5ac518c7b70348ef9b4b4b8975ad66ad87259688da9a3fc05f5345e369af09"
+  },
+  "review_script": {
+    "path": "/private/tmp/natural-features-vocal-assets/v6-holdout-independent-review/rescore.py",
+    "sha256": "b546f2769f9302e9c6c9a11e5dc591e7bd876e6824e6230f576f61484c18e69e"
+  },
+  "qualification_log": {
+    "path": "/private/tmp/nf-v6-holdout.log",
+    "sha256": "fe119d5b395d8f4fabc1f00f74807077463d7bb19d649dd1616bf5d0bb873d8a"
+  },
+  "qualification_exit_code": 1,
+  "prior_evidence_retained": true,
+  "post_test_parameter_changes": false,
+  "replacement_test_performed": false
+}
