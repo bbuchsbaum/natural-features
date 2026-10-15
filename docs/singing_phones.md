@@ -77,9 +77,10 @@ singing mixed at 0 dB with known instrumental backing, and the canonical
 Demucs vocal stem from that mixture. Two fixed models yield 32 cases:
 [base English CTC](https://huggingface.co/bobboyms/wav2vec2-base-en-phoneme-ctc-41h/tree/04111e5d2ee8030f715b057f076defa227827454)
 and [large multilingual CTC](https://huggingface.co/facebook/wav2vec2-lv-60-espeak-cv-ft/tree/ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4).
-No model is selected from these results. Singing annotations are manual;
-read-speech boundaries are automatically aligned and provide a lower-grade
-diagnostic comparator. The fixed crop is not matched for linguistic content
+No model is selected from these results. The [original corpus paper](https://apsipa.org/proceedings/2013/papers/364_NUS-corpus-Duan-2927261.pdf)
+describes manual singing annotations and automatically aligned read-speech
+boundaries; the latter provide a lower-grade diagnostic comparator.
+The fixed crop is not matched for linguistic content
 between spoken and sung versions, so condition differences are descriptive.
 
 Four-second composition windows and two-second ordered bins are benchmark
@@ -119,6 +120,14 @@ PYTHONPATH=src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python \
 verified before use. Neither the 96/200 downstream support rule nor neural
 fit quality supplies an upstream acceptance threshold. Fresh data and a
 pretraining-overlap audit remain necessary for qualification.
+
+The pinned large checkpoint's tokenizer also requires `phonemizer` and an
+eSpeak shared library at load time, even though reference text is never sent
+to it. The recorded run used `phonemizer==3.3.0` and `protobuf==6.33.5`, with
+`PHONEMIZER_ESPEAK_LIBRARY` pointing to the installed library. See the
+[upstream installation instructions](https://bootphon.github.io/phonemizer/install.html)
+if automatic library discovery fails. A missing dependency is a runtime
+failure, not a recognition score; retain that receipt before rerunning.
 
 If retained posterior supports have native-time gaps, greedy CTC collapse resets
 at each gap. Reports mark this as a partial path with `full_path_observed=false`

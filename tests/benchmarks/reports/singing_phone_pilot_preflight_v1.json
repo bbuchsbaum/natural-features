@@ -1,0 +1,301 @@
+{
+  "schema": "SingingPhonePilotRuntimeFailure/v1",
+  "state": "development",
+  "qualified": false,
+  "source_report_sha256": "6f0087900919a3c748de5120d8432549ebd8f335d82442efd74b4bf3b078911d",
+  "manifest_sha256": "c84dd4c4a6979098674d5b899864722f8faaf13c6d75a4e1fce3a1f07ea951db",
+  "n_items": 32,
+  "n_failed": 16,
+  "items": [
+    {
+      "id": "ADIZ_01_read_clean_base",
+      "error": null,
+      "artifact": {
+        "generated_posterior": {
+          "path": "/private/tmp/nf-singing-phone-native-v1/ADIZ_01_read_clean_base.npz",
+          "sha256": "277af208b4283b779c4ee7bac1130cac289bae05063d537068cbb4a7fdf6d03a"
+        }
+      }
+    },
+    {
+      "id": "ADIZ_01_read_clean_large",
+      "error": {
+        "message": "phoneme CTC load failed: model '/private/tmp/nf-singing-reference-assets/models/large' is unavailable",
+        "type": "BackendLoadError"
+      },
+      "artifact": null
+    },
+    {
+      "id": "ADIZ_01_sing_clean_base",
+      "error": null,
+      "artifact": {
+        "generated_posterior": {
+          "path": "/private/tmp/nf-singing-phone-native-v1/ADIZ_01_sing_clean_base.npz",
+          "sha256": "4b12a26e1649a735c377c65c9f15cc3bb5eca7f5ee728d9a9b0e0c728e76bba3"
+        }
+      }
+    },
+    {
+      "id": "ADIZ_01_sing_clean_large",
+      "error": {
+        "message": "phoneme CTC load failed: model '/private/tmp/nf-singing-reference-assets/models/large' is unavailable",
+        "type": "BackendLoadError"
+      },
+      "artifact": null
+    },
+    {
+      "id": "ADIZ_01_sing_mixture_0db_base",
+      "error": null,
+      "artifact": {
+        "generated_posterior": {
+          "path": "/private/tmp/nf-singing-phone-native-v1/ADIZ_01_sing_mixture_0db_base.npz",
+          "sha256": "d3fff60d0f2834ba8841c9aabfd260c048650362cd17dc8b34702f9eb286a094"
+        }
+      }
+    },
+    {
+      "id": "ADIZ_01_sing_mixture_0db_large",
+      "error": {
+        "message": "phoneme CTC load failed: model '/private/tmp/nf-singing-reference-assets/models/large' is unavailable",
+        "type": "BackendLoadError"
+      },
+      "artifact": null
+    },
+    {
+      "id": "ADIZ_01_sing_stem_0db_base",
+      "error": null,
+      "artifact": {
+        "generated_posterior": {
+          "path": "/private/tmp/nf-singing-phone-native-v1/ADIZ_01_sing_stem_0db_base.npz",
+          "sha256": "e8b8be25d3d4ac30e0bf691837d68b622b41da9d1822424d76855fab1367f0e1"
+        }
+      }
+    },
+    {
+      "id": "ADIZ_01_sing_stem_0db_large",
+      "error": {
+        "message": "phoneme CTC load failed: model '/private/tmp/nf-singing-reference-assets/models/large' is unavailable",
+        "type": "BackendLoadError"
+      },
+      "artifact": null
+    },
+    {
+      "id": "JLEE_05_read_clean_base",
+      "error": null,
+      "artifact": {
+        "generated_posterior": {
+          "path": "/private/tmp/nf-singing-phone-native-v1/JLEE_05_read_clean_base.npz",
+          "sha256": "bc21d8362b0814784d15e9d9c731ea94c87523c2f4863332d0714ed26785ffe4"
+        }
+      }
+    },
+    {
+      "id": "JLEE_05_read_clean_large",
+      "error": {
+        "message": "phoneme CTC load failed: model '/private/tmp/nf-singing-reference-assets/models/large' is unavailable",
+        "type": "BackendLoadError"
+      },
+      "artifact": null
+    },
+    {
+      "id": "JLEE_05_sing_clean_base",
+      "error": null,
+      "artifact": {
+        "generated_posterior": {
+          "path": "/private/tmp/nf-singing-phone-native-v1/JLEE_05_sing_clean_base.npz",
+          "sha256": "3c1ec58690d2f965e20f6947d2c59d8521268c668456a0e134501f0a126d7be0"
+        }
+      }
+    },
+    {
+      "id": "JLEE_05_sing_clean_large",
+      "error": {
+        "message": "phoneme CTC load failed: model '/private/tmp/nf-singing-reference-assets/models/large' is unavailable",
+        "type": "BackendLoadError"
+      },
+      "artifact": null
+    },
+    {
+      "id": "JLEE_05_sing_mixture_0db_base",
+      "error": null,
+      "artifact": {
+        "generated_posterior": {
+          "path": "/private/tmp/nf-singing-phone-native-v1/JLEE_05_sing_mixture_0db_base.npz",
+          "sha256": "510d8a06146f5e9992263f5223d1b33746887838e5fcc7848d15cabc32d16b80"
+        }
+      }
+    },
+    {
+      "id": "JLEE_05_sing_mixture_0db_large",
+      "error": {
+        "message": "phoneme CTC load failed: model '/private/tmp/nf-singing-reference-assets/models/large' is unavailable",
+        "type": "BackendLoadError"
+      },
+      "artifact": null
+    },
+    {
+      "id": "JLEE_05_sing_stem_0db_base",
+      "error": null,
+      "artifact": {
+        "generated_posterior": {
+          "path": "/private/tmp/nf-singing-phone-native-v1/JLEE_05_sing_stem_0db_base.npz",
+          "sha256": "e7b9bcaec718d8a5dc4e19bb2945045bdc2ad56fe6aad1f962e5b98f91bcbd1b"
+        }
+      }
+    },
+    {
+      "id": "JLEE_05_sing_stem_0db_large",
+      "error": {
+        "message": "phoneme CTC load failed: model '/private/tmp/nf-singing-reference-assets/models/large' is unavailable",
+        "type": "BackendLoadError"
+      },
+      "artifact": null
+    },
+    {
+      "id": "JTAN_07_read_clean_base",
+      "error": null,
+      "artifact": {
+        "generated_posterior": {
+          "path": "/private/tmp/nf-singing-phone-native-v1/JTAN_07_read_clean_base.npz",
+          "sha256": "52e5b6b3939aa59ab6d81ba73c393999921d066f4ba9d87a07c9bbcaf714a4ca"
+        }
+      }
+    },
+    {
+      "id": "JTAN_07_read_clean_large",
+      "error": {
+        "message": "phoneme CTC load failed: model '/private/tmp/nf-singing-reference-assets/models/large' is unavailable",
+        "type": "BackendLoadError"
+      },
+      "artifact": null
+    },
+    {
+      "id": "JTAN_07_sing_clean_base",
+      "error": null,
+      "artifact": {
+        "generated_posterior": {
+          "path": "/private/tmp/nf-singing-phone-native-v1/JTAN_07_sing_clean_base.npz",
+          "sha256": "1865398e2e115a0553d59f6a6cff35324b13d21ebde5693d42320f36324fd568"
+        }
+      }
+    },
+    {
+      "id": "JTAN_07_sing_clean_large",
+      "error": {
+        "message": "phoneme CTC load failed: model '/private/tmp/nf-singing-reference-assets/models/large' is unavailable",
+        "type": "BackendLoadError"
+      },
+      "artifact": null
+    },
+    {
+      "id": "JTAN_07_sing_mixture_0db_base",
+      "error": null,
+      "artifact": {
+        "generated_posterior": {
+          "path": "/private/tmp/nf-singing-phone-native-v1/JTAN_07_sing_mixture_0db_base.npz",
+          "sha256": "76665763cafe23a3ac3835246ef05f0ac8c9f5c9cddee130724786fa86032542"
+        }
+      }
+    },
+    {
+      "id": "JTAN_07_sing_mixture_0db_large",
+      "error": {
+        "message": "phoneme CTC load failed: model '/private/tmp/nf-singing-reference-assets/models/large' is unavailable",
+        "type": "BackendLoadError"
+      },
+      "artifact": null
+    },
+    {
+      "id": "JTAN_07_sing_stem_0db_base",
+      "error": null,
+      "artifact": {
+        "generated_posterior": {
+          "path": "/private/tmp/nf-singing-phone-native-v1/JTAN_07_sing_stem_0db_base.npz",
+          "sha256": "471e66f1a14f3a4cb77bcb4f22ac2f397e23da225a63a7c8a011f37b5ed052ee"
+        }
+      }
+    },
+    {
+      "id": "JTAN_07_sing_stem_0db_large",
+      "error": {
+        "message": "phoneme CTC load failed: model '/private/tmp/nf-singing-reference-assets/models/large' is unavailable",
+        "type": "BackendLoadError"
+      },
+      "artifact": null
+    },
+    {
+      "id": "KENN_04_read_clean_base",
+      "error": null,
+      "artifact": {
+        "generated_posterior": {
+          "path": "/private/tmp/nf-singing-phone-native-v1/KENN_04_read_clean_base.npz",
+          "sha256": "779402a110d23df73b2d993689bfa3ff8c676ccdf29c9703eab241490c7d6296"
+        }
+      }
+    },
+    {
+      "id": "KENN_04_read_clean_large",
+      "error": {
+        "message": "phoneme CTC load failed: model '/private/tmp/nf-singing-reference-assets/models/large' is unavailable",
+        "type": "BackendLoadError"
+      },
+      "artifact": null
+    },
+    {
+      "id": "KENN_04_sing_clean_base",
+      "error": null,
+      "artifact": {
+        "generated_posterior": {
+          "path": "/private/tmp/nf-singing-phone-native-v1/KENN_04_sing_clean_base.npz",
+          "sha256": "1bda6a499cf879eb4c79d998c270b0165e212012775ada52a31b7284bf3492d4"
+        }
+      }
+    },
+    {
+      "id": "KENN_04_sing_clean_large",
+      "error": {
+        "message": "phoneme CTC load failed: model '/private/tmp/nf-singing-reference-assets/models/large' is unavailable",
+        "type": "BackendLoadError"
+      },
+      "artifact": null
+    },
+    {
+      "id": "KENN_04_sing_mixture_0db_base",
+      "error": null,
+      "artifact": {
+        "generated_posterior": {
+          "path": "/private/tmp/nf-singing-phone-native-v1/KENN_04_sing_mixture_0db_base.npz",
+          "sha256": "918b4002b396684a1b5b1a5f898de22b124eb859dcb24124e26a6b1d5df63b2f"
+        }
+      }
+    },
+    {
+      "id": "KENN_04_sing_mixture_0db_large",
+      "error": {
+        "message": "phoneme CTC load failed: model '/private/tmp/nf-singing-reference-assets/models/large' is unavailable",
+        "type": "BackendLoadError"
+      },
+      "artifact": null
+    },
+    {
+      "id": "KENN_04_sing_stem_0db_base",
+      "error": null,
+      "artifact": {
+        "generated_posterior": {
+          "path": "/private/tmp/nf-singing-phone-native-v1/KENN_04_sing_stem_0db_base.npz",
+          "sha256": "8469afff288283ac4a6cc9346732f7a1eae3b25949a464f44cb9f9f1ac0d0543"
+        }
+      }
+    },
+    {
+      "id": "KENN_04_sing_stem_0db_large",
+      "error": {
+        "message": "phoneme CTC load failed: model '/private/tmp/nf-singing-reference-assets/models/large' is unavailable",
+        "type": "BackendLoadError"
+      },
+      "artifact": null
+    }
+  ],
+  "diagnosis": "Pinned large tokenizer could not load because phonemizer/protobuf were absent. Exception chain independently inspected. Not a recognition score.",
+  "resolution": "Install phonemizer3.3.0/protobuf6.33.5; point PHONEMIZER_ESPEAK_LIBRARY to existinglib; rerun identical32itemmanifest without source/model/scoringchanges. Originalreport/nativefiles retained."
+}
