@@ -91,6 +91,8 @@ def verify_protocol(protocol):
         raise ValueError('this comparison permits consumed-data development only')
     if protocol['rmvpe_threshold'] != .03 or protocol['activity_threshold'] != .51:
         raise ValueError('fixed upstream diagnostic thresholds changed')
+    if protocol['torch_threads'] != 4:
+        raise ValueError('canonical replay requires the historical four-thread runtime')
     for name, expected in protocol['frozen_sources'].items():
         if digest(ROOT / name) != expected:
             raise ValueError('frozen source mismatch: ' + name)
@@ -121,9 +123,9 @@ def main():
     ap.add_argument('--out-json', type=Path, required=True)
     args = ap.parse_args()
     import torch
-    torch.set_num_threads(1)
     protocol = json.loads(args.protocol.read_text())
     inherited = verify_protocol(protocol)
+    torch.set_num_threads(protocol['torch_threads'])
     runner = _runner()
     records, analytic = load_records(inherited, args.assets, runner)
     protocol_hash = digest(args.protocol)
@@ -132,7 +134,7 @@ def main():
               'protocol_sha256': protocol_hash, 'protocol': protocol, 'errors': [], 'rows': [],
               'canonical_analytic': analytic, 'fresh_data_consumed': False,
               'activity_reference_limits': 'Known nonvocal controls and pitched singing positives only; F0-unvoiced frames remain unknown for vocal presence.',
-              'torch_threads': 1}
+              'torch_threads': torch.get_num_threads()}
     metrics_by_variant = {}
     for record in records:
         try:

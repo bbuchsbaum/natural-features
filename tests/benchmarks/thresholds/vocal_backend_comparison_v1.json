@@ -11,7 +11,7 @@
     "sha256": "26099428ce8de69c703eb383ed48577f2af478bb7c69eba875ea247bbef85fc4"
   },
   "frozen_sources": {
-    "scripts/compare_vocal_backends.py": "8014c67785beffc68938f7d79bbbb127cf8433a2aebc7b1d10dd8856927728d8",
+    "scripts/compare_vocal_backends.py": "645bdb7e0aaaa3a98e7d85c7a3f685b483b744c1092aa300165211835e1965e5",
     "scripts/calibrate_vocal_voicing.py": "66bac92805d8ea3006b70eeddc1661b78a3a29bfade441a69b79b0d3eb5c9872",
     "scripts/calibrate_vocal_f0.py": "f24e7bc77388e3dbe6b897a830972841a45c4ad06b6e71e275198d155332fb86",
     "scripts/qualify_vocal_f0.py": "139656428df7324df65b00ecc6c8a42156bb6752c33e1a2a2f826de2d6a08d48",
@@ -51,5 +51,7 @@
     "Activity reference positives from F0 do not cover unvoiced consonants; F0-zero is unknown.",
     "Training overlap with candidate models is not established.",
     "RMVPE BiGRU uses whole-input context; CPJKU uses115 magnitude frames; no shared causal claim."
-  ]
+  ],
+  "torch_threads": 4,
+  "runtime_amendment": "Initial preflight at ff09f76 stopped before candidate scoring: thread1 canonical float32 drift. Match all historical reports thread4; preserve original tolerance and failed receipt. No accuracy gate or candidate threshold changed."
 }
