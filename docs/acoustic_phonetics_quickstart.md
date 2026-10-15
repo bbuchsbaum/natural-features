@@ -90,6 +90,13 @@ input; high conditional phone probability alone is not evidence of speech or of
 correct phone recognition in music. Articulatory mappings preserve frame bounds,
 clock context and source metadata.
 
+For singing, use the [reference benchmark recipe](singing_phones.md) to audit
+token roles, mapping coverage, raw posterior pooling, free recognition and
+temporal summaries. Its consumed NUS-48E pilot is development evidence;
+phonetic support does not depend on vocal-F0 acceptance. The separate
+[vocal pitch/activity comparison](vocal_backend_comparison.md) evaluates
+experimental pitch and activity evidence against the canonical PR #23 route.
+
 `audio.prosody` now computes energy, pitch and spectral controls on common
 sample windows of at least 40 ms. This changes its former 25 ms energy/spectral
 windows: the old combination mixed 25 ms and 40 ms centers by row index. Requested
