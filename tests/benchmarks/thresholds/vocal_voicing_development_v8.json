@@ -1,0 +1,71 @@
+{
+  "schema": "VocalVoicingDevelopmentProtocol/v8",
+  "purpose": "Adaptive development after v7: complete fixed-score zero-switch threshold search with nested singer selection and descriptive error audit. No fresh data, no refits, no neural inference. All historical failures remain unchanged.",
+  "source_commit": "b819fdf9a60f49b840b3e21a0c2c66e44e4082c0",
+  "frozen_inputs": {
+    "scripts/calibrate_vocal_voicing.py": "66bac92805d8ea3006b70eeddc1661b78a3a29bfade441a69b79b0d3eb5c9872",
+    "src/natural_features/features/audio/vocal_voicing.py": "898ef48a5061271a16134e0c0c9739b2b7b7425c29d3c89ebeb3fa9d4837e110",
+    "src/natural_features/features/audio/vocal_f0.py": "cf166895a44398808cefe86e2da41559f4c8dd1ae61e10d9462b95bd9c1b4d2c",
+    "src/natural_features/features/audio/vocal_f0_benchmark.py": "23670160c8e70b605a304281d6be653e39178b6ae5dc7a8facdc7cfbc35bcdde",
+    "tests/benchmarks/thresholds/vocal_voicing_development_v7.json": "26099428ce8de69c703eb383ed48577f2af478bb7c69eba875ea247bbef85fc4",
+    "tests/benchmarks/reports/vocal_voicing_development_v7.json": "b760ab4c119dacf96e09e4b118bbc229791bc86a9c73d6f1275b0a9d7a51cd7e",
+    "tests/benchmarks/reports/vocal_voicing_review_v7.json": "5caa98ee66db4f68c7e4fc9a1b9cd7fbfcbf9ec4bdd3ce65881e7d9424ad1043",
+    "scripts/calibrate_vocal_f0.py": "f24e7bc77388e3dbe6b897a830972841a45c4ad06b6e71e275198d155332fb86",
+    "scripts/qualify_vocal_f0.py": "139656428df7324df65b00ecc6c8a42156bb6752c33e1a2a2f826de2d6a08d48"
+  },
+  "v7_protocol": "tests/benchmarks/thresholds/vocal_voicing_development_v7.json",
+  "v7_report": "tests/benchmarks/reports/vocal_voicing_development_v7.json",
+  "gates": {
+    "raw_pitch_accuracy_min": 0.8,
+    "voicing_recall_min": 0.8,
+    "voicing_false_alarm_rate_max": 0.1,
+    "median_abs_cents_error_max": 50.0,
+    "octave_error_rate_max": 0.05,
+    "backing_false_alarm_rate_max": 0.05,
+    "silence_false_alarm_rate_max": 0.0,
+    "analytic_median_abs_cents_error_max": 50.0
+  },
+  "model_reuse": "Reuse exact stored v7 selector, outer-refit and final-refit models, whose fitting is independent of operating threshold. Verify all90 dataset keys, fold memberships, every96base/24Platt trace ancestor singer/hash/negative-family exclusions and model/trace equality. No refit/scaling/calibration changes.",
+  "cross_validation": {
+    "outer_folds": 5,
+    "outer_assignment": "(numeric singer id -1)%5",
+    "selector_folds": 3,
+    "calibration_folds": 3,
+    "inner_assignment": "sort remaining singer ids numerically and assign round-robin; all excerpts/conditions of a singer stay together",
+    "nesting": "outer training ->3-fold profile selection; each selector-training pipeline itself uses3-fold OOF logits for Platt, then refits base. After profile selection refit calibrated pipeline on outer training; never use outer labels at any stage."
+  },
+  "purge": "at every fit/calibration/selector level exclude held singers, exact rendered audio hashes, and negative families of validation rows; inherit all ancestor exclusions. Backing family=(recording SHA,window start); silence one family across lengths. Family purge applies to negative rows, not all singing mixtures using same backing.",
+  "weights": "each singer mass1, equal excerpts then 3 singing conditions; each negative family mass1, equal unique rendered inputs, repeated copies split input mass; within stream normalize mapped admissible annotation counts; omit streams with zero admissible labels; no class balancing; normalize total mass",
+  "decoder": {
+    "switch_penalty": 0.0,
+    "score": "float64 log(clip(p,1e-12,1-1e-12)/(1-clip(p,1e-12,1-1e-12)))",
+    "decision": "admissible AND score > float64 log(threshold/(1-threshold)); equality is unvoiced",
+    "numerical_correction": "Use direct score comparison for zero-switch decoding. The v7 cumulative dynamic program can lose tiny positive emissions to rounding. Preserve v7 source and record the v8 change separately; learned scores and pitch candidates unchanged."
+  },
+  "exhaustive_states": {
+    "domain": "0<threshold<1; include all admissible native frames, including unmatched/unknown-reference frames",
+    "representatives": "Initial5e-13 admits every admissible frame. Then one threshold per distinct effective float64 score class: minimum clipped native probability in that class; assert its float64 logit equals the class score. The maximal class rejects all. Remove all ties together. These canonical representatives cover every attainable score-threshold mask; do not claim interval width or numerical margin.",
+    "metrics": "Reference-to-native mapping, annotation denominators, equal-excerpt macro means and original gates unchanged. Calculate RPA/recall/FA for every state; test conditional median and octave gates for every state passing monotone constraints. Undefined relevant metrics fail. Save complete state arrays and gate masks as hash-bound NPZ."
+  },
+  "selection": "In each outer training partition reconstruct3-fold selector OOF scores from retained models, search all canonical states, require all original gates in every represented historical group. Rank maximum minimum RPA over singing group/conditions, then minimum maximum singing FA, then larger canonical threshold. If empty use fixed(.5,0) fallback solely for diagnostics and record ineligible. Repeat same selection on all17 singers for final profile. Never use outer held labels to choose threshold.",
+  "structural_absence": "Only inner selector gates for backing/silence with zero eligible validation rows after ancestor family purge are marked not_tested:ancestor_family_purge and omitted, never counted as passed. Any present control rows must satisfy original gate. Undefined metrics or missing artifacts fail. OuterOOF must include all90 rows/all5conditions/3groups.",
+  "advancement": "All five outer selectors and final selector must be eligible; complete outer90rows/3historicalgroups must pass every original gate; inherited unchanged pitch-engine controls must pass. This is development only. No fresh qualification in this run even if it passes.",
+  "error_audit": {
+    "scope": "Post-selection descriptive audit of all54 singing outer-held streams; cannot alter labels, models, thresholds, or advancement. Compare actual v8 selected/fallback decisions with fixed diagnostic .50 and .75 anchors using same outer models. Both anchors are descriptive, not candidate choices. Compare the direct .50 masks with retained v7 DP fallback masks separately to quantify comparator-only differences.",
+    "boundary_distance": "For each reference-unvoiced annotation find nearest preceding/following known voiced annotation; nearest absolute time gap. Bins <=.05s,(.05,.10],(.10,.20],>.20; missing voiced neighbors gives infinite distance. For false negatives use nearest known unvoiced annotation analogously. Unknown annotations never become transitions or scored frames. Report unknown and unmatched annotations and absent preceding/following opposite-state neighbors explicitly; these distances are censored by clip endpoints.",
+    "categories": "For FP within.20s of voice classify post-offset if preceding voice nearest, pre-onset if following nearest, ties post-offset; farther FP are interior-rest. These annotation proximity categories do not establish causes.",
+    "outputs": "Per excerpt/singer/condition counts and unchanged scoring; pooled descriptive FP/FN boundary bins, predictor medians and quantiles for TP/FP/FN; paired identical-reference solo/mixture FP co-occurrence; high-score FP defined p>=.9 and interior-rest; persist6 longest contiguous actual-v8 FP runs of >=.20s (ties key then start), predictions/reference/predictors and paired solo/mixture context, PNG traces and original solo waveform excerpts where available. Contiguous runs split at unknown/non-FP annotations and timestamp gaps greater than1.5 times the median positive annotation step; duration includes one such median step.",
+    "scope_limits": "No auditory classification claim, no automatic relabeling, no inferred instrumental leakage from diagnostics alone. Original solo waveform context and paired-error patterns distinguish pre-existing source residual from mixture-associated error only descriptively; separator causality remains unresolved."
+  },
+  "stop_rule": "One exhaustive zero-switch analysis. Retain all outcomes; no feature/model/regularization/fold/threshold-objective changes after outcomes. If no viable threshold exists, stop threshold-only work for this score model on this development design. No fresh audio or annotations beyond the18 consumed clips.",
+  "limitations": [
+    "17 singers/18clips; frames correlated",
+    "only two known accompaniment recordings; no unseen-backing generalization claim",
+    "adaptive design informed by prior outcomes",
+    "cross-fit versus refit score-distribution difference",
+    "probabilities describe specified benchmark weighting, not population prevalence",
+    "Canonical breakpoint selection has no claimed safety margin",
+    "Reuse cross-fit models, and final refit can change score distribution",
+    "Earlier outcomes informed v8; nested CV on consumed data is not independent qualification"
+  ]
+}
