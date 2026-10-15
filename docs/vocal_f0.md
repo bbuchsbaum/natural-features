@@ -1,6 +1,6 @@
 # Vocal F0 in mixed music
 
-**Experimental and unqualified:** the v2 profile failed its singer-disjoint test on false voicing. The v6 hybrid passed the false-voicing limits on six fresh singers but failed pitch accuracy and voiced recall in the −6 dB mixtures. The v7 learned voicing experiment also failed development; no fresh recordings were used for v7. None is a qualified vocal-pitch bank.
+**Experimental and unqualified:** the v2 profile failed its singer-disjoint test on false voicing. The v6 hybrid passed the false-voicing limits on six fresh singers but failed pitch accuracy and voiced recall in the −6 dB mixtures. The v7 learned voicing experiment and v8 exhaustive nested threshold experiment also failed development. No fresh recordings were used for v7 or v8. None is a qualified vocal-pitch bank.
 
 `audio.vocal_f0` selects the `vocals` stem of Demucs 4.0.1 `htdemucs`, then
 estimates its dominant F0 with torchcrepe 0.0.24 `full`. It is a separate optional
@@ -426,6 +426,138 @@ bounds, raw candidates, and input context are preserved. The output adds
 remain available but no longer define acceptance. Public extraction defaults
 remain unchanged. The failed bounded experiment stops here, without using
 fresh qualification recordings or relaxing any acceptance limit.
+
+## Exhaustive threshold selection and error audit: version 8
+
+V8 asks whether v7 failed because its three probability thresholds were too
+coarse. It reuses the exact stored v7 base models, calibration fits, and nested
+singer partitions. No fitting, neural inference, new features, new recordings,
+or annotation changes occur. The v8 protocol and implementation were frozen
+in commit `2f9514dd36252db7c87dc95b04b866f1b5d75157` before empirical search.
+The original v7 source, protocols, and reports remain byte-identical.
+
+For zero switching cost, the intended decision is a direct comparison between
+the clipped probability's logit and the threshold's logit, with equality
+unvoiced. Pre-outcome synthetic review found that v7's cumulative dynamic
+program could lose a tiny positive emission to floating-point rounding. V8
+uses a separate direct comparator. An exact comparison of probabilities,
+admissibility, timestamps, and candidates against all retained v7 outer
+artifacts passed. At threshold 0.50, this numerical correction changed **zero**
+empirical decisions, so it does not explain the new threshold results.
+
+The search includes every distinct effective float64 score class among all
+admissible native frames, including unscored frames. Ties move together.
+One canonical probability threshold represents each class, plus an initial
+all-admissible-accepted state; the last class gives all-rejected. Integer
+annotation counts determine every accuracy, recall, and false-alarm curve.
+Conditional median and octave gates are checked for every state surviving
+those constraints. Canonical thresholds cover the possible decision masks;
+their endpoints are not estimates of a robust operating interval.
+
+Each outer threshold is selected using only its own inner-fold predictions.
+The ranking and fallback remain explicit. V8 additionally requires every
+outer selector, as well as the final selector, to find an eligible threshold.
+The exhaustive searches covered **309,082 states** across six selectors:
+
+| Selector | States | Eligible states | Selected threshold |
+|---|---:|---:|---:|
+| Outer fold 0 | 42,219 | 0 | Diagnostic fallback 0.50 |
+| Outer fold 1 | 45,617 | 1,809 | 0.7950694704520352 |
+| Outer fold 2 | 51,257 | 0 | Diagnostic fallback 0.50 |
+| Outer fold 3 | 51,219 | 749 | 0.8269110753286072 |
+| Outer fold 4 | 50,641 | 0 | Diagnostic fallback 0.50 |
+| Final all-data selector | 68,129 | 613 | 0.8590826434171935 |
+
+The final selector's chosen threshold passes its development gates: minimum
+raw pitch accuracy 0.8129546 and maximum false voicing 0.0999259. Its false
+voicing margin is only 0.0000741 below the 0.10 limit. These are inner
+cross-validation selection scores, not a passing outer evaluation or
+qualification of the final refitted model.
+
+The three failed outer selectors have disjoint monotone requirements:
+
+| Selector | First canonical threshold satisfying false-alarm limits | Last canonical threshold retaining accuracy/recall limits |
+|---|---:|---:|
+| Outer fold 0 | 0.8856594 | 0.8678928 |
+| Outer fold 2 | 0.8711233 | 0.8510561 |
+| Outer fold 4 | 0.8825440 | 0.8551883 |
+
+Thus no threshold works for those fixed inner scores under the original
+gates. This establishes a limitation of the fixed scores and development
+design, not impossibility of vocal identification. The complete outer
+evaluation also fails: five singing false-alarm gates fail, with the largest
+rate 0.1577200 in the consumed v2 group's 0 dB condition. Every outer
+pitch-accuracy, recall, median, octave, backing, and silence gate passes.
+The original development group passes all outer gates. The algorithm used
+the declared fallback in three folds; those results are diagnostic.
+
+The prespecified error audit uses all 54 outer-held singing streams and fixed
+0.50/0.75 diagnostic anchors. Counts below pool correlated annotation frames
+and are not the macro-averaged qualification metrics:
+
+| Condition | V8 false-positive annotations | Within 50 ms of observed voicing | More than 200 ms from observed voicing |
+|---|---:|---:|---:|
+| Solo | 834 | 708 (84.9%) | 24 |
+| 0 dB mixture | 1,142 | 703 (61.6%) | 236 |
+| −6 dB mixture | 996 | 589 (59.1%) | 192 |
+
+Both mixture conditions also contain many false positives absent from their
+paired solo predictions: 582 at 0 dB and 563 at −6 dB. There are six contiguous
+false-positive runs lasting at least 200 ms, all in mixtures, spanning
+approximately 238–302 ms. Hash-bound figures compare reference F0, accepted
+pitch, probabilities, and the original solo waveform; paired solo predictions
+stay low during these sustained mixture errors. This supports a descriptive
+distinction between boundary-sensitive errors and mixture-associated errors.
+It does not prove instrumental leakage or annotation mistakes. No auditory
+assessment or relabeling was performed.
+
+Rejected true singing is also weaker: at −6 dB its median source RMS is 0.0140,
+versus 0.0494 for accepted true singing. These selected-frame distributions
+describe the observed tradeoff; they are not causal estimates. Unknown labels,
+unmatched timestamps, and missing previous/next opposite-state annotations
+are recorded explicitly. Runs split across unknown/non-error annotations and
+timestamp gaps. Clip-censored examples remain identified by their context.
+
+Independent review verified all 309,082 canonical states, all 90 outputs
+(88,990 native rows), and all 120 inherited fit/calibration traces. It also
+recomputed the 162 error-audit rows, 108 paired comparisons, and six long runs,
+checked figure hashes, and compared all six waveform snippets with the exact
+original source samples. It confirmed both the feasible final selector and
+the development failure. The receipt is
+`tests/benchmarks/reports/vocal_voicing_review_v8.json`; its SHA256 is
+`59c8e9f4cb4193029d3220c506b36933c6e4000741684aea9b58b4b10d28fa68`.
+The runnable independent reviewer and its bundled common code are retained in
+`/private/tmp/natural-features-vocal-assets/v8-independent-review/`:
+`review.py` has SHA256
+`a3ab3cdb2ec8b922bc322db4e8c0e98b35920b83ad91b3db421a359ccf4445f8`,
+and `common.py` has SHA256
+`7afb1b39c9b7be2920e8acad48e6753f904dd56a3d25bd53593596ac3c1afe75`.
+The reviewer imports no production modules and performs no fits, inference,
+or fresh-data evaluation. It verifies the recorded fixed-score experiment;
+it does not independently qualify a vocal F0 model.
+
+Reproduction requires the previously retained native assets and the optional
+plotting dependency from the `docs` extra:
+
+```bash
+python scripts/calibrate_vocal_voicing_threshold.py \
+  --assets /tmp/vocal-f0-assets \
+  --artifact-dir /tmp/vocal-voicing-v8 \
+  --out-json /tmp/vocal-voicing-v8-report.json \
+  --audit-json /tmp/vocal-voicing-v8-errors.json
+```
+
+The committed reports are `tests/benchmarks/reports/vocal_voicing_development_v8.json`
+and `vocal_voicing_errors_v8.json`. Complete threshold curves and masks, all 90
+native outer outputs, figures, and source-waveform snippets are retained under
+`/private/tmp/natural-features-vocal-assets/native-v8-development`, with hashes
+in the reports. Use `apply_threshold_model` from
+`natural_features.features.audio.vocal_voicing_threshold` for explicit
+experimental application of its exported `final_profile.json`; the default
+extractor is unchanged. The overall development result is **failed**, so no
+fresh qualification follows. Threshold-only development for this fixed score
+model stops here; further work needs better evidence for singing, informed by
+the boundary and mixture error patterns.
 
 Evaluation covers the named excerpts and controlled mixtures only.
 It does not establish performance on commercial mixes, choirs, every singer,
