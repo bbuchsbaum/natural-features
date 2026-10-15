@@ -1,0 +1,50 @@
+{
+  "checks": [
+    {
+      "kind": "rmvpe",
+      "silence": false,
+      "samples": 19201,
+      "frames": 121,
+      "input_sha256": "2d0d7555521dba9faa01ba086113fb337026870d71fea7e87c968e3833e25d59",
+      "parity": "bitwise_exact"
+    },
+    {
+      "kind": "rmvpe",
+      "silence": true,
+      "samples": 19201,
+      "frames": 121,
+      "input_sha256": "3baa90acccbd584b238ba5db450fe9c3f3a212183ec5571d03d1a72290495629",
+      "parity": "bitwise_exact"
+    },
+    {
+      "kind": "activity",
+      "silence": false,
+      "samples": 26461,
+      "frames": 85,
+      "input_sha256": "fde527baf13cf0100b3b988c5d1d0ef38ff6ea1bd3e478af0413fe3161d26d55",
+      "parity": "bitwise_exact"
+    },
+    {
+      "kind": "activity",
+      "silence": true,
+      "samples": 26461,
+      "frames": 85,
+      "input_sha256": "e579374e5117bb4f56df0039f17e375093da55ef22907dcc17f1007625fa5535",
+      "parity": "bitwise_exact"
+    }
+  ],
+  "source_sha256": "b55699e68a94ce5ce2b9f232e6f7a666f9f40be76ccdf5557bec0f44fde3dc4b",
+  "review_script_sha256": "76a6675c484464ce8ed8132fb4938ce5835a8d90ee6ce9c782f0e80466e57c2b",
+  "upstream_function_source_sha256": {
+    "svd/train.py": "b430f86b50ce2b4faee42e0876d21f1f5aa23569f90f4924e29e39101eae3c0e",
+    "svd/predict.py": "1c51990b96852851efe5c58aff97567dc4bb71e936f1414daa04048536b0d75f",
+    "svd/core/audio.py": "f6ab7eb67a6a0a2237709c43651d41b8d0063a7b4a458b9841dd1c6a75f763e9"
+  },
+  "versions": {
+    "torch": "2.14.1",
+    "torchaudio": "2.11.0",
+    "numpy": "2.4.2",
+    "librosa": "0.11.0"
+  },
+  "limits": "Synthetic native-rate parity only; no historical/off-rate environment, calibration or empirical accuracy claim."
+}
