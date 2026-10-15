@@ -1,0 +1,55 @@
+{
+  "schema": "VocalBackendComparisonProtocol/v1",
+  "state": "development",
+  "qualification_allowed": false,
+  "canonical_base_commit": "91bd4a436f96b78165e1c59641a407a9f2014541",
+  "purpose": "Fixed comparison on all90 previously consumed inputs; no new qualification data, fitting or threshold search.",
+  "rmvpe_threshold": 0.03,
+  "activity_threshold": 0.51,
+  "consumed_protocol": {
+    "path": "tests/benchmarks/thresholds/vocal_voicing_development_v7.json",
+    "sha256": "26099428ce8de69c703eb383ed48577f2af478bb7c69eba875ea247bbef85fc4"
+  },
+  "frozen_sources": {
+    "scripts/compare_vocal_backends.py": "8014c67785beffc68938f7d79bbbb127cf8433a2aebc7b1d10dd8856927728d8",
+    "scripts/calibrate_vocal_voicing.py": "66bac92805d8ea3006b70eeddc1661b78a3a29bfade441a69b79b0d3eb5c9872",
+    "scripts/calibrate_vocal_f0.py": "f24e7bc77388e3dbe6b897a830972841a45c4ad06b6e71e275198d155332fb86",
+    "scripts/qualify_vocal_f0.py": "139656428df7324df65b00ecc6c8a42156bb6752c33e1a2a2f826de2d6a08d48",
+    "src/natural_features/features/audio/vocal_evidence.py": "b55699e68a94ce5ce2b9f232e6f7a666f9f40be76ccdf5557bec0f44fde3dc4b",
+    "src/natural_features/features/audio/vocal_activity_benchmark.py": "e072b44d69c02a96aedfb3a63bf66360616035edc7fc0b0fc93a148549e5b57c",
+    "src/natural_features/features/audio/vocal_f0.py": "cf166895a44398808cefe86e2da41559f4c8dd1ae61e10d9462b95bd9c1b4d2c",
+    "src/natural_features/features/audio/vocal_f0_benchmark.py": "23670160c8e70b605a304281d6be653e39178b6ae5dc7a8facdc7cfbc35bcdde"
+  },
+  "arms": [
+    "canonical",
+    "rmvpe_mixture",
+    "rmvpe_stem"
+  ],
+  "activity_masks": [
+    "none",
+    "activity_mixture",
+    "activity_stem"
+  ],
+  "selection": "none; report every fixed arm; unchanged gates; no automatic adoption",
+  "models": {
+    "rmvpe": {
+      "source_url": "https://raw.githubusercontent.com/RVC-Project/Retrieval-based-Voice-Conversion-WebUI/9f2f0559e6932c10c48642d404e7d2e771d9db43/infer/lib/rmvpe.py",
+      "checkpoint_url": "https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/e6d0c1a17da07c33557852f9dfa2bd44cc75737d/rmvpe.pt",
+      "checkpoint_sha256": "6d62215f4306e3ca278246188607209f09af3dc77ed4232efdd069798c4ec193",
+      "license": "MIT source; checkpoint repository license not independently established"
+    },
+    "activity": {
+      "source_archive_url": "https://github.com/CPJKU/veracity/archive/0983900f136173015f3c5d0b116be014edd33905.zip",
+      "checkpoint_relative_path": "dataset/jamendo/models/model_log_0mean/model.pt",
+      "checkpoint_sha256": "f09cd6a55c83c13640622ce67480443ce282e3124dd22fccee8a898bb2ba9dee",
+      "license": "MIT repository"
+    }
+  },
+  "limitations": [
+    "All40 Vocadito recordings have been examined downstream and are development evidence.",
+    "Only18 previously preserved excerpts and two accompaniment recordings are used here.",
+    "Activity reference positives from F0 do not cover unvoiced consonants; F0-zero is unknown.",
+    "Training overlap with candidate models is not established.",
+    "RMVPE BiGRU uses whole-input context; CPJKU uses115 magnitude frames; no shared causal claim."
+  ]
+}
