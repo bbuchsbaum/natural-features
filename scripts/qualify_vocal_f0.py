@@ -199,7 +199,7 @@ def _mixture(source: np.ndarray, backing: np.ndarray, mask: np.ndarray, db: floa
 def _cache_key(audio: np.ndarray, label: str, protocol_hash: str, extractor_hash: str, device: str) -> str:
     digest = hashlib.sha256()
     digest.update(np.ascontiguousarray(audio).tobytes())
-    digest.update(json.dumps({"label": label, "sr_hz": 16000, "protocol": protocol_hash, "extractor": extractor_hash, "device": device}, sort_keys=True).encode())
+    digest.update(json.dumps({"sr_hz": 16000, "protocol": protocol_hash, "extractor": extractor_hash, "device": device}, sort_keys=True).encode())
     return digest.hexdigest()
 
 
@@ -246,7 +246,7 @@ def _extract_cached(audio: np.ndarray, label: str, args: argparse.Namespace, pro
     from natural_features.features.audio.vocal_f0 import audio_vocal_f0
     feature = audio_vocal_f0(AudioStimulus.from_array(audio, 16000), separator_checkpoint=args.separator_checkpoint,
                              cache_dir=str(args.artifact_dir / "model_cache"), local_files_only=not args.download,
-                             device=args.device)
+                             device=args.device, **args.extractor_params)
     _save_feature(path, key, feature)
     return feature, {"cache_key": key, "artifact": str(path), "artifact_sha256": _digest(path), "cached": False}
 
@@ -302,11 +302,13 @@ def _gate(report: dict, gates: dict) -> tuple[bool, list[str]]:
 def _analytic_feature(audio: np.ndarray, args: argparse.Namespace) -> FeatureSeries:
     from natural_features.features.audio import vocal_f0 as vf
     runtime = vf._load_runtime(args.separator_checkpoint, str(args.artifact_dir / "model_cache"), not args.download, args.device)
-    hop = 160
-    f0, confidence = runtime.pitch(audio, hop, 50.0, 1000.0)
+    hop = round(16000 * args.extractor_params.get("hop_s", 0.01))
+    f0, confidence = runtime.pitch(audio, hop, args.extractor_params.get("fmin", 50.0), args.extractor_params.get("fmax", 1000.0))
     n = len(f0)
     if confidence.shape != f0.shape or not np.all(np.isfinite(f0)) or not np.all(np.isfinite(confidence)):
         raise ValueError("runtime.pitch produced invalid analytic output")
+    # Pitch-engine checks are fixed controls, separate from calibrated vocal
+    # identification. Analytic tones are not positive vocal examples.
     voiced = confidence >= 0.21
     values = np.column_stack([np.where(voiced, f0, np.nan), confidence, np.ones(n), np.ones(n), voiced, ~voiced, np.zeros(n), np.zeros(n)])
     return FeatureSeries(values=values, times_s=np.arange(n) * hop / 16000.0,
@@ -353,6 +355,7 @@ def _analytic_cases(args: argparse.Namespace) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--assets", type=Path, required=True)
+    parser.add_argument("--protocol", type=Path, default=ROOT / "tests/benchmarks/thresholds/vocal_f0_v1.json")
     parser.add_argument("--separator-checkpoint", type=Path, default=None)
     parser.add_argument("--out-json", type=Path, required=True)
     parser.add_argument("--artifact-dir", type=Path, required=True)
@@ -370,16 +373,26 @@ def main() -> int:
         torch.set_num_threads(args.threads)
     except ImportError:
         pass
-    protocol_path = ROOT / "tests/benchmarks/thresholds/vocal_f0_v1.json"
+    protocol_path = args.protocol.resolve()
     protocol_hash = _digest(protocol_path)
     protocol = json.loads(protocol_path.read_text(encoding="utf-8"))
+    excerpt_ids = protocol.get("excerpt_ids", list(range(1, 7)))
+    if len(excerpt_ids) != 6 or len(set(excerpt_ids)) != 6 or any(type(i) is not int or i <= 0 for i in excerpt_ids):
+        raise ValueError("protocol must specify six distinct positive excerpt IDs")
+    backing_start = float(protocol.get("backing_start_s", 0))
+    if not np.isfinite(backing_start) or backing_start < 0:
+        raise ValueError("backing_start_s must be finite and nonnegative")
+    args.extractor_params = {key: value for key, value in protocol["extractor"].items()
+                            if key in {"hop_s", "fmin", "fmax", "confidence_threshold", "source_threshold", "min_source_rms"}}
     extractor_path = ROOT / "src/natural_features/features/audio/vocal_f0.py"
     extractor_hash = _digest(extractor_path)
     report: dict = {"schema": "VocalF0QualificationReport/v1", "protocol_path": str(protocol_path), "protocol_sha256": protocol_hash,
                     "extractor_source_sha256": extractor_hash,
                     "runner_source_sha256": _digest(Path(__file__)),
                     "scorer_source_sha256": _digest(ROOT / "src/natural_features/features/audio/vocal_f0_benchmark.py"),
-                    "extractor_revision": "vocal-f0-v1", "arguments": {"device": args.device, "threads": args.threads, "download": args.download},
+                    "extractor_revision": None, "arguments": {"device": args.device, "threads": args.threads, "download": args.download},
+                    "excerpt_ids": excerpt_ids, "backing_start_s": backing_start,
+                    "extractor_parameters": args.extractor_params,
                     "per_excerpt": [], "summary": {}, "analytic": {"complete": False}, "errors": [], "completed_jobs": 0, "qualified_scope": "unqualified"}
     _atomic_json(args.out_json, report)
     try:
@@ -388,7 +401,7 @@ def main() -> int:
         for path in backing_paths.values():
             if not path.is_file():
                 raise FileNotFoundError(f"missing backing asset {path}; pass --download to fetch verified assets")
-        for excerpt in range(1, 7):
+        for excerpt in excerpt_ids:
             wav = _find_one(args.assets, f"vocadito_{excerpt}.wav")
             annotation = _find_one(args.assets, f"vocadito_{excerpt}_f0.csv")
             _verify_vocadito_member(args.assets / "vocadito.zip", wav)
@@ -403,7 +416,8 @@ def main() -> int:
             ref_times, ref_hz = ref_times[within_clip], ref_hz[within_clip]
             which_backing = "vibe" if excerpt % 2 else "sugar"
             backing, backing_sr = _read_audio(backing_paths[which_backing])
-            backing = _to_16k_mono(backing, backing_sr, len(source) / 16000.0)
+            backing = _to_16k_mono(backing, backing_sr, backing_start + len(source) / 16000.0)
+            backing = backing[round(backing_start * 16000):]
             if len(backing) < len(source):
                 raise ValueError(f"backing asset is shorter than excerpt {excerpt}")
             backing = backing[:len(source)]
@@ -416,6 +430,10 @@ def main() -> int:
             for condition, (audio, recipe) in conditions.items():
                 try:
                     feature, artifact = _extract_cached(audio, f"{excerpt}:{condition}", args, protocol_hash, extractor_hash)
+                    revision = feature.metadata["code_version"]
+                    if report["extractor_revision"] not in (None, revision):
+                        raise ValueError("inconsistent extractor revisions across artifacts")
+                    report["extractor_revision"] = revision
                     score_times, score_reference = _scoring_reference(
                         condition, ref_times, ref_hz, feature, len(audio) / 16000,
                     )

@@ -32,6 +32,10 @@ silence label. Retain native rows and validity when pooling downstream.
 | `range_edge` | Estimate within 20 cents of a search boundary; not proof the true pitch is out of range |
 | `octave_jump` | Adjacent accepted estimates differ by 1200 ± 100 cents; genuine intervals can trigger it |
 | `padded` | CREPE window extends outside supplied audio |
+| `candidate_f0_hz` | Unaccepted raw pitch candidate, including instrumental/silent frames; not vocal F0 evidence |
+| `source_rms` | Exact vocal-stem frame RMS used by the acceptance gate, retained at float64 precision |
+
+Confidence comparisons use float32; source support and RMS comparisons use float64, preserved in the diagnostic output.
 
 These thresholds are fixed engineering heuristics. Source support is not a
 singing detector probability, and periodic instruments can leak into the stem.
@@ -101,7 +105,22 @@ for each singing condition. Backing-only false acceptance must be at most
 0.05 and digital-silence acceptance must be zero. Missing assets, incomplete
 inference and empty denominators cannot produce a passing qualification.
 Unmatched or rejected reference-voiced rows remain misses in the denominators.
-Thresholds and models are not tuned on these outcomes.
+The original v1 thresholds and models were not tuned on those outcomes.
+
+The retained v1 report failed its gates: solo/0 dB false-voicing rates were
+0.380/0.228, and −6 dB voiced recall was 0.761. Its joint pitch error was about
+6 cents, illustrating why pitch error and voice/source errors are separate.
+That candidate is not qualified.
+
+Version 2 uses IDs 1–6 as explicitly declared development data after that failed
+evaluation. A single frozen 60-combination grid calibrates confidence, source
+share and RMS gates; neural models, decoder, range and temporal processing stay
+fixed. The original thresholds must first reproduce the retained v1 results.
+Only a profile satisfying every original development gate may proceed to a
+test on singer-disjoint IDs 7, 10, 11, 12, 13 and 14. Those IDs were selected
+from singer metadata alone; the instrumental test windows start at ten seconds.
+The grid is not expanded after outcomes, and the test set is not replaced.
+Calibration and holdout status are recorded in their separate reports.
 
 Qualification applies to the named excerpts and controlled mixtures only.
 It does not establish performance on commercial mixes, choirs, every singer,

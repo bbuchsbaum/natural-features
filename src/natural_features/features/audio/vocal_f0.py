@@ -27,7 +27,7 @@ SEPARATOR_SHA256 = "8726e21a993978c7ba086d3872e7608d7d5bfca646ca4aca459ffda844fa
 CREPE_SHA256 = "133225604dedd2e4005f8bbd1bd0a2ec073ba8b7a6cd31ff6d5edbbfa3539986"
 SEPARATOR_FILE = "955717e8-8726e21a.th"
 SEPARATOR_URL = "https://dl.fbaipublicfiles.com/demucs/hybrid_transformer/" + SEPARATOR_FILE
-FEATURES = ["f0_hz", "confidence", "source_support", "source_supported", "voiced", "missing", "range_edge", "octave_jump", "padded"]
+FEATURES = ["f0_hz", "confidence", "source_support", "source_supported", "voiced", "missing", "range_edge", "octave_jump", "padded", "candidate_f0_hz", "source_rms"]
 
 
 def _sha256(path):
@@ -177,6 +177,13 @@ def _frame_rms(audio, centers):
     return np.sqrt(np.maximum(0, total[centers + 1024] - total[centers]) / 1024)
 
 
+def _acceptance_masks(confidence, support, rms, valid, confidence_threshold, source_threshold, min_source_rms):
+    """Shared gate with explicit precision, preserved in diagnostic artifacts."""
+    source = (np.asarray(support, dtype=np.float64) >= source_threshold) & (np.asarray(rms, dtype=np.float64) >= min_source_rms) & valid
+    voiced = source & (np.asarray(confidence, dtype=np.float32) >= confidence_threshold)
+    return source, voiced
+
+
 def audio_vocal_f0(
     stimulus: AudioStimulus, *, separator_checkpoint: str | None = None,
     cache_dir: str | None = None, local_files_only: bool = True, device: str = "cpu",
@@ -233,18 +240,19 @@ def audio_vocal_f0(
             raise ValueError("pitch confidence is outside [0, 1]")
     except Exception as exc:
         raise BackendInferenceError("vocal_f0", "source-specific pitch inference failed") from exc
+    f0 = np.asarray(f0, dtype=np.float32)
+    confidence = np.asarray(confidence, dtype=np.float32)
     source_rms = _frame_rms(pitch_input, centers)
     total_energy = sum(_frame_rms(pitch_stems[:, j], centers) ** 2 for j in range(pitch_stems.shape[1]))
     support = source_rms ** 2 / np.maximum(total_energy, 1e-20)
     duration = len(mono) / stimulus.sr_hz
-    source = (support >= source_threshold) & (source_rms >= min_source_rms) & (centers / 16000 < duration)
-    voiced = source & (confidence >= confidence_threshold)
+    source, voiced = _acceptance_masks(confidence, support, source_rms, centers / 16000 < duration, confidence_threshold, source_threshold, min_source_rms)
     edge = (1200 * np.log2(f0 / fmin) < 20) | (1200 * np.log2(fmax / f0) < 20)
     jump = np.zeros(len(f0), dtype=bool)
     intervals = np.abs(1200 * np.diff(np.log2(f0)))
     jump[1:] = voiced[1:] & voiced[:-1] & (np.abs(intervals - 1200) <= 100)
     padded = (centers < 512) | ((centers + 512) / 16000 > duration)
-    values = np.column_stack([np.where(voiced, f0, np.nan), confidence, support, source, voiced, ~voiced, edge, jump, padded])
+    values = np.column_stack([np.where(voiced, f0, np.nan), confidence, support, source, voiced, ~voiced, edge, jump, padded, f0, source_rms])
     start = stimulus.start_offset_s
     bounds = start + np.clip(np.column_stack([centers - 512, centers + 512]) / 16000, 0, duration)
     context = computation_context(
@@ -259,7 +267,7 @@ def audio_vocal_f0(
                        "pitch_zero_padding_samples_each_side": 512},
     )
     md = extractor_metadata(
-        "audio.vocal_f0", code_version="vocal-f0-v1",
+        "audio.vocal_f0", code_version="vocal-f0-v2",
         params={"hop_s": hop_s, "fmin": fmin, "fmax": fmax, "confidence_threshold": confidence_threshold,
                 "source_threshold": source_threshold, "min_source_rms": min_source_rms},
         model_revision=f"demucs:sha256:{SEPARATOR_SHA256};crepe:sha256:{CREPE_SHA256}",
@@ -268,6 +276,9 @@ def audio_vocal_f0(
                "confidence_semantics": "CREPE periodicity; not calibrated vocal probability",
                "source_support_semantics": "vocal/sum-of-separated-stems frame energy; heuristic, not probability",
                "missing_f0": "NaN; never encoded as acoustic silence or phonology",
+               "candidate_f0_hz": "raw finite CREPE candidate before acceptance gates; diagnostic only and not vocal-F0 evidence",
+               "gate_precision": "float32 confidence; float64 source support and RMS, preserved in output diagnostics",
+               "source_rms": "Exact 1024-sample selected-stem frame RMS used by the source acceptance gate; global stem DC was removed before resampling",
                "octave_jump_semantics": "adjacent supported frames differ by 1200 +/- 100 cents; not proven octave error",
                "pitch_decoder": "local weighted +/-4 bins; undithered centers; no temporal smoothing",
                "effective_hop_s": hop / 16000, "frontend_support": "1024-sample CREPE window on resampled vocal stem",
@@ -275,7 +286,7 @@ def audio_vocal_f0(
                "versions": runtime.versions},
     )
     return FeatureSeries(
-        values=values.astype(np.float32), times_s=start + centers / 16000,
+        values=values, times_s=start + centers / 16000,
         coords={"feature": FEATURES}, metadata=md,
         timebase=TimebaseSpec(kind="audio_hop", reference=stimulus.clock, hop_s=hop / 16000, window_s=1024 / 16000),
         time_bounds_s=bounds, temporal_context=stimulus.temporal_context,

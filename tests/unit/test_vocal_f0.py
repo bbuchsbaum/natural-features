@@ -37,7 +37,8 @@ def test_source_support_clock_offset_missingness_and_context(runtime):
     np.testing.assert_allclose(a.values[:-1, 2], 0.5, atol=1e-6)
     assert np.all(a.values[:-1, 0] == 220)
     assert np.isnan(a.values[-1, 0]) and a.values[-1, 5] == 1
-    assert a.values[0, -1] == 1 and a.values[-1, -1] == 1
+    assert a.values[0, 8] == 1 and a.values[-1, 8] == 1
+    assert a.metadata["code_version"] == "vocal-f0-v2"
     assert a.clock == "song"
     assert b.metadata["computation_context"]["dependency_bounds_s"] == [[7.25, 8.25]]
     assert b.metadata["computation_context"]["policy"] == "bidirectional"
@@ -50,12 +51,16 @@ def test_silence_and_weak_source_never_become_zero_pitch(runtime):
     assert np.isnan(a.values[:, 0]).all()
     assert not a.values[:, 3:5].any()
     assert a.values[:, 5].all()
+    assert np.all(a.values[:, 9] == 220.0)
+    assert np.all(a.values[:, 10] == 0.0)
     # High pitch confidence is insufficient when the selected stem is weak.
     old = runtime.separate
     runtime.separate = lambda x: old(x) * np.array([1, 1, 1, 0.01])
     b = vf.audio_vocal_f0(_audio())
     assert np.isnan(b.values[:, 0]).all()
     assert np.all(b.values[:, 1] == pytest.approx(0.9))
+    assert np.all(b.values[:, 9] == 220.0)
+    assert np.all(b.values[:, 10] > 0.0)
 
 
 def test_awkward_resampling_and_short_input(runtime):
@@ -65,10 +70,10 @@ def test_awkward_resampling_and_short_input(runtime):
     assert a.metadata["effective_hop_s"] == 117 / 16000
     short = vf.audio_vocal_f0(_audio(n=1))
     assert short.values.shape == (1, len(vf.FEATURES))
-    assert short.values[0, -1] == 1
+    assert short.values[0, 8] == 1
     # A resampler's fractional tail is not real source audio.
     fractional = vf.audio_vocal_f0(_audio(sr=11025, n=11047))
-    assert fractional.values[97, -1] == 1
+    assert fractional.values[97, 8] == 1
     assert fractional.time_bounds_s[97, 1] == pytest.approx(11047 / 11025)
 
 
