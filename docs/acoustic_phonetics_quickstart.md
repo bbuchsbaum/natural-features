@@ -48,3 +48,35 @@ extract_acoustic_phonetics(
     execution_mode="strict",
 )
 ```
+
+### Native clocks and support
+
+CTC timestamps are centers of valid frontend sample intervals, computed from the
+checkpoint's convolution kernels and strides. For the default 16 kHz checkpoint,
+frames have a 20 ms hop and 25 ms frontend support; the first center is 12.5 ms.
+They are not evenly stretched to fill the input duration. `stride_s`, when given,
+asserts the checkpoint's native hop and raises on mismatch; use explicit
+resampling for a different output grid. Unknown frontends and time-downsampling
+adapters fail rather than receiving a guessed clock.
+
+Chunk starts snap backward onto the native sample grid by less than one hop;
+metadata records planned and actual sample bounds. Duplicate positions retain
+the frame with the largest minimum input margin (earlier chunk on a tie). Gaps
+from insufficient overlap remain real gaps and produce an irregular timebase.
+`time_bounds_s` describes local **frontend positional support**, not the full
+encoder dependency: contextual CTC states can depend on the entire inference
+chunk. Metadata records those chunk inputs and each chunk's retained row ranges.
+Changing chunks can change posteriors even at identical timestamps.
+
+Retain special tokens (`drop_special_tokens=False`) when auditing blank mass.
+Dropping blanks renormalizes the remaining phones and can obscure unsupported
+input; high conditional phone probability alone is not evidence of speech or of
+correct phone recognition in music. Articulatory mappings preserve frame bounds,
+clock context and source metadata.
+
+`audio.prosody` now computes energy, pitch and spectral controls on common
+sample windows of at least 40 ms. This changes its former 25 ms energy/spectral
+windows: the old combination mixed 25 ms and 40 ms centers by row index. Requested
+and effective sample-rounded framing and short-input right padding are recorded.
+The pitch estimator remains a monophonic autocorrelation estimator, not a
+validated vocal-F0 extractor or a voice detector for polyphonic music.

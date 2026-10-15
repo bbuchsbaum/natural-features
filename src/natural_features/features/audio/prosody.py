@@ -7,7 +7,7 @@ import numpy as np
 from natural_features.core.feature_types import FeatureSeries
 from natural_features.core.execution import add_execution_provenance, resolve_execution_mode
 from natural_features.core.stimulus import AudioStimulus
-from natural_features.core.timebase import TimebaseSpec, times_from_hop
+from natural_features.core.timebase import TimebaseSpec
 from natural_features.features.audio.lowlevel import _frames, _mono, rms, spectral_stats
 from natural_features.features.common import extractor_metadata
 
@@ -29,7 +29,11 @@ def audio_pitch(
     if fmin <= 0 or fmax <= 0 or fmax <= fmin:
         raise ValueError("Require 0 < fmin < fmax")
     x = _mono(stimulus.samples)
-    framed, _ = _frames(x, stimulus.sr_hz, hop_s, win_s)
+    if not np.isfinite(hop_s) or not np.isfinite(win_s) or hop_s <= 0 or win_s <= 0:
+        raise ValueError("hop_s and win_s must be finite and positive")
+    framed, starts = _frames(x, stimulus.sr_hz, hop_s, win_s)
+    effective_hop = max(1, round(stimulus.sr_hz * hop_s)) / stimulus.sr_hz
+    effective_win = framed.shape[1] / stimulus.sr_hz
     min_lag = max(1, int(round(stimulus.sr_hz / fmax)))
     max_lag = min(framed.shape[1] - 1, int(round(stimulus.sr_hz / fmin)))
     f0 = np.zeros(framed.shape[0], dtype=np.float32)
@@ -49,7 +53,10 @@ def audio_pitch(
         if strength >= voicing_threshold:
             f0[i] = float(stimulus.sr_hz / (min_lag + best))
     values = np.column_stack([f0, voicing]).astype(np.float32)
-    times = times_from_hop(values.shape[0], hop_s, start_offset_s=stimulus.start_offset_s, center=True, window_s=win_s)
+    bounds = stimulus.start_offset_s + np.column_stack(
+        [starts, starts + framed.shape[1]]
+    ) / stimulus.sr_hz
+    times = bounds.mean(axis=1)
     md = add_execution_provenance(
         extractor_metadata(
             "audio.pitch",
@@ -60,7 +67,13 @@ def audio_pitch(
                 "fmax": fmax,
                 "voicing_threshold": voicing_threshold,
             },
-            extra={"backend": "autocorrelation"},
+            extra={
+                "backend": "autocorrelation",
+                "effective_hop_s": effective_hop,
+                "effective_window_s": effective_win,
+                "right_padding_samples": max(0, framed.shape[1] - len(x)),
+                "pitch_scope": "monophonic_autocorrelation_not_vocal_detection",
+            },
         ),
         execution_mode=mode,
         fallback_used=False,
@@ -71,7 +84,11 @@ def audio_pitch(
         dims=("time", "feature"),
         coords={"feature": ["f0_hz", "voicing_strength"]},
         metadata=md,
-        timebase=TimebaseSpec(kind="audio_hop", hop_s=hop_s, sampling_rate_hz=1.0 / hop_s),
+        timebase=TimebaseSpec(
+            kind="audio_hop", hop_s=effective_hop,
+            sampling_rate_hz=1.0 / effective_hop, window_s=effective_win,
+        ),
+        time_bounds_s=bounds,
     )
 
 
@@ -83,10 +100,15 @@ def prosody_features(
 ) -> FeatureSeries:
     """Return compact energy, pitch, and spectral prosody controls."""
 
-    r = rms(stimulus, hop_s=hop_s, win_s=win_s)
-    p = audio_pitch(stimulus, hop_s=hop_s, win_s=max(0.04, win_s))
-    s = spectral_stats(stimulus, hop_s=hop_s, win_s=win_s)
-    n = min(r.values.shape[0], p.values.shape[0], s.values.shape[0])
+    if not np.isfinite(hop_s) or not np.isfinite(win_s) or hop_s <= 0 or win_s <= 0:
+        raise ValueError("hop_s and win_s must be finite and positive")
+    # All columns summarize the same sample windows, including the F0 column.
+    effective_hop = max(1, round(stimulus.sr_hz * hop_s)) / stimulus.sr_hz
+    effective_win = max(1, round(stimulus.sr_hz * max(0.04, win_s))) / stimulus.sr_hz
+    r = rms(stimulus, hop_s=effective_hop, win_s=effective_win)
+    p = audio_pitch(stimulus, hop_s=effective_hop, win_s=effective_win)
+    s = spectral_stats(stimulus, hop_s=effective_hop, win_s=effective_win)
+    n = len(p.times_s)
     rms_val = r.values[:n, 0]
     log_rms = np.log1p(np.maximum(rms_val, 0.0))
     values = np.column_stack(
@@ -102,13 +124,21 @@ def prosody_features(
     md = extractor_metadata(
         "audio.prosody",
         params={"hop_s": hop_s, "win_s": win_s},
-        extra={"backend": "python_native"},
+        extra={
+            "backend": "python_native",
+            "effective_hop_s": effective_hop,
+            "effective_window_s": effective_win,
+            "framing": "shared_sample_windows",
+            "right_padding_samples": p.metadata["right_padding_samples"],
+            "pitch_scope": p.metadata["pitch_scope"],
+        },
     )
     return FeatureSeries(
         values=values,
-        times_s=r.times_s[:n],
+        times_s=p.times_s,
         dims=("time", "feature"),
         coords={"feature": ["rms", "log_rms", "f0_hz", "voicing_strength", "spectral_centroid", "zcr"]},
         metadata=md,
-        timebase=TimebaseSpec(kind="audio_hop", hop_s=hop_s, sampling_rate_hz=1.0 / hop_s),
+        timebase=p.timebase,
+        time_bounds_s=p.time_bounds_s,
     )

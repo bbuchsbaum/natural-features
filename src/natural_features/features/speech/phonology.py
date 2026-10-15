@@ -18,7 +18,7 @@ from natural_features.core.execution import (
 )
 from natural_features.core.feature_types import EventSeries, FeatureSeries
 from natural_features.core.stimulus import AudioStimulus
-from natural_features.core.timebase import TimebaseSpec, times_from_hop
+from natural_features.core.timebase import TimebaseSpec
 from natural_features.features.audio.lowlevel import mel
 from natural_features.features.common import extractor_metadata
 from natural_features.features.speech.chunking import plan_audio_chunks
@@ -865,18 +865,31 @@ def _decode_ctc_labels(
     return probs, labels
 
 
-def _keep_chunk_frames(
-    times: np.ndarray,
-    *,
-    chunk_index: int,
-    n_chunks: int,
-    chunk_start_s: float,
-    chunk_end_s: float,
-    overlap_s: float,
-) -> np.ndarray:
-    lo = chunk_start_s if chunk_index == 0 else chunk_start_s + overlap_s / 2.0
-    hi = chunk_end_s if chunk_index == n_chunks - 1 else chunk_end_s - overlap_s / 2.0
-    return (times >= lo) & (times < hi)
+def _ctc_frontend_geometry(runtime: CTCModelRuntime) -> tuple[int, int]:
+    """Stride and local support of supported valid-convolution CTC frontends.
+
+    This describes positional support, not the contextual transformer's full
+    input dependency. Unknown frontends must not acquire a guessed timebase.
+    """
+    config = getattr(runtime.model, "config", None)
+    kernels = getattr(config, "conv_kernel", None)
+    strides = getattr(config, "conv_stride", None)
+    model_type = getattr(config, "model_type", None)
+    if model_type not in {"wav2vec2", "hubert", "wavlm"}:
+        raise ValueError("Unsupported CTC frontend: expected wav2vec2, hubert or wavlm config")
+    if getattr(config, "add_adapter", False):
+        raise ValueError("CTC time-downsampling adapters are not supported")
+    if not kernels or not strides or len(kernels) != len(strides):
+        raise ValueError("CTC config must specify matching conv_kernel and conv_stride")
+    stride, support = 1, 1
+    for kernel, step in zip(kernels, strides):
+        if not isinstance(kernel, (int, np.integer)) or not isinstance(step, (int, np.integer)):
+            raise ValueError("CTC convolution geometry must contain positive integers")
+        if kernel <= 0 or step <= 0:
+            raise ValueError("CTC convolution geometry must contain positive integers")
+        support += (int(kernel) - 1) * stride
+        stride *= int(step)
+    return stride, support
 
 
 def _ctc_inference_error(error: BaseException, device: str) -> BackendInferenceError:
@@ -897,7 +910,7 @@ def ctc_phone_posteriors(
     stimulus: AudioStimulus,
     *,
     model: str = "bobboyms/wav2vec2-base-en-phoneme-ctc-41h",
-    stride_s: float = 0.02,
+    stride_s: float | None = None,
     local_files_only: bool = True,
     execution_mode: str | None = None,
     strict_dependency: bool | None = None,
@@ -909,18 +922,21 @@ def ctc_phone_posteriors(
 ) -> FeatureSeries:
     """Extract CTC phone posteriors with cached runtimes and long-audio chunking.
 
-    Audio shorter than ``chunk_window_s`` uses one forward pass. Longer stimuli
-    are split with ``plan_audio_chunks`` and interior overlap frames are dropped
-    before concatenation.
+    Timestamps are centers of the checkpoint frontend's sample intervals. The
+    optional ``stride_s`` asserts that native hop; it does not resample outputs.
+    Chunk starts snap backward by less than one native hop onto the sample grid.
+    Duplicate positions retain the frame with most surrounding input context.
+    Frontend support bounds do not describe the transformer's full chunk context;
+    exact chunk inputs and retained row ranges are recorded in metadata.
     """
 
     mode, _strict = resolve_execution_mode(
         execution_mode=execution_mode,
         strict_dependency=strict_dependency,
     )
-    if chunk_window_s <= 0:
+    if not np.isfinite(chunk_window_s) or chunk_window_s <= 0:
         raise ValueError("chunk_window_s must be greater than zero")
-    if chunk_overlap_s < 0:
+    if not np.isfinite(chunk_overlap_s) or chunk_overlap_s < 0:
         raise ValueError("chunk_overlap_s must be >= 0")
     if chunk_overlap_s >= chunk_window_s:
         raise ValueError("chunk_overlap_s must be < chunk_window_s")
@@ -947,67 +963,83 @@ def ctc_phone_posteriors(
         runtime=runtime,
     )
 
+    native_stride, frontend_support = _ctc_frontend_geometry(active_runtime)
+    model_sr = active_runtime.sample_rate_hz
+    hop_s = native_stride / model_sr
+    if stride_s is not None and (
+        not np.isfinite(stride_s) or not np.isclose(stride_s, hop_s, rtol=0, atol=1e-12)
+    ):
+        raise ValueError(f"stride_s must match native CTC hop {hop_s}; resample explicitly")
     try:
         wav = stimulus.samples.astype(np.float32)
         if wav.ndim == 2:
             wav = wav.mean(axis=1)
-        wav_model = _resample_audio_linear(
-            wav,
-            from_sr=stimulus.sr_hz,
-            to_sr=active_runtime.sample_rate_hz,
+        wav_model = _resample_audio_linear(wav, from_sr=stimulus.sr_hz, to_sr=model_sr)
+        if len(wav_model) < frontend_support:
+            raise ValueError("Audio is shorter than the CTC frontend receptive field")
+        chunks = plan_audio_chunks(
+            n_samples=len(wav_model), sr_hz=model_sr,
+            window_s=float(chunk_window_s), overlap_s=float(chunk_overlap_s),
+            start_offset_s=stimulus.start_offset_s,
         )
-        duration_s = float(len(wav_model) / active_runtime.sample_rate_hz)
-        if duration_s <= float(chunk_window_s):
-            raw_probs = _ctc_forward_chunk(active_runtime, wav_model)
-            hop_s = max(duration_s / max(1, raw_probs.shape[0]), 1e-6)
-            times = times_from_hop(
-                raw_probs.shape[0],
-                hop_s,
-                start_offset_s=stimulus.start_offset_s,
-            )
-            chunk_count = 1
-        else:
-            chunks = plan_audio_chunks(
-                n_samples=len(wav_model),
-                sr_hz=active_runtime.sample_rate_hz,
-                window_s=float(chunk_window_s),
-                overlap_s=float(chunk_overlap_s),
-                start_offset_s=stimulus.start_offset_s,
-            )
-            probability_parts: list[np.ndarray] = []
-            time_parts: list[np.ndarray] = []
-            for index, chunk in enumerate(chunks):
-                wav_slice = wav_model[chunk.sample_start : chunk.sample_end]
-                chunk_probs = _ctc_forward_chunk(active_runtime, wav_slice)
-                chunk_duration_s = float(len(wav_slice) / active_runtime.sample_rate_hz)
-                chunk_hop_s = max(chunk_duration_s / max(1, chunk_probs.shape[0]), 1e-6)
-                chunk_times = times_from_hop(
-                    chunk_probs.shape[0],
-                    chunk_hop_s,
-                    start_offset_s=chunk.start_s,
+        probability_parts: list[np.ndarray] = []
+        start_parts: list[np.ndarray] = []
+        margin_parts: list[np.ndarray] = []
+        owner_parts: list[np.ndarray] = []
+        chunk_records: list[dict[str, Any]] = []
+        for chunk in chunks:
+            start = (chunk.sample_start // native_stride) * native_stride
+            end = chunk.sample_end
+            record = {
+                "planned_sample_start": chunk.sample_start,
+                "sample_start": start, "sample_end": end,
+                "input_start_s": stimulus.start_offset_s + start / model_sr,
+                "input_end_s": stimulus.start_offset_s + end / model_sr,
+                "kept_row_ranges": [],
+            }
+            chunk_records.append(record)
+            expected = max(0, 1 + (end - start - frontend_support) // native_stride)
+            if expected == 0:
+                record["status"] = "short_tail_no_valid_frontend_frames"
+                continue
+            chunk_probs = _ctc_forward_chunk(active_runtime, wav_model[start:end])
+            if chunk_probs.ndim != 2 or len(chunk_probs) != expected:
+                raise ValueError(
+                    f"CTC output count disagrees with configured frontend: "
+                    f"expected {expected}, got {chunk_probs.shape}"
                 )
-                keep = _keep_chunk_frames(
-                    chunk_times,
-                    chunk_index=index,
-                    n_chunks=len(chunks),
-                    chunk_start_s=chunk.start_s,
-                    chunk_end_s=chunk.end_s,
-                    overlap_s=float(chunk_overlap_s),
-                )
-                if not np.any(keep):
-                    continue
-                probability_parts.append(chunk_probs[keep])
-                time_parts.append(chunk_times[keep])
-            if not probability_parts:
-                raise RuntimeError("CTC chunking produced no posterior frames")
-            raw_probs = np.concatenate(probability_parts, axis=0)
-            times = np.concatenate(time_parts)
-            if len(times) > 1 and np.any(np.diff(times) < 0):
-                order = np.argsort(times, kind="mergesort")
-                times = times[order]
-                raw_probs = raw_probs[order]
-            hop_s = max(duration_s / max(1, raw_probs.shape[0]), 1e-6)
-            chunk_count = len(chunks)
+            starts = start + np.arange(expected, dtype=np.int64) * native_stride
+            centers = starts + frontend_support / 2
+            probability_parts.append(chunk_probs)
+            start_parts.append(starts)
+            margin_parts.append(np.minimum(centers - start, end - centers))
+            owner_parts.append(np.full(expected, chunk.index, dtype=np.int64))
+            record["status"] = "inferred"
+        raw_probs = np.concatenate(probability_parts)
+        all_starts = np.concatenate(start_parts)
+        margins = np.concatenate(margin_parts)
+        owners = np.concatenate(owner_parts)
+        # Primary key: exact global frame position. Secondary: most input on
+        # both sides. Earlier chunks win ties, making stitching deterministic.
+        order = np.lexsort((owners, -margins, all_starts))
+        first = np.r_[True, np.diff(all_starts[order]) != 0]
+        chosen = order[first]
+        starts = all_starts[chosen]
+        raw_probs = raw_probs[chosen]
+        owners = owners[chosen]
+        for index, record in enumerate(chunk_records):
+            rows = np.flatnonzero(owners == index)
+            if len(rows):
+                splits = np.flatnonzero(np.diff(rows) != 1) + 1
+                record["kept_row_ranges"] = [
+                    [int(part[0]), int(part[-1]) + 1] for part in np.split(rows, splits)
+                ]
+        bounds = stimulus.start_offset_s + np.column_stack(
+            [starts, starts + frontend_support]
+        ) / model_sr
+        times = bounds.mean(axis=1)
+        regular = bool(np.all(np.diff(starts) == native_stride))
+        chunk_count = len(chunks)
         probs, labels = _decode_ctc_labels(
             active_runtime.processor,
             raw_probs,
@@ -1024,6 +1056,20 @@ def ctc_phone_posteriors(
                 "backend": "transformers_ctc",
                 "device": active_runtime.device,
                 "chunk_count": chunk_count,
+                "native_hop_s": hop_s,
+                "native_stride_samples": native_stride,
+                "frontend_support_samples": frontend_support,
+                "frame_anchor": "frontend_sample_interval_center",
+                "support_scope": "frontend_window_not_full_encoder_context",
+                "input_context": "entire_inference_chunk",
+                "chunk_start_alignment": "floor_to_native_stride",
+                "stitch_rule": "maximum_minimum_input_margin_earlier_chunk_tie",
+                "source_sample_rate_hz": stimulus.sr_hz,
+                "model_sample_rate_hz": model_sr,
+                "source_samples": len(wav),
+                "model_samples": len(wav_model),
+                "chunks": chunk_records,
+                "regular_native_grid": regular,
                 "chunk_window_s": float(chunk_window_s),
                 "chunk_overlap_s": float(chunk_overlap_s),
             },
@@ -1038,8 +1084,12 @@ def ctc_phone_posteriors(
         coords={"feature": labels},
         metadata=md,
         timebase=TimebaseSpec(
-            kind="audio_hop", hop_s=hop_s, sampling_rate_hz=1.0 / hop_s
+            kind="audio_hop" if regular else "irregular",
+            hop_s=hop_s if regular else None,
+            sampling_rate_hz=1.0 / hop_s if regular else None,
+            window_s=frontend_support / model_sr,
         ),
+        time_bounds_s=bounds,
     )
 
 
@@ -1085,7 +1135,8 @@ def articulatory_from_posteriors(
             "include_uncertainty": include_uncertainty,
         },
         extra={
-            "source_extractor": posteriors.metadata.get("extractor_name", "unknown")
+            "source_extractor": posteriors.metadata.get("extractor_name", "unknown"),
+            "source_metadata": dict(posteriors.metadata),
         },
     )
     return FeatureSeries(
@@ -1095,6 +1146,8 @@ def articulatory_from_posteriors(
         coords={"feature": out_names},
         metadata=md,
         timebase=posteriors.timebase,
+        time_bounds_s=posteriors.time_bounds_s,
+        temporal_context=posteriors.temporal_context,
     )
 
 
