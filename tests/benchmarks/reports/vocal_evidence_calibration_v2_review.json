@@ -1,0 +1,35 @@
+{
+  "reviewed_commit": "00b37dcfffa149c88d74d62ace43ac97048ad170",
+  "report_sha256": "2460020431a3aac595bcd1cbaa0cfc53a338b70e4692226b6acea0136c101e62",
+  "original_input_projections": 90,
+  "verified_fits": 24,
+  "verified_selectors": 12,
+  "verified_outputs": 180,
+  "results": {
+    "joint_logistic": {
+      "max_fa": 0.10450757858999847,
+      "min_rpa": 0.8555034666590928,
+      "empirical": false,
+      "analytic": false,
+      "original_gates": false,
+      "reported_failures": {
+        "consumed_v2_test": [
+          "solo.voicing_false_alarm_rate <= 0.1: 0.10450757858999847"
+        ]
+      }
+    },
+    "rmvpe_threshold": {
+      "max_fa": 0.1014400569020722,
+      "min_rpa": 0.8751287973808269,
+      "empirical": false,
+      "analytic": false,
+      "original_gates": false,
+      "reported_failures": {
+        "consumed_v2_test": [
+          "solo.voicing_false_alarm_rate <= 0.1: 0.10144005690207218"
+        ]
+      }
+    }
+  },
+  "scope": "No fitting, reselection, neural inference or fresh data; scalar replay from retained arrays and fitted coefficients."
+}

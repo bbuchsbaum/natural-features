@@ -59,3 +59,47 @@ means execution completed; qualification is a separate, explicit report field.
 Singer cross-validation on reused data is still development evidence. Global
 song IDs are absent from the retained Vocadito metadata, and two shared backing
 recordings cannot establish accompaniment generalization.
+
+## Frozen run result
+
+The experiment was committed at `00b37dc` before fitting. The
+[complete report](../tests/benchmarks/reports/vocal_evidence_calibration_v2.json)
+contains both predetermined arms, 24 fitted models, 180 outer case scores and
+all threshold selections. Execution finished successfully, with exact public
+scorer parity on every output. No fresh reserved reference was consumed.
+
+The values below are the minimum accuracy/recall and maximum false-voicing
+across the nine historical-group × singing-condition summaries, using their
+original aggregation. They are not per-frame pooled estimates or independent
+test-set performance.
+
+| Arm | Minimum raw pitch accuracy | Minimum voiced recall | Worst false voicing | Backing / silence false voicing |
+|---|---:|---:|---:|---:|
+| RMVPE salience + trained-partition threshold | 87.51% | 88.60% | 10.14% | 0% / 0% |
+| Fixed joint logistic evidence | 85.55% | 86.83% | 10.45% | 0% / 0% |
+
+Every inner selector found an eligible threshold, and the final selectors were
+eligible. Nevertheless, outer predictions in the consumed-v2 solo condition
+exceeded the 10% false-voicing limit for both arms. Neither arm passes the
+empirical procedure, and the inherited incomplete analytic control separately
+prevents overall acceptance. No gate was rounded, relaxed or replaced.
+
+Threshold calibration materially improves the fixed 0.03 RMVPE result. This
+single joint model does not establish a benefit from added activity/source
+evidence: it has lower minimum pitch accuracy and slightly worse worst-case
+false voicing than the threshold-only baseline. Preserve this negative result;
+do not expand the search on these repeatedly examined recordings. Defaults
+remain unchanged and #21 remains scientifically unqualified.
+
+An independent scalar audit reconstructed the input references, exclusions,
+saved-model predictions, selector eligibility and final aggregation. It checked
+90 input projections, 24 fits, 12 selectors and 180 outputs, confirming both
+failures. The [receipt](../tests/benchmarks/reports/vocal_evidence_calibration_v2_review.json)
+binds this finding to the frozen commit and report SHA-256. Replay it without
+fitting or threshold search:
+
+```bash
+PYTHONPATH=src OPENBLAS_NUM_THREADS=1 python scripts/review_vocal_evidence_calibration.py \
+  --assets /private/tmp/natural-features-vocal-assets \
+  --out-json /private/tmp/vocal-evidence-review.json
+```
