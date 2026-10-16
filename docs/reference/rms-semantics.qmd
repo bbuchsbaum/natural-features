@@ -1,0 +1,24 @@
+---
+title: "RMS amplitude semantics"
+---
+
+`audio.lowlevel.rms` and its `audio.rms` alias return the square root of the mean
+squared **raw samples** in each frame. A constant-amplitude0.2 signal therefore
+returns0.2. Frame positions and the existing right-zero-padding policy for inputs
+shorter than one frame are unchanged. Multiple channels are averaged first, as
+in the existing audio frontend.
+
+The earlier implementation accidentally reused Hann-tapered FFT frames. For
+stationary inputs that reduced amplitude by approximately `sqrt(3/8)`; for
+transients it also changed the result with position inside a frame. A constant
+scale correction cannot repair that transient weighting.
+
+The corrected extractor catalog version is1.1 and metadata records
+`code_version="rms-untapered-v2"` and `windowing="rectangular"`. These identities
+invalidate cached results computed with the old semantics. Existing saved
+outputs are not rewritten: downstream comparisons should pin their original
+source or explicitly re-extract a separately versioned result.
+
+FFT/STFT features continue to use their periodic Hann taper. Tests independently
+check this unchanged frontend alongside constant/sinusoid/impulse/gain and
+native-time RMS behavior.

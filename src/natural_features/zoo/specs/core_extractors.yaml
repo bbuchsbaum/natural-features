@@ -398,7 +398,7 @@ extractors:
 
   - name: audio.lowlevel.rms
     impl: natural_features.features.audio.lowlevel:rms
-    version: "1.0"
+    version: "1.1"
     modalities: [audio]
     requires: [audio]
     tags: [baseline, audio]
@@ -412,7 +412,7 @@ extractors:
 
   - name: audio.rms
     impl: natural_features.features.audio.lowlevel:rms
-    version: "1.0"
+    version: "1.1"
     label: RMS energy
     modalities: [audio]
     requires: [audio]
