@@ -18,7 +18,9 @@ def _mono(samples: np.ndarray) -> np.ndarray:
     return samples.astype(np.float32).mean(axis=1)
 
 
-def _frames(x: np.ndarray, sr_hz: int, hop_s: float, win_s: float) -> tuple[np.ndarray, np.ndarray]:
+def _frames(
+    x: np.ndarray, sr_hz: int, hop_s: float, win_s: float, *, taper: bool = True
+) -> tuple[np.ndarray, np.ndarray]:
     hop = max(1, int(round(sr_hz * hop_s)))
     win = max(1, int(round(sr_hz * win_s)))
     if len(x) < win:
@@ -27,8 +29,10 @@ def _frames(x: np.ndarray, sr_hz: int, hop_s: float, win_s: float) -> tuple[np.n
     idx = np.arange(win)[None, :] + (np.arange(n)[:, None] * hop)
     frm = x[idx]
     # Match FFT/STFT convention (periodic Hann, equivalent to scipy.signal.windows.hann(sym=False)).
-    window = np.hanning(win + 1).astype(np.float32)[:-1]
-    return frm * window[None, :], idx[:, 0]
+    if taper:
+        window = np.hanning(win + 1).astype(np.float32)[:-1]
+        frm = frm * window[None, :]
+    return frm, idx[:, 0]
 
 
 def _stft_power(x: np.ndarray, sr_hz: int, hop_s: float, win_s: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -79,11 +83,20 @@ def _dct_matrix(n_mfcc: int, n_mels: int) -> np.ndarray:
 
 
 def rms(stimulus: AudioStimulus, *, hop_s: float = 0.01, win_s: float = 0.025) -> FeatureSeries:
+    """Return raw-sample RMS per frame, without a spectral-analysis taper.
+
+    As in the existing frame API, audio shorter than one frame is right-padded
+    with zeros. Complete frames are otherwise used, with unchanged native clocks.
+    """
     x = _mono(stimulus.samples)
-    framed, _ = _frames(x, stimulus.sr_hz, hop_s, win_s)
+    framed, _ = _frames(x, stimulus.sr_hz, hop_s, win_s, taper=False)
     vals = np.sqrt(np.mean(framed * framed, axis=1, keepdims=True)).astype(np.float32)
     times = times_from_hop(len(vals), hop_s, start_offset_s=stimulus.start_offset_s, center=True, window_s=win_s)
-    metadata = extractor_metadata("audio.lowlevel.rms", params={"hop_s": hop_s, "win_s": win_s})
+    metadata = extractor_metadata(
+        "audio.lowlevel.rms",
+        params={"hop_s": hop_s, "win_s": win_s, "windowing": "rectangular"},
+        code_version="rms-untapered-v2",
+    )
     return FeatureSeries(
         values=vals,
         times_s=times,
