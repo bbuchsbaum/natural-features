@@ -1,0 +1,25 @@
+{
+  "schema": "VocalBackendRuntimeFailure/v1",
+  "failure": "ENOSPC while writing case 75 stem.npy; 74 cases atomically retained",
+  "process_exit_status": null,
+  "process_exit_status_note": "Owned parent/child processes absent; logging wrapper metadata remained empty after disk exhaustion. Do not infer an exit code.",
+  "preserved_files": [
+    {
+      "path": "/private/tmp/nf-vocal-backend-comparison-v1-t4.log",
+      "sha256": "1e87acbc68b090a64a3e3a50463b438514d680e9d3aa6d93341f2d99ca59b151",
+      "bytes": 4081
+    },
+    {
+      "path": "/private/tmp/nf-vocal-backend-comparison-v1-t4.log.meta.json",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "/private/tmp/nf-vocal-backend-comparison-v1-t4.json",
+      "sha256": "b613cc9681b921d44b58788c368605580097d0a6569ac52e368272a463ef34f0",
+      "bytes": 867174
+    }
+  ],
+  "remaining_bytes_before_resume": 1067884544,
+  "resume_changes": "New output/log paths only; same protocol, models, thresholds, artifacts and CPU threads."
+}

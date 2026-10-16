@@ -1,0 +1,201 @@
+{
+  "canonical_base": "91bd4a436f96b78165e1c59641a407a9f2014541",
+  "hosted_ci_before_final_evidence_commit": {
+    "head": "d45c6a4830fb7de38d86add4a57a84017e246fd3",
+    "passed": [
+      "alignment-benchmark",
+      "deterministic-unit",
+      "smoke",
+      "speech-validation"
+    ],
+    "runs": [
+      38822554841,
+      38822559999
+    ],
+    "skipped": [
+      "media",
+      "nightly"
+    ]
+  },
+  "public_phone_projection_check": {
+    "items_exact_except_declared_sequence_omission": 32,
+    "per_and_tv_summaries_recomputed": 8
+  },
+  "runs": [
+    {
+      "log_sha256": "f557f27f1c352ec903f390353516a53778f8acad548e8b466174c4626e5b0bd4",
+      "metadata": {
+        "child_returncode": 1,
+        "command": [
+          "/Users/bbuchsbaum/code/pycode/natural-features/.venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/unit",
+          "-q"
+        ],
+        "cwd": "/private/tmp/natural-features-singing-benchmarks",
+        "detail": null,
+        "duration_seconds": 45.407381,
+        "exit_code": 1,
+        "finished_utc": "2026-10-15T22:57:07.215908+00:00",
+        "log": "/private/tmp/nf-singing-full-unit-v1.log",
+        "log_bytes": 3708,
+        "reason": "exited",
+        "schema_version": 1,
+        "started_utc": "2026-10-15T22:56:21.808854+00:00",
+        "timeout_seconds": 600.0
+      },
+      "metadata_sha256": "544a54c9c6cdc5c325ac2b3c2736096755d542a0ddefb6982aeb3d01b98d3a51"
+    },
+    {
+      "log_sha256": "8ab7036fe8b954904b74a6448d352ecf76189152e249f024047dea84fac3113d",
+      "metadata": {
+        "child_returncode": 0,
+        "command": [
+          "/Users/bbuchsbaum/code/pycode/natural-features/.venv/bin/python",
+          "scripts/release_check.py",
+          "--no-r-compare"
+        ],
+        "cwd": "/private/tmp/natural-features-singing-benchmarks",
+        "detail": null,
+        "duration_seconds": 0.711493,
+        "exit_code": 0,
+        "finished_utc": "2026-10-15T22:56:22.521224+00:00",
+        "log": "/private/tmp/nf-singing-release-check-v1.log",
+        "log_bytes": 83,
+        "reason": "exited",
+        "schema_version": 1,
+        "started_utc": "2026-10-15T22:56:21.809673+00:00",
+        "timeout_seconds": 180.0
+      },
+      "metadata_sha256": "c329f7db5d297acbe864ad5de87893494ced22c6ac50c37d83a4c3461adb28cd"
+    },
+    {
+      "log_sha256": "4ea68f26bf67cf5812578532578072eb5ae996a8d89eb031bc5c7f29edfed764",
+      "metadata": {
+        "child_returncode": 0,
+        "command": [
+          "/Users/bbuchsbaum/code/pycode/natural-features/.venv/bin/python",
+          "scripts/qualify_singing_phones.py",
+          "--manifest",
+          "/private/tmp/nf-singing-pilot-inputs-v1/manifest.json",
+          "--artifact-dir",
+          "/private/tmp/nf-singing-phone-native-v1-complete",
+          "--out-json",
+          "/private/tmp/nf-singing-phone-pilot-v1-complete.json"
+        ],
+        "cwd": "/private/tmp/natural-features-singing-benchmarks",
+        "detail": null,
+        "duration_seconds": 52.042178,
+        "exit_code": 0,
+        "finished_utc": "2026-10-15T23:09:28.715481+00:00",
+        "log": "/private/tmp/nf-singing-phone-pilot-v1-complete.log",
+        "log_bytes": 975,
+        "reason": "exited",
+        "schema_version": 1,
+        "started_utc": "2026-10-15T23:08:36.673630+00:00",
+        "timeout_seconds": 3600.0
+      },
+      "metadata_sha256": "f6b72b89da692826fd90e36ffa9333db24acf6e56ecdeaf1479d4913cef08310"
+    },
+    {
+      "log_sha256": "90481527fbb8a59cc935310f36763cdd13cd61e8a2877a7f350577d128c8d9d9",
+      "metadata": {
+        "child_returncode": 0,
+        "command": [
+          "/Users/bbuchsbaum/code/pycode/natural-features/.venv/bin/python",
+          "scripts/compare_vocal_backends.py",
+          "--assets",
+          "/private/tmp/natural-features-vocal-assets",
+          "--rmvpe-assets",
+          "/private/tmp/nf-singing-models/RVC",
+          "--activity-assets",
+          "/private/tmp/nf-singing-models/veracity",
+          "--separator-checkpoint",
+          "/private/tmp/natural-features-vocal-assets/955717e8-8726e21a.th",
+          "--artifact-dir",
+          "/private/tmp/nf-vocal-comparison-native-v1-t4",
+          "--out-json",
+          "/private/tmp/nf-vocal-backend-comparison-v1-t4-resumed.json"
+        ],
+        "cwd": "/private/tmp/natural-features-singing-benchmarks",
+        "detail": null,
+        "duration_seconds": 321.110195,
+        "exit_code": 0,
+        "finished_utc": "2026-10-15T23:29:56.969627+00:00",
+        "log": "/private/tmp/nf-vocal-backend-comparison-v1-t4-resumed.log",
+        "log_bytes": 3548,
+        "reason": "exited",
+        "schema_version": 1,
+        "started_utc": "2026-10-15T23:24:35.860039+00:00",
+        "timeout_seconds": 1800.0
+      },
+      "metadata_sha256": "036b37443183221a7cb6429a1a9ca70208b5a8d4f7c97f5d5c6fa435793ce10d"
+    },
+    {
+      "log_sha256": "6386c77eb0219655b2bbf835aa3e70fff221fd82c7ded05d2dde4081215567e4",
+      "metadata": {
+        "child_returncode": 0,
+        "command": [
+          "/Users/bbuchsbaum/code/pycode/natural-features/.venv/bin/python",
+          "scripts/review_singing_empirical.py",
+          "--root",
+          "/private/tmp/natural-features-singing-benchmarks",
+          "--vocal-report",
+          "/private/tmp/nf-vocal-backend-comparison-v1-t4-resumed.json",
+          "--vocal-assets",
+          "/private/tmp/natural-features-vocal-assets",
+          "--phone-report",
+          "/private/tmp/nf-singing-phone-pilot-v1-complete.json",
+          "--phone-manifest",
+          "/private/tmp/nf-singing-pilot-inputs-v1/manifest.json",
+          "--complete"
+        ],
+        "cwd": "/private/tmp/natural-features-singing-benchmarks",
+        "detail": null,
+        "duration_seconds": 9.313743,
+        "exit_code": 0,
+        "finished_utc": "2026-10-16T00:23:12.933098+00:00",
+        "log": "/private/tmp/nf-singing-empirical-complete-review-v1.log",
+        "log_bytes": 664,
+        "reason": "exited",
+        "schema_version": 1,
+        "started_utc": "2026-10-16T00:23:03.619144+00:00",
+        "timeout_seconds": 180.0
+      },
+      "metadata_sha256": "990e132aae11a49c56410daaa819516c0af92a5c3b947810aacf786b498dfa08"
+    }
+  ],
+  "runtime": {
+    "espeak_library": "/opt/homebrew/lib/libespeak.dylib",
+    "espeak_library_sha256": "2cd57ac498c9590fefe35331608acc9450d304517f44369aa989e17fa311c52d",
+    "notes": "Added missing phonemizer/protobuf without changing existing packages, model assets, source code, manifest or scoring.",
+    "packages": {
+      "librosa": "0.11.0",
+      "numpy": "2.4.2",
+      "phonemizer": "3.3.0",
+      "protobuf": "6.33.5",
+      "scipy": "1.17.0",
+      "soundfile": "0.13.1",
+      "torch": "2.14.1",
+      "torchaudio": "2.11.0",
+      "transformers": "4.57.6"
+    }
+  },
+  "schema": "SingingBenchmarkValidation/v1",
+  "scientific_decisions": {
+    "model_adoption": null,
+    "phone_acceptance_gates": null,
+    "qualified": false,
+    "vocal_arms_evaluated": 9,
+    "vocal_arms_passing_all_original_development_gates": 0
+  },
+  "static_release_contracts_passed": 49,
+  "unit_results": {
+    "classification": "Existing installed-R-package contract mismatch, reproduced in unchanged primary checkout eb362465f6e647d12694d3ad0ec86b2de8a9023b earlier in this session.",
+    "failed": 1,
+    "failure": "tests/unit/test_release_discipline.py::test_release_check_script_passes",
+    "passed": 647,
+    "skipped": 3
+  }
+}
