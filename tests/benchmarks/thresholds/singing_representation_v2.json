@@ -1,0 +1,54 @@
+{
+  "schema": "SingingRepresentationComparison/v2",
+  "state": "frozen_consumed_development",
+  "purpose": "A fixed 32-arm mapping-by-pooling comparison over already cached v1 CTC posteriors. It is descriptive and cannot select a recognizer, threshold, or duration measure.",
+  "no_empirical_rescore_without_explicit_flag": true,
+  "inputs": {
+    "manifest": {
+      "path": "/private/tmp/nf-singing-pilot-inputs-v1/manifest.json",
+      "sha256": "c84dd4c4a6979098674d5b899864722f8faaf13c6d75a4e1fce3a1f07ea951db"
+    },
+    "v1_report": {
+      "path": "/private/tmp/nf-singing-phone-pilot-v1-complete.json",
+      "sha256": "dff9a757e12080403c0f0238a0b877da02e4c0161ae377f0567f1af313f987dd"
+    },
+    "mapping": {
+      "path": "src/natural_features/data/english_singing_phone_mapping_v2.json",
+      "sha256": "65edf10bcbc3d93e013eafb228dac45a92d750074b1eae6b721aecca6b1e04be"
+    },
+    "reservation": {
+      "path": "tests/benchmarks/thresholds/singing_reference_reservation_v1.json",
+      "sha256": "be283cec73febc6a9e5261eb6d26375e5558e2700668486e3f81871a2216d741"
+    }
+  },
+  "frozen_sources": {
+    "scripts/qualify_singing_phones.py": "d56798e89a01ea2ba93524e959c2601f55a1fcd69ec5df690a3e499bd0ad2554",
+    "src/natural_features/features/speech/singing_benchmark.py": "965ed22f60a16b8a3ed5bf7aedd0d7a9d066768d6b64eebd483feeb6e2c1de70",
+    "scripts/compare_singing_phone_representations.py": "aad0ee5cb50efad623cf5d9b44f95c8ea40b28bdea89854d43bc2a68f528cc01",
+    "src/natural_features/features/speech/phone_inventory.py": "ec3f749acc48ce797a93ef21e08e31dbd75ae4a251d47def355e3522344224aa",
+    "src/natural_features/features/speech/singing_pooling.py": "85a405158d42b3d5dd8051856a3917796d9ad8d72730a93d181caf7e15ac12e0"
+  },
+  "arm_selection": "all_manifest_items",
+  "expected_item_count": 32,
+  "mappings": [
+    "v1_legacy_exact",
+    "v2_english_decisions"
+  ],
+  "poolings": [
+    "raw_posterior_integral",
+    "framewise_phone_conditional",
+    "greedy_ctc_token_events"
+  ],
+  "reference_compositions": [
+    "duration",
+    "occurrence"
+  ],
+  "constraints": [
+    "Use v1 window and ordered-bin boundaries already present in each manifest item.",
+    "Do not impute native-time gaps; raw-id CTC collapse resets at a gap.",
+    "No F0 gate or support threshold is used.",
+    "No 96/200 support rule or 5.49-second study window is introduced.",
+    "Event counts and posterior mass are not durations."
+  ],
+  "qualification_allowed": false
+}

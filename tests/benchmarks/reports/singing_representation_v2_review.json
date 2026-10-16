@@ -1,0 +1,67 @@
+{
+  "reviewed_commit": "b20a5d30aae14d90c7a475909e8acf59faec95cd",
+  "protocol_sha256": "fab25fe7c7533022846b5b99cb918f6095ecb49cdab1393f260f32fdadde47fd",
+  "report_sha256": "806e98b54bf0655c382af3ae780e78012f734bf24e4f261b10198e8c3f9dcf5f",
+  "status": "PASS",
+  "counts": {
+    "token_audits": 8112,
+    "recognition_records": 64,
+    "reference_profiles": 768,
+    "coverage_records": 768,
+    "predicted_profiles": 2304,
+    "comparison_slots": 4608,
+    "non_null_comparisons": 3876,
+    "legacy_raw_bins": 384,
+    "null_comparisons": 732,
+    "items": 32
+  },
+  "maximum_absolute_numeric_difference": 3.907985046680551e-14,
+  "absolute_tolerance": 1e-11,
+  "mapping_changes": [
+    {
+      "token": "\u0251",
+      "v1": [],
+      "v2": [
+        "aa"
+      ]
+    },
+    {
+      "token": "\u0259\u028a",
+      "v1": [],
+      "v2": [
+        "ow"
+      ]
+    }
+  ],
+  "null_counts": {
+    "composition|v1_legacy_exact|framewise_phone_conditional|duration": 12,
+    "composition|v1_legacy_exact|framewise_phone_conditional|occurrence": 12,
+    "composition|v1_legacy_exact|greedy_ctc_token_events|duration": 20,
+    "composition|v1_legacy_exact|greedy_ctc_token_events|occurrence": 20,
+    "composition|v1_legacy_exact|greedy_ctc_token_events|profile": 20,
+    "composition|v1_legacy_exact|raw_posterior_integral|duration": 12,
+    "composition|v1_legacy_exact|raw_posterior_integral|occurrence": 12,
+    "composition|v2_english_decisions|framewise_phone_conditional|duration": 12,
+    "composition|v2_english_decisions|framewise_phone_conditional|occurrence": 12,
+    "composition|v2_english_decisions|greedy_ctc_token_events|duration": 20,
+    "composition|v2_english_decisions|greedy_ctc_token_events|occurrence": 20,
+    "composition|v2_english_decisions|greedy_ctc_token_events|profile": 20,
+    "composition|v2_english_decisions|raw_posterior_integral|duration": 12,
+    "composition|v2_english_decisions|raw_posterior_integral|occurrence": 12,
+    "ordered_bins|v1_legacy_exact|framewise_phone_conditional|duration": 38,
+    "ordered_bins|v1_legacy_exact|framewise_phone_conditional|occurrence": 38,
+    "ordered_bins|v1_legacy_exact|greedy_ctc_token_events|duration": 63,
+    "ordered_bins|v1_legacy_exact|greedy_ctc_token_events|occurrence": 63,
+    "ordered_bins|v1_legacy_exact|greedy_ctc_token_events|profile": 63,
+    "ordered_bins|v1_legacy_exact|raw_posterior_integral|duration": 38,
+    "ordered_bins|v1_legacy_exact|raw_posterior_integral|occurrence": 38,
+    "ordered_bins|v2_english_decisions|framewise_phone_conditional|duration": 38,
+    "ordered_bins|v2_english_decisions|framewise_phone_conditional|occurrence": 38,
+    "ordered_bins|v2_english_decisions|greedy_ctc_token_events|duration": 63,
+    "ordered_bins|v2_english_decisions|greedy_ctc_token_events|occurrence": 63,
+    "ordered_bins|v2_english_decisions|greedy_ctc_token_events|profile": 63,
+    "ordered_bins|v2_english_decisions|raw_posterior_integral|duration": 38,
+    "ordered_bins|v2_english_decisions|raw_posterior_integral|occurrence": 38
+  },
+  "independence": "Only JSON, NumPy and standard library; no production scoring/mapping/pooling imports. Matrix integration/mapping, independent scalar cell construction and edit-distance recurrence. No models or fresh data."
+}
