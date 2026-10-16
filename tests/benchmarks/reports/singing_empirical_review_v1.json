@@ -1,0 +1,65 @@
+{
+  "exit_code": 0,
+  "final_execution": "Parent executed the independently authored oracle; prior independent peer execution checked 74 vocal cases and all 32 phone cases.",
+  "formatting_ast_equal": true,
+  "limitations": [
+    "No production scorer imports or model inference.",
+    "Analytic aggregates checked from retained summaries; analytic inference not independently regenerated.",
+    "Development-only evidence; no qualification or model adoption."
+  ],
+  "oracle_path": "scripts/review_singing_empirical.py",
+  "oracle_sha256": "738deed3cb5b4e45acebc35852acd48a94e6570dbcb53086aa9fdacf9d1ed5e8",
+  "original_independently_authored_oracle_sha256": "09b9b05ba6b2c1ed0c8108cf074ba703279c459939f203dea18bc6e7e11b0d79",
+  "phones": {
+    "complete": true,
+    "items": 32,
+    "manifest_sha256": "c84dd4c4a6979098674d5b899864722f8faaf13c6d75a4e1fce3a1f07ea951db",
+    "profile_windows_checked": 384,
+    "report_sha256": "dff9a757e12080403c0f0238a0b877da02e4c0161ae377f0567f1af313f987dd"
+  },
+  "run_receipt": {
+    "log_sha256": "6386c77eb0219655b2bbf835aa3e70fff221fd82c7ded05d2dde4081215567e4",
+    "metadata": {
+      "child_returncode": 0,
+      "command": [
+        "/Users/bbuchsbaum/code/pycode/natural-features/.venv/bin/python",
+        "scripts/review_singing_empirical.py",
+        "--root",
+        "/private/tmp/natural-features-singing-benchmarks",
+        "--vocal-report",
+        "/private/tmp/nf-vocal-backend-comparison-v1-t4-resumed.json",
+        "--vocal-assets",
+        "/private/tmp/natural-features-vocal-assets",
+        "--phone-report",
+        "/private/tmp/nf-singing-phone-pilot-v1-complete.json",
+        "--phone-manifest",
+        "/private/tmp/nf-singing-pilot-inputs-v1/manifest.json",
+        "--complete"
+      ],
+      "cwd": "/private/tmp/natural-features-singing-benchmarks",
+      "detail": null,
+      "duration_seconds": 9.313743,
+      "exit_code": 0,
+      "finished_utc": "2026-10-16T00:23:12.933098+00:00",
+      "log": "/private/tmp/nf-singing-empirical-complete-review-v1.log",
+      "log_bytes": 664,
+      "reason": "exited",
+      "schema_version": 1,
+      "started_utc": "2026-10-16T00:23:03.619144+00:00",
+      "timeout_seconds": 180.0
+    },
+    "metadata_sha256": "990e132aae11a49c56410daaa819516c0af92a5c3b947810aacf786b498dfa08"
+  },
+  "schema": "SingingEmpiricalIndependentReview/v1",
+  "source_head": "d45c6a4830fb7de38d86add4a57a84017e246fd3",
+  "vocal": {
+    "activity_masks_checked": 540,
+    "activity_scores_checked": 180,
+    "aggregate_scalar_gates_checked": 459,
+    "artifact_hashes_checked": 990,
+    "complete": true,
+    "pitch_scores_checked": 810,
+    "report_sha256": "773ca0c2edf7f21eeb80d40c0375e184cc3a4ec3bc43d197a4bc14b1730f50e4",
+    "rows": 90
+  }
+}

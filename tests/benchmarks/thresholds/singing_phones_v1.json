@@ -1,0 +1,8 @@
+{
+  "manifest_version": 1,
+  "state": "development",
+  "description": "Development-only schema template. It is intentionally rejected until pinned items and SHA256 values are added; it declares no pass thresholds.",
+  "token_roles": {"<blank>": "blank", "|": "boundary", "AA": "phone", "T": "phone"},
+  "canonical_inventory": {"AA": ["aa"], "T": ["t"]},
+  "items": []
+}

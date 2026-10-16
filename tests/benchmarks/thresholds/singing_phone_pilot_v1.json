@@ -1,0 +1,512 @@
+{
+  "schema": "SingingPhonePilotProtocol/v1",
+  "state": "development",
+  "qualification_allowed": false,
+  "purpose": "Reproducible32case pilot on four previously examined NUS pairs; no fresh holdout, selection or general singing-recognition qualification.",
+  "canonical_base_commit": "91bd4a436f96b78165e1c59641a407a9f2014541",
+  "duration_s": 16,
+  "crop": "first16seconds from original recording start, no outcome-dependent selection",
+  "window_bounds_s": [
+    0,
+    4,
+    8,
+    12,
+    16
+  ],
+  "bin_bounds_s": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16
+  ],
+  "pairs": [
+    {
+      "singer": "ADIZ",
+      "song": "01",
+      "backing": "vibe.ogg"
+    },
+    {
+      "singer": "JLEE",
+      "song": "05",
+      "backing": "sugar.ogg"
+    },
+    {
+      "singer": "JTAN",
+      "song": "07",
+      "backing": "vibe.ogg"
+    },
+    {
+      "singer": "KENN",
+      "song": "04",
+      "backing": "sugar.ogg"
+    }
+  ],
+  "conditions": [
+    "read_clean",
+    "sing_clean",
+    "sing_mixture_0db",
+    "sing_stem_0db"
+  ],
+  "models": {
+    "base": {
+      "path": "models/base",
+      "repository": "bobboyms/wav2vec2-base-en-phoneme-ctc-41h",
+      "revision": "04111e5d2ee8030f715b057f076defa227827454",
+      "snapshot_digest": "sha256:cec78546ab397369f160b74465b3af0ec8756c674215f2917ed68b0e7ede33d8"
+    },
+    "large": {
+      "path": "models/large",
+      "repository": "facebook/wav2vec2-lv-60-espeak-cv-ft",
+      "revision": "ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4",
+      "snapshot_digest": "sha256:aa87484b4a7c52c42af13ed5593f068df3d6ee9d127a2b52ef1f1bf6a1dc7710"
+    }
+  },
+  "assets": [
+    {
+      "path": "nus/ADIZ/read/01.txt",
+      "url": "https://drive.usercontent.google.com/download?id=1FxGHmOxncty8siqZwUI4G5HUU_4H4694&export=download",
+      "bytes": 4037,
+      "sha256": "325d6550078f741dd913e7bdff663bb82aca29a50c5af88901f458f87ffc1062"
+    },
+    {
+      "path": "nus/ADIZ/read/01.wav",
+      "url": "https://drive.usercontent.google.com/download?id=1iBdetT16ocphc9DceNj60yiP9ojf5cwT&export=download",
+      "bytes": 1899200,
+      "sha256": "693694f202f5afd869071897cea86be991dba59f8cd2d7c1ce804515d12959a6"
+    },
+    {
+      "path": "nus/ADIZ/sing/01.txt",
+      "url": "https://drive.usercontent.google.com/download?id=1s2iQmDr4dWOK0OsusvlpGkV_Y6pnBixS&export=download",
+      "bytes": 4134,
+      "sha256": "d62a364ef29ae0b52487d72d69a8793a06d3cbc77adc8990e353cf64a424a470"
+    },
+    {
+      "path": "nus/ADIZ/sing/01.wav",
+      "url": "https://drive.usercontent.google.com/download?id=1KzUCKDQphYAnJPtzhYXgdOLdYJDdjIla&export=download",
+      "bytes": 5886282,
+      "sha256": "0866ec94115a6b443ec58d5b52ff54c1e1822af6de4557148415313d9fb02c97"
+    },
+    {
+      "path": "nus/JLEE/read/05.txt",
+      "url": "https://drive.usercontent.google.com/download?id=1P8-nlfmxAslHfu06EqrXtEQ7O7Zf3d4B&export=download",
+      "bytes": 13789,
+      "sha256": "2bf4f97ab55d743054bf4571a6fb5a37331655ccaa525537630cf9590c6cdf6d"
+    },
+    {
+      "path": "nus/JLEE/read/05.wav",
+      "url": "https://drive.usercontent.google.com/download?id=1Q7Ms8ZXAfPd0ReYFkiZQ6e33x6RdgtTE&export=download",
+      "bytes": 8335308,
+      "sha256": "955becec5b2b6c4afb96ced60555a6f77e656d4cafed46af837e7c1df439ad39"
+    },
+    {
+      "path": "nus/JLEE/sing/05.txt",
+      "url": "https://drive.usercontent.google.com/download?id=1ENTJn3bxhSGHQHO4gY34TqoRlDfh2GPM&export=download",
+      "bytes": 14441,
+      "sha256": "6b1ab715fb5f68da75938c9bca2311fbbed5a57bd6a16ee7fe790c4e69f0a016"
+    },
+    {
+      "path": "nus/JLEE/sing/05.wav",
+      "url": "https://drive.usercontent.google.com/download?id=1JyEtXwzdNy7EQq1fYJGSkU3lCOFlZLd6&export=download",
+      "bytes": 25367622,
+      "sha256": "ddc8a7ac700593fc086f2868436be152fa206bbf2b9070651d3441933d6d9902"
+    },
+    {
+      "path": "nus/JTAN/read/07.txt",
+      "url": "https://drive.usercontent.google.com/download?id=1KzQGqtaNfct9eoiIF7TlcGhL93Iv5eaN&export=download",
+      "bytes": 13573,
+      "sha256": "5625253952003117b00c3a8c3b209d72689657e0356828fabe3342e05b4571d2"
+    },
+    {
+      "path": "nus/JTAN/read/07.wav",
+      "url": "https://drive.usercontent.google.com/download?id=1wI-aYSb76FuaaGJ1gd0AGORTlTEQy1qF&export=download",
+      "bytes": 8793012,
+      "sha256": "cc5f5176bb816b779f396138e1461ff67f2d43f03a2d88b0193247e28391eb6b"
+    },
+    {
+      "path": "nus/JTAN/sing/07.txt",
+      "url": "https://drive.usercontent.google.com/download?id=1MZNDRglPJkQCFPLfF38wU7V5fqRhyHBG&export=download",
+      "bytes": 13462,
+      "sha256": "2260fca91dcb958a5195e83112c0eef755a163fdf94cb575ab4280983b1634a8"
+    },
+    {
+      "path": "nus/JTAN/sing/07.wav",
+      "url": "https://drive.usercontent.google.com/download?id=1BB7NaSWBy2aHl90WjkOHZFkBwSX4nNH5&export=download",
+      "bytes": 21775492,
+      "sha256": "3c251e561a53514b84a219005bb4983221e7bdedc0b70f58108ebab813ee6e3e"
+    },
+    {
+      "path": "nus/KENN/read/04.txt",
+      "url": "https://drive.usercontent.google.com/download?id=1HX8GF3MPj_nD1u5aIrjUsOhi1xHA-MES&export=download",
+      "bytes": 9671,
+      "sha256": "c216d091c488b8cd4890c2cbcc411e38d1dc64337fc1018a6882c9ad66087bee"
+    },
+    {
+      "path": "nus/KENN/read/04.wav",
+      "url": "https://drive.usercontent.google.com/download?id=1yR9z7FFURJ1zHLP5W6cmY13dkRU-U0p5&export=download",
+      "bytes": 4757952,
+      "sha256": "c26e2e0ba24987d7e2ab063b3841c1ed59bc638939d080acbb98743626de6a1c"
+    },
+    {
+      "path": "nus/KENN/sing/04.txt",
+      "url": "https://drive.usercontent.google.com/download?id=1xSwYbEpHo9mgpleUskd-HVHw9I9yo47M&export=download",
+      "bytes": 10122,
+      "sha256": "f5877b3a41e320b0217435153886f3923f0477678d06cef840fe5b72ea0cc80a"
+    },
+    {
+      "path": "nus/KENN/sing/04.wav",
+      "url": "https://drive.usercontent.google.com/download?id=1W6HnhDu0wklW8KBhsT_PfUkKfe7Dy1M6&export=download",
+      "bytes": 14784520,
+      "sha256": "550a3778bfa8253d8f4b15c187592001a96c4e0500dc99c9bef8db208acf3984"
+    },
+    {
+      "path": "models/base/README.md",
+      "url": "https://huggingface.co/bobboyms/wav2vec2-base-en-phoneme-ctc-41h/resolve/04111e5d2ee8030f715b057f076defa227827454/README.md",
+      "bytes": 5548,
+      "sha256": "0291ffcf36103732c72501453b9bf9b01fbd06833e3cd724c6094d76385981d3",
+      "repository": "bobboyms/wav2vec2-base-en-phoneme-ctc-41h",
+      "revision": "04111e5d2ee8030f715b057f076defa227827454"
+    },
+    {
+      "path": "models/base/added_tokens.json",
+      "url": "https://huggingface.co/bobboyms/wav2vec2-base-en-phoneme-ctc-41h/resolve/04111e5d2ee8030f715b057f076defa227827454/added_tokens.json",
+      "bytes": 32,
+      "sha256": "a8bf97f25cec5179dbac840a7dadad2d7bedc1304cb1b4a06a153e0b466ca695",
+      "repository": "bobboyms/wav2vec2-base-en-phoneme-ctc-41h",
+      "revision": "04111e5d2ee8030f715b057f076defa227827454"
+    },
+    {
+      "path": "models/base/config.json",
+      "url": "https://huggingface.co/bobboyms/wav2vec2-base-en-phoneme-ctc-41h/resolve/04111e5d2ee8030f715b057f076defa227827454/config.json",
+      "bytes": 2323,
+      "sha256": "6339b1789ebf5bd733cd3bb25b9160d9050b0d53277bdc831906b3a23dab00b7",
+      "repository": "bobboyms/wav2vec2-base-en-phoneme-ctc-41h",
+      "revision": "04111e5d2ee8030f715b057f076defa227827454"
+    },
+    {
+      "path": "models/base/model.safetensors",
+      "url": "https://huggingface.co/bobboyms/wav2vec2-base-en-phoneme-ctc-41h/resolve/04111e5d2ee8030f715b057f076defa227827454/model.safetensors",
+      "bytes": 377866436,
+      "sha256": "72a9b7f4d348e8dd85bd887e29ba635a2bd2fe503f1a7f16687c5bb2844afef7",
+      "repository": "bobboyms/wav2vec2-base-en-phoneme-ctc-41h",
+      "revision": "04111e5d2ee8030f715b057f076defa227827454"
+    },
+    {
+      "path": "models/base/preprocessor_config.json",
+      "url": "https://huggingface.co/bobboyms/wav2vec2-base-en-phoneme-ctc-41h/resolve/04111e5d2ee8030f715b057f076defa227827454/preprocessor_config.json",
+      "bytes": 256,
+      "sha256": "ffc72f475cd79680d5d659fbaefc691cdbcee5c9703a15faf708a5e91452a8d8",
+      "repository": "bobboyms/wav2vec2-base-en-phoneme-ctc-41h",
+      "revision": "04111e5d2ee8030f715b057f076defa227827454"
+    },
+    {
+      "path": "models/base/special_tokens_map.json",
+      "url": "https://huggingface.co/bobboyms/wav2vec2-base-en-phoneme-ctc-41h/resolve/04111e5d2ee8030f715b057f076defa227827454/special_tokens_map.json",
+      "bytes": 96,
+      "sha256": "9046da57c270c8e74d0f38832b4adce269c9d914ef21d2a0925e7772152dd793",
+      "repository": "bobboyms/wav2vec2-base-en-phoneme-ctc-41h",
+      "revision": "04111e5d2ee8030f715b057f076defa227827454"
+    },
+    {
+      "path": "models/base/tokenizer_config.json",
+      "url": "https://huggingface.co/bobboyms/wav2vec2-base-en-phoneme-ctc-41h/resolve/04111e5d2ee8030f715b057f076defa227827454/tokenizer_config.json",
+      "bytes": 1169,
+      "sha256": "8166f63dd2839577833a63f218ccd12f61e1120b0141f321c6c5dc7bbda43ab6",
+      "repository": "bobboyms/wav2vec2-base-en-phoneme-ctc-41h",
+      "revision": "04111e5d2ee8030f715b057f076defa227827454"
+    },
+    {
+      "path": "models/base/vocab.json",
+      "url": "https://huggingface.co/bobboyms/wav2vec2-base-en-phoneme-ctc-41h/resolve/04111e5d2ee8030f715b057f076defa227827454/vocab.json",
+      "bytes": 1562,
+      "sha256": "4f011122a244fdf1c79ae9ee19e19f4f4e4ee1822b94eed1e11479b66ba980ab",
+      "repository": "bobboyms/wav2vec2-base-en-phoneme-ctc-41h",
+      "revision": "04111e5d2ee8030f715b057f076defa227827454"
+    },
+    {
+      "path": "models/large/README.md",
+      "url": "https://huggingface.co/facebook/wav2vec2-lv-60-espeak-cv-ft/resolve/ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4/README.md",
+      "bytes": 3035,
+      "sha256": "81a55816a87034bcf0828d6181fa88abad32a0cbfcebc2ebc8b336664b69ba60",
+      "repository": "facebook/wav2vec2-lv-60-espeak-cv-ft",
+      "revision": "ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4"
+    },
+    {
+      "path": "models/large/config.json",
+      "url": "https://huggingface.co/facebook/wav2vec2-lv-60-espeak-cv-ft/resolve/ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4/config.json",
+      "bytes": 1856,
+      "sha256": "4609fb49b7e1d28aecb2840da1926c40bd915bc6f1120a940afacf7159bbfb13",
+      "repository": "facebook/wav2vec2-lv-60-espeak-cv-ft",
+      "revision": "ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4"
+    },
+    {
+      "path": "models/large/preprocessor_config.json",
+      "url": "https://huggingface.co/facebook/wav2vec2-lv-60-espeak-cv-ft/resolve/ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4/preprocessor_config.json",
+      "bytes": 212,
+      "sha256": "a2254a5b58f72cd4de3632f8eee64f3f098b7c1402128d2f419e7d00ae13e335",
+      "repository": "facebook/wav2vec2-lv-60-espeak-cv-ft",
+      "revision": "ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4"
+    },
+    {
+      "path": "models/large/pytorch_model.bin",
+      "url": "https://huggingface.co/facebook/wav2vec2-lv-60-espeak-cv-ft/resolve/ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4/pytorch_model.bin",
+      "bytes": 1263535127,
+      "sha256": "3173bde9e9ce490fa0f989e413c42f25bc1820c020adc1e6b9b87025b3cfcc5e",
+      "repository": "facebook/wav2vec2-lv-60-espeak-cv-ft",
+      "revision": "ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4"
+    },
+    {
+      "path": "models/large/special_tokens_map.json",
+      "url": "https://huggingface.co/facebook/wav2vec2-lv-60-espeak-cv-ft/resolve/ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4/special_tokens_map.json",
+      "bytes": 85,
+      "sha256": "bb7068de1150661a10b55f9e4b12a0e77af8bf91f5e45e1b58afaf1d0e17f675",
+      "repository": "facebook/wav2vec2-lv-60-espeak-cv-ft",
+      "revision": "ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4"
+    },
+    {
+      "path": "models/large/tokenizer_config.json",
+      "url": "https://huggingface.co/facebook/wav2vec2-lv-60-espeak-cv-ft/resolve/ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4/tokenizer_config.json",
+      "bytes": 321,
+      "sha256": "1273ec458332cc55226ec596904bae811420755ace7e5d69462b61c4f480b457",
+      "repository": "facebook/wav2vec2-lv-60-espeak-cv-ft",
+      "revision": "ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4"
+    },
+    {
+      "path": "models/large/vocab.json",
+      "url": "https://huggingface.co/facebook/wav2vec2-lv-60-espeak-cv-ft/resolve/ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4/vocab.json",
+      "bytes": 4637,
+      "sha256": "d732ab2456c0c017930001dc9af0b41b3b93d25b2eb9740bf9d925508d7d87d0",
+      "repository": "facebook/wav2vec2-lv-60-espeak-cv-ft",
+      "revision": "ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4"
+    }
+  ],
+  "ipa_to_reference": {
+    "aɪ": [
+      "ay"
+    ],
+    "aʊ": [
+      "aw"
+    ],
+    "b": [
+      "b"
+    ],
+    "d": [
+      "d"
+    ],
+    "dʒ": [
+      "jh"
+    ],
+    "eɪ": [
+      "ey"
+    ],
+    "f": [
+      "f"
+    ],
+    "h": [
+      "hh"
+    ],
+    "i": [
+      "iy"
+    ],
+    "iː": [
+      "iy"
+    ],
+    "j": [
+      "y"
+    ],
+    "k": [
+      "k"
+    ],
+    "l": [
+      "l"
+    ],
+    "m": [
+      "m"
+    ],
+    "n": [
+      "n"
+    ],
+    "n̩": [
+      "n"
+    ],
+    "oʊ": [
+      "ow"
+    ],
+    "p": [
+      "p"
+    ],
+    "r": [
+      "r"
+    ],
+    "s": [
+      "s"
+    ],
+    "t": [
+      "t"
+    ],
+    "tʃ": [
+      "ch"
+    ],
+    "uː": [
+      "uw"
+    ],
+    "v": [
+      "v"
+    ],
+    "w": [
+      "w"
+    ],
+    "z": [
+      "z"
+    ],
+    "æ": [
+      "ae"
+    ],
+    "ð": [
+      "dh"
+    ],
+    "ŋ": [
+      "ng"
+    ],
+    "ɐ": [
+      "ah"
+    ],
+    "ɑː": [
+      "aa"
+    ],
+    "ɔ": [
+      "ao"
+    ],
+    "ɔɪ": [
+      "oy"
+    ],
+    "ɔː": [
+      "ao"
+    ],
+    "ə": [
+      "ah"
+    ],
+    "ɚ": [
+      "er"
+    ],
+    "ɛ": [
+      "eh"
+    ],
+    "ɜː": [
+      "er"
+    ],
+    "ɡ": [
+      "g"
+    ],
+    "ɪ": [
+      "ih"
+    ],
+    "ɹ": [
+      "r"
+    ],
+    "ɾ": [
+      "dx"
+    ],
+    "ʃ": [
+      "sh"
+    ],
+    "ʊ": [
+      "uh"
+    ],
+    "ʌ": [
+      "ah"
+    ],
+    "ʒ": [
+      "zh"
+    ],
+    "ʔ": [
+      "q"
+    ],
+    "θ": [
+      "th"
+    ],
+    "ᵻ": [
+      "ih"
+    ],
+    "x": [
+      "kh"
+    ],
+    "aɪə": [
+      "ay",
+      "ah"
+    ],
+    "aɪɚ": [
+      "ay",
+      "er"
+    ],
+    "iə": [
+      "iy",
+      "ah"
+    ],
+    "ɑːɹ": [
+      "aa",
+      "r"
+    ],
+    "ɔːɹ": [
+      "ao",
+      "r"
+    ],
+    "əl": [
+      "ah",
+      "l"
+    ],
+    "ɛɹ": [
+      "eh",
+      "r"
+    ],
+    "ɪɹ": [
+      "ih",
+      "r"
+    ],
+    "ʊɹ": [
+      "uh",
+      "r"
+    ]
+  },
+  "mapping_policy": "Explicit English IPA to broad NUS ARPABET; remove stress only. Diphthongs stay one phone, specified rhotic compounds expand. Multi-phone token posterior mass divided equally; not a duration estimate. Flap dx/glottal q/velar fricative kh remain distinct without NUS counterparts. All other tokens including <unk> are unmapped phones and count in PER. Blank/boundary/BOS/EOS excluded. No label-driven mapping changes after outcomes.",
+  "reference_policy": "NUS sil combines silence/inhalation; nonphone, never vocal-absence ground truth. sp is word boundary and excluded. All other reference phones retained, including unvoiced consonants. Clip intervals to frozen input; retain partially clipped final phones; no correction based on model.",
+  "metrics": "Free greedy CTC PER/S/D/I, raw-mass composition vs duration reference TV, ordered-bin TV and adjacent-delta error; blank/special/unmapped mass; observation/reference/mapping coverage; all missing bins retained. Descriptive only.",
+  "terms": "NUS original distribution research use only; raw files are not redistributed. Cite Duan et al., APSIPA ASC2013.",
+  "source_page": "https://smcnus.comp.nus.edu.sg/",
+  "source_folder": "https://drive.google.com/open?id=12pP9uUl0HTVANU3IPLnumTJiRjPtVUMx",
+  "separator_sha256": "8726e21a993978c7ba086d3872e7608d7d5bfca646ca4aca459ffda844faa8b4",
+  "backing_sha256": {
+    "vibe.ogg": "73d6443ef90a7c022f164e5aa90e56c2291585930b39b1656d0765abbc1f1779",
+    "sugar.ogg": "f062221a56a227cdb7c067cf2e6ac0e250a50012f7693ca0c8e31f05f83e49b1"
+  },
+  "frozen_sources": {
+    "scripts/prepare_singing_phone_pilot.py": "88bccc902f1abf0cf4d31f21544306ac144f0e2a075a013009071d13e3c15ac4",
+    "scripts/qualify_singing_phones.py": "d56798e89a01ea2ba93524e959c2601f55a1fcd69ec5df690a3e499bd0ad2554",
+    "scripts/compare_vocal_backends.py": "645bdb7e0aaaa3a98e7d85c7a3f685b483b744c1092aa300165211835e1965e5",
+    "scripts/qualify_vocal_f0.py": "139656428df7324df65b00ecc6c8a42156bb6752c33e1a2a2f826de2d6a08d48",
+    "src/natural_features/features/speech/singing_benchmark.py": "965ed22f60a16b8a3ed5bf7aedd0d7a9d066768d6b64eebd483feeb6e2c1de70",
+    "src/natural_features/features/speech/phonology.py": "99bbdd6488c58db80febd4f98653478927a2f81da6867effdc028f0408b30ee4",
+    "src/natural_features/features/audio/vocal_f0.py": "cf166895a44398808cefe86e2da41559f4c8dd1ae61e10d9462b95bd9c1b4d2c"
+  },
+  "limitations": [
+    "All four pairs are consumed development recordings.",
+    "Four singers/four songs and two backing recordings cannot establish generalization.",
+    "Read speech boundaries are automatically aligned and lower-grade references than manually annotated singing.",
+    "CTC evidence occupancy is not phonetic duration occupancy; TV is a diagnostic.",
+    "Model pretraining overlap has not been excluded.",
+    "Study-specific support thresholds, windows, scanner alignment, matching and neural fitting remain downstream.",
+    "No F0-based phonetic filtering.",
+    "Conservative mapping covers110 base phone columns vs59 large;330 large phone columns remain unmapped, including some English variants. Cross-model PER/TV confound mapping coverage with recognition.",
+    "First16seconds read versus sing contains different text extents; no matched-utterance difficulty claim."
+  ],
+  "runtime": {
+    "torch_threads": 1,
+    "device": "cpu",
+    "wav_subtype": "FLOAT",
+    "reader": "soundfile float32; preserved source sample rate"
+  }
+}

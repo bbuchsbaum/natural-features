@@ -1,0 +1,393 @@
+{
+  "activity_reference_limits": "Known nonvocal controls and pitched singing positives only; F0-unvoiced frames remain unknown for vocal presence.",
+  "canonical_analytic": {
+    "consumed_v2_test": {
+      "report": "/private/tmp/natural-features-singing-benchmarks/tests/benchmarks/reports/vocal_f0_holdout_v2.json",
+      "result": {
+        "cases": {
+          "glide_110_440": {
+            "gross_pitch_error_rate": 0.0,
+            "median_abs_cents_error": 6.1193820307777385,
+            "median_abs_cents_error_interior": 6.0435496860578795,
+            "n_joint_voiced": 99,
+            "n_reference": 100,
+            "n_reference_unvoiced": 0,
+            "n_reference_voiced": 100,
+            "n_scored": 100,
+            "n_unmatched": 0,
+            "octave_error_rate": 0.0,
+            "raw_pitch_accuracy": 0.99,
+            "voicing_false_alarm_rate": null,
+            "voicing_recall": 0.99
+          },
+          "missing_fundamental_220": {
+            "gross_pitch_error_rate": 0.01,
+            "median_abs_cents_error": 5.021218804797177,
+            "median_abs_cents_error_interior": 5.021218804797177,
+            "n_joint_voiced": 100,
+            "n_reference": 100,
+            "n_reference_unvoiced": 0,
+            "n_reference_voiced": 100,
+            "n_scored": 100,
+            "n_unmatched": 0,
+            "octave_error_rate": 0.01,
+            "raw_pitch_accuracy": 0.99,
+            "voicing_false_alarm_rate": null,
+            "voicing_recall": 1.0
+          },
+          "tone_100": {
+            "gross_pitch_error_rate": 0.0,
+            "median_abs_cents_error": 8.065234073299761,
+            "median_abs_cents_error_interior": 8.065234073299761,
+            "n_joint_voiced": 99,
+            "n_reference": 100,
+            "n_reference_unvoiced": 0,
+            "n_reference_voiced": 100,
+            "n_scored": 100,
+            "n_unmatched": 0,
+            "octave_error_rate": 0.0,
+            "raw_pitch_accuracy": 0.99,
+            "voicing_false_alarm_rate": null,
+            "voicing_recall": 0.99
+          },
+          "tone_150": {
+            "gross_pitch_error_rate": 0.0,
+            "median_abs_cents_error": 8.921786495143092,
+            "median_abs_cents_error_interior": 8.802113209377126,
+            "n_joint_voiced": 99,
+            "n_reference": 100,
+            "n_reference_unvoiced": 0,
+            "n_reference_voiced": 100,
+            "n_scored": 100,
+            "n_unmatched": 0,
+            "octave_error_rate": 0.0,
+            "raw_pitch_accuracy": 0.99,
+            "voicing_false_alarm_rate": null,
+            "voicing_recall": 0.99
+          },
+          "tone_220": {
+            "gross_pitch_error_rate": 0.0,
+            "median_abs_cents_error": 5.152674501316282,
+            "median_abs_cents_error_interior": 5.152674501316282,
+            "n_joint_voiced": 100,
+            "n_reference": 100,
+            "n_reference_unvoiced": 0,
+            "n_reference_voiced": 100,
+            "n_scored": 100,
+            "n_unmatched": 0,
+            "octave_error_rate": 0.0,
+            "raw_pitch_accuracy": 1.0,
+            "voicing_false_alarm_rate": null,
+            "voicing_recall": 1.0
+          },
+          "tone_440": {
+            "gross_pitch_error_rate": 0.0,
+            "median_abs_cents_error": 5.36097183160147,
+            "median_abs_cents_error_interior": 5.36097183160147,
+            "n_joint_voiced": 100,
+            "n_reference": 100,
+            "n_reference_unvoiced": 0,
+            "n_reference_voiced": 100,
+            "n_scored": 100,
+            "n_unmatched": 0,
+            "octave_error_rate": 0.0,
+            "raw_pitch_accuracy": 1.0,
+            "voicing_false_alarm_rate": null,
+            "voicing_recall": 1.0
+          }
+        },
+        "complete": true,
+        "worst_median_abs_cents_error": 8.802113209377126
+      },
+      "scope": "unchanged pitch-engine controls; no learned singing-identity claim from analytic tones",
+      "sha256": "ed328fe19e465a773437beb9358591068ed0c283565f547c3dfb082f2dd301a0"
+    },
+    "consumed_v6_test": {
+      "report": "/private/tmp/natural-features-singing-benchmarks/tests/benchmarks/reports/vocal_f0_holdout_v6.json",
+      "result": {
+        "cases": {
+          "glide_110_440": {
+            "gross_pitch_error_rate": 0.0,
+            "median_abs_cents_error": 6.1193820307777385,
+            "median_abs_cents_error_interior": 6.0435496860578795,
+            "n_joint_voiced": 99,
+            "n_reference": 100,
+            "n_reference_unvoiced": 0,
+            "n_reference_voiced": 100,
+            "n_scored": 100,
+            "n_unmatched": 0,
+            "octave_error_rate": 0.0,
+            "raw_pitch_accuracy": 0.99,
+            "voicing_false_alarm_rate": null,
+            "voicing_recall": 0.99
+          },
+          "missing_fundamental_220": {
+            "gross_pitch_error_rate": 0.01,
+            "median_abs_cents_error": 5.021218804797177,
+            "median_abs_cents_error_interior": 5.021218804797177,
+            "n_joint_voiced": 100,
+            "n_reference": 100,
+            "n_reference_unvoiced": 0,
+            "n_reference_voiced": 100,
+            "n_scored": 100,
+            "n_unmatched": 0,
+            "octave_error_rate": 0.01,
+            "raw_pitch_accuracy": 0.99,
+            "voicing_false_alarm_rate": null,
+            "voicing_recall": 1.0
+          },
+          "tone_100": {
+            "gross_pitch_error_rate": 0.0,
+            "median_abs_cents_error": 8.065234073299761,
+            "median_abs_cents_error_interior": 8.065234073299761,
+            "n_joint_voiced": 99,
+            "n_reference": 100,
+            "n_reference_unvoiced": 0,
+            "n_reference_voiced": 100,
+            "n_scored": 100,
+            "n_unmatched": 0,
+            "octave_error_rate": 0.0,
+            "raw_pitch_accuracy": 0.99,
+            "voicing_false_alarm_rate": null,
+            "voicing_recall": 0.99
+          },
+          "tone_150": {
+            "gross_pitch_error_rate": 0.0,
+            "median_abs_cents_error": 8.921786495143092,
+            "median_abs_cents_error_interior": 8.802113209377126,
+            "n_joint_voiced": 99,
+            "n_reference": 100,
+            "n_reference_unvoiced": 0,
+            "n_reference_voiced": 100,
+            "n_scored": 100,
+            "n_unmatched": 0,
+            "octave_error_rate": 0.0,
+            "raw_pitch_accuracy": 0.99,
+            "voicing_false_alarm_rate": null,
+            "voicing_recall": 0.99
+          },
+          "tone_220": {
+            "gross_pitch_error_rate": 0.0,
+            "median_abs_cents_error": 5.152674501316282,
+            "median_abs_cents_error_interior": 5.152674501316282,
+            "n_joint_voiced": 100,
+            "n_reference": 100,
+            "n_reference_unvoiced": 0,
+            "n_reference_voiced": 100,
+            "n_scored": 100,
+            "n_unmatched": 0,
+            "octave_error_rate": 0.0,
+            "raw_pitch_accuracy": 1.0,
+            "voicing_false_alarm_rate": null,
+            "voicing_recall": 1.0
+          },
+          "tone_440": {
+            "gross_pitch_error_rate": 0.0,
+            "median_abs_cents_error": 5.36097183160147,
+            "median_abs_cents_error_interior": 5.36097183160147,
+            "n_joint_voiced": 100,
+            "n_reference": 100,
+            "n_reference_unvoiced": 0,
+            "n_reference_voiced": 100,
+            "n_scored": 100,
+            "n_unmatched": 0,
+            "octave_error_rate": 0.0,
+            "raw_pitch_accuracy": 1.0,
+            "voicing_false_alarm_rate": null,
+            "voicing_recall": 1.0
+          }
+        },
+        "complete": true,
+        "worst_median_abs_cents_error": 8.802113209377126
+      },
+      "scope": "unchanged pitch-engine controls; no learned singing-identity claim from analytic tones",
+      "sha256": "f62002e2cb0b617c38334bf5f65bcddf8479fe9fce4fea944a574869d4969621"
+    },
+    "original_development": {
+      "report": "/private/tmp/natural-features-singing-benchmarks/tests/benchmarks/reports/vocal_f0_development_v2.json",
+      "result": {
+        "cases": {
+          "glide_110_440": {
+            "gross_pitch_error_rate": 0.0,
+            "median_abs_cents_error": 6.1193820307777385,
+            "median_abs_cents_error_interior": 6.0435496860578795,
+            "n_joint_voiced": 99,
+            "n_reference": 100,
+            "n_reference_unvoiced": 0,
+            "n_reference_voiced": 100,
+            "n_scored": 100,
+            "n_unmatched": 0,
+            "octave_error_rate": 0.0,
+            "raw_pitch_accuracy": 0.99,
+            "voicing_false_alarm_rate": null,
+            "voicing_recall": 0.99
+          },
+          "missing_fundamental_220": {
+            "gross_pitch_error_rate": 0.01,
+            "median_abs_cents_error": 5.021218804797177,
+            "median_abs_cents_error_interior": 5.021218804797177,
+            "n_joint_voiced": 100,
+            "n_reference": 100,
+            "n_reference_unvoiced": 0,
+            "n_reference_voiced": 100,
+            "n_scored": 100,
+            "n_unmatched": 0,
+            "octave_error_rate": 0.01,
+            "raw_pitch_accuracy": 0.99,
+            "voicing_false_alarm_rate": null,
+            "voicing_recall": 1.0
+          },
+          "tone_100": {
+            "gross_pitch_error_rate": 0.0,
+            "median_abs_cents_error": 8.065234073299761,
+            "median_abs_cents_error_interior": 8.065234073299761,
+            "n_joint_voiced": 99,
+            "n_reference": 100,
+            "n_reference_unvoiced": 0,
+            "n_reference_voiced": 100,
+            "n_scored": 100,
+            "n_unmatched": 0,
+            "octave_error_rate": 0.0,
+            "raw_pitch_accuracy": 0.99,
+            "voicing_false_alarm_rate": null,
+            "voicing_recall": 0.99
+          },
+          "tone_150": {
+            "gross_pitch_error_rate": 0.0,
+            "median_abs_cents_error": 8.921786495143092,
+            "median_abs_cents_error_interior": 8.802113209377126,
+            "n_joint_voiced": 99,
+            "n_reference": 100,
+            "n_reference_unvoiced": 0,
+            "n_reference_voiced": 100,
+            "n_scored": 100,
+            "n_unmatched": 0,
+            "octave_error_rate": 0.0,
+            "raw_pitch_accuracy": 0.99,
+            "voicing_false_alarm_rate": null,
+            "voicing_recall": 0.99
+          },
+          "tone_220": {
+            "gross_pitch_error_rate": 0.0,
+            "median_abs_cents_error": 5.152674501316282,
+            "median_abs_cents_error_interior": 5.152674501316282,
+            "n_joint_voiced": 100,
+            "n_reference": 100,
+            "n_reference_unvoiced": 0,
+            "n_reference_voiced": 100,
+            "n_scored": 100,
+            "n_unmatched": 0,
+            "octave_error_rate": 0.0,
+            "raw_pitch_accuracy": 1.0,
+            "voicing_false_alarm_rate": null,
+            "voicing_recall": 1.0
+          },
+          "tone_440": {
+            "gross_pitch_error_rate": 0.0,
+            "median_abs_cents_error": 5.36097183160147,
+            "median_abs_cents_error_interior": 5.36097183160147,
+            "n_joint_voiced": 100,
+            "n_reference": 100,
+            "n_reference_unvoiced": 0,
+            "n_reference_voiced": 100,
+            "n_scored": 100,
+            "n_unmatched": 0,
+            "octave_error_rate": 0.0,
+            "raw_pitch_accuracy": 1.0,
+            "voicing_false_alarm_rate": null,
+            "voicing_recall": 1.0
+          }
+        },
+        "complete": true,
+        "worst_median_abs_cents_error": 8.802113209377126
+      },
+      "scope": "unchanged pitch-engine controls; no learned singing-identity claim from analytic tones",
+      "sha256": "a1dd10d4ed93c8b0a6a30de1f35be6ab6ae54bc1d43f5a7d889afecf6a00c4ba"
+    }
+  },
+  "errors": [
+    {
+      "key": "original_development:1:solo",
+      "message": "\nNot equal to tolerance rtol=2e-05, atol=1e-06\n\nMismatched elements: 1 / 1001 (0.0999%)\nMismatch at index:\n [618]: 0.08249523490667343 (ACTUAL), 0.08249250054359436 (DESIRED)\nMax absolute difference among violations: 2.73436308e-06\nMax relative difference among violations: 3.3146808e-05\n ACTUAL: array([0.005316, 0.049416, 0.088481, ..., 0.913982, 0.841486, 0.647484],\n      shape=(1001,))\n DESIRED: array([0.005316, 0.049416, 0.088482, ..., 0.913982, 0.841486, 0.647484],\n      shape=(1001,))",
+      "type": "AssertionError"
+    }
+  ],
+  "fresh_data_consumed": false,
+  "protocol": {
+    "activity_masks": [
+      "none",
+      "activity_mixture",
+      "activity_stem"
+    ],
+    "activity_threshold": 0.51,
+    "arms": [
+      "canonical",
+      "rmvpe_mixture",
+      "rmvpe_stem"
+    ],
+    "canonical_base_commit": "91bd4a436f96b78165e1c59641a407a9f2014541",
+    "consumed_protocol": {
+      "path": "tests/benchmarks/thresholds/vocal_voicing_development_v7.json",
+      "sha256": "26099428ce8de69c703eb383ed48577f2af478bb7c69eba875ea247bbef85fc4"
+    },
+    "frozen_sources": {
+      "scripts/calibrate_vocal_f0.py": "f24e7bc77388e3dbe6b897a830972841a45c4ad06b6e71e275198d155332fb86",
+      "scripts/calibrate_vocal_voicing.py": "66bac92805d8ea3006b70eeddc1661b78a3a29bfade441a69b79b0d3eb5c9872",
+      "scripts/compare_vocal_backends.py": "8014c67785beffc68938f7d79bbbb127cf8433a2aebc7b1d10dd8856927728d8",
+      "scripts/qualify_vocal_f0.py": "139656428df7324df65b00ecc6c8a42156bb6752c33e1a2a2f826de2d6a08d48",
+      "src/natural_features/features/audio/vocal_activity_benchmark.py": "e072b44d69c02a96aedfb3a63bf66360616035edc7fc0b0fc93a148549e5b57c",
+      "src/natural_features/features/audio/vocal_evidence.py": "b55699e68a94ce5ce2b9f232e6f7a666f9f40be76ccdf5557bec0f44fde3dc4b",
+      "src/natural_features/features/audio/vocal_f0.py": "cf166895a44398808cefe86e2da41559f4c8dd1ae61e10d9462b95bd9c1b4d2c",
+      "src/natural_features/features/audio/vocal_f0_benchmark.py": "23670160c8e70b605a304281d6be653e39178b6ae5dc7a8facdc7cfbc35bcdde"
+    },
+    "limitations": [
+      "All40 Vocadito recordings have been examined downstream and are development evidence.",
+      "Only18 previously preserved excerpts and two accompaniment recordings are used here.",
+      "Activity reference positives from F0 do not cover unvoiced consonants; F0-zero is unknown.",
+      "Training overlap with candidate models is not established.",
+      "RMVPE BiGRU uses whole-input context; CPJKU uses115 magnitude frames; no shared causal claim."
+    ],
+    "models": {
+      "activity": {
+        "checkpoint_relative_path": "dataset/jamendo/models/model_log_0mean/model.pt",
+        "checkpoint_sha256": "f09cd6a55c83c13640622ce67480443ce282e3124dd22fccee8a898bb2ba9dee",
+        "license": "MIT repository",
+        "source_archive_url": "https://github.com/CPJKU/veracity/archive/0983900f136173015f3c5d0b116be014edd33905.zip"
+      },
+      "rmvpe": {
+        "checkpoint_sha256": "6d62215f4306e3ca278246188607209f09af3dc77ed4232efdd069798c4ec193",
+        "checkpoint_url": "https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/e6d0c1a17da07c33557852f9dfa2bd44cc75737d/rmvpe.pt",
+        "license": "MIT source; checkpoint repository license not independently established",
+        "source_url": "https://raw.githubusercontent.com/RVC-Project/Retrieval-based-Voice-Conversion-WebUI/9f2f0559e6932c10c48642d404e7d2e771d9db43/infer/lib/rmvpe.py"
+      }
+    },
+    "purpose": "Fixed comparison on all90 previously consumed inputs; no new qualification data, fitting or threshold search.",
+    "qualification_allowed": false,
+    "rmvpe_threshold": 0.03,
+    "schema": "VocalBackendComparisonProtocol/v1",
+    "selection": "none; report every fixed arm; unchanged gates; no automatic adoption",
+    "state": "development"
+  },
+  "protocol_sha256": "814f4a6220cbd7814ae0e2fe2b4657227cb1cc3ba29b9f5d922b756d3a8e7a06",
+  "qualified": false,
+  "rows": [],
+  "schema": "VocalBackendComparison/v1",
+  "state": "development",
+  "torch_threads": 1,
+  "receipt_kind": "preserved failed baseline preflight before any candidate scoring",
+  "source_commit": "ff09f76",
+  "resolution": "Restore historical torch thread count4 at ebabc86; leave numerical tolerances and scientific gates unchanged.",
+  "log_sha256": "319bbc0f0b65082c633f720dc2910bf46472dc1762963d7114718128c4c25894",
+  "log": "ERROR original_development:1:solo: \nNot equal to tolerance rtol=2e-05, atol=1e-06\n\nMismatched elements: 1 / 1001 (0.0999%)\nMismatch at index:\n [618]: 0.08249523490667343 (ACTUAL), 0.08249250054359436 (DESIRED)\nMax absolute difference among violations: 2.73436308e-06\nMax relative difference among violations: 3.3146808e-05\n ACTUAL: array([0.005316, 0.049416, 0.088481, ..., 0.913982, 0.841486, 0.647484],\n      shape=(1001,))\n DESIRED: array([0.005316, 0.049416, 0.088482, ..., 0.913982, 0.841486, 0.647484],\n      shape=(1001,))\n",
+  "independent_review": {
+    "all_discrete_decisions_unchanged": true,
+    "candidate_max_difference_hz": 0.0006713867,
+    "candidate_max_difference_cents": 0.00175717,
+    "confidence_max_difference": 3.8743019e-06,
+    "source_support_max_difference": 4.12967e-07,
+    "source_rms_max_difference": 2.92137e-09,
+    "historical_threads": 4,
+    "preflight_threads": 1,
+    "interpretation": "Identical library versions; thread-order float32 reduction drift inferred, then corrected runtime before candidate scoring."
+  }
+}
