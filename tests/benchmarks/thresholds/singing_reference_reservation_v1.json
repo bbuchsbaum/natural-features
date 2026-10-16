@@ -1,0 +1,365 @@
+{
+  "schema": "SingingReferenceReservation/v1",
+  "state": "reserved_not_evaluated",
+  "created_date": "2026-10-15",
+  "before_new_selection": true,
+  "reservation_scope": "known natural-features development ledger through 8c4b4619847687dbea3b118fc97bbcc86d99648b",
+  "audio_decoded": false,
+  "phone_annotations_parsed": false,
+  "candidate_inference_run": false,
+  "consumed": {
+    "vocadito": "All40 recordings are development; no untouched claim. Song identities absent from preserved metadata.",
+    "nus_singers": [
+      "ADIZ",
+      "JLEE",
+      "JTAN",
+      "KENN"
+    ],
+    "nus_global_song_ids": [
+      "01",
+      "04",
+      "05",
+      "07"
+    ],
+    "accompaniment_recordings": [
+      "Kevin MacLeod Vibe Ace",
+      "Kevin MacLeod Sugar Plum Fairy"
+    ],
+    "other_downstream_usage": "Unknown beyond the supplied known ledger; must check before any evaluation claim."
+  },
+  "selection_rule": "Sort unused singers lexically, choose their smallest global NUS song number not consumed and not already selected; all files reserved before further fitting. No performance, waveform or annotation-based selection.",
+  "phone_singer_song_pairs": [
+    [
+      "MCUR",
+      "10"
+    ],
+    [
+      "MPOL",
+      "11"
+    ],
+    [
+      "MPUR",
+      "02"
+    ],
+    [
+      "NJAT",
+      "15"
+    ],
+    [
+      "PMAR",
+      "08"
+    ],
+    [
+      "SAMF",
+      "09"
+    ],
+    [
+      "VKOW",
+      "19"
+    ],
+    [
+      "ZHIY",
+      "03"
+    ]
+  ],
+  "reserved_assets": [
+    {
+      "dataset": "NUS-48E",
+      "singer_id": "MCUR",
+      "song_id": "10",
+      "name": "MCUR_10.txt",
+      "kind": "annotation",
+      "url": "https://drive.usercontent.google.com/download?id=1WlcWxgO6bOqa8qo7VLDQneW6QnGCgfEN&export=download",
+      "status": "reserved_bytes_only",
+      "path": "/private/tmp/nf-singing-reference-reservation-v1/MCUR_10.txt",
+      "sha256": "f99ed9567661b0efe1417aad445eabb813d4d4c07f2da45c069e69513dfb5516",
+      "bytes": 18552
+    },
+    {
+      "dataset": "NUS-48E",
+      "singer_id": "MCUR",
+      "song_id": "10",
+      "name": "MCUR_10.wav",
+      "kind": "audio",
+      "url": "https://drive.usercontent.google.com/download?id=1qWiJjSSeYHe9l2hEvEzduR-mYP4qC0PB&export=download",
+      "status": "reserved_bytes_only",
+      "path": "/private/tmp/nf-singing-reference-reservation-v1/MCUR_10.wav",
+      "sha256": "3dcc4b1c2037dd66c2b713b82a6cff351557f2b7bc624a1954573f79704c142c",
+      "bytes": 15816960
+    },
+    {
+      "dataset": "NUS-48E",
+      "singer_id": "MPOL",
+      "song_id": "11",
+      "name": "MPOL_11.txt",
+      "kind": "annotation",
+      "url": "https://drive.usercontent.google.com/download?id=1DPHFT1RiNlk6TzJ8oAJfZC7BfM9KARuC&export=download",
+      "status": "reserved_bytes_only",
+      "path": "/private/tmp/nf-singing-reference-reservation-v1/MPOL_11.txt",
+      "sha256": "f4d5d159e7d2461a303398eb5279ec7d074841e80f4c6fe26de61ca7ac7cb0ab",
+      "bytes": 19990
+    },
+    {
+      "dataset": "NUS-48E",
+      "singer_id": "MPOL",
+      "song_id": "11",
+      "name": "MPOL_11.wav",
+      "kind": "audio",
+      "url": "https://drive.usercontent.google.com/download?id=1ZOT0WdJTIS8Mia0IE9NNYCyFyA3bO074&export=download",
+      "status": "reserved_bytes_only",
+      "path": "/private/tmp/nf-singing-reference-reservation-v1/MPOL_11.wav",
+      "sha256": "9b21403577299cfdceddbef5e7ea6fa413cd431cd03851b30994ce4e98331f33",
+      "bytes": 22138446
+    },
+    {
+      "dataset": "NUS-48E",
+      "singer_id": "MPUR",
+      "song_id": "02",
+      "name": "MPUR_02.txt",
+      "kind": "annotation",
+      "url": "https://drive.usercontent.google.com/download?id=1mnVYKRhqYrAe6ez7MLKI7lbEcB536oZe&export=download",
+      "status": "reserved_bytes_only",
+      "path": "/private/tmp/nf-singing-reference-reservation-v1/MPUR_02.txt",
+      "sha256": "d26c110cee41ad78891e64789e94ddba60bc14f388645f95bbeff854eaed4b87",
+      "bytes": 8202
+    },
+    {
+      "dataset": "NUS-48E",
+      "singer_id": "MPUR",
+      "song_id": "02",
+      "name": "MPUR_02.wav",
+      "kind": "audio",
+      "url": "https://drive.usercontent.google.com/download?id=1n0jNQ2Jk1lfM7vAhlE15oXfsVKxECRQj&export=download",
+      "status": "reserved_bytes_only",
+      "path": "/private/tmp/nf-singing-reference-reservation-v1/MPUR_02.wav",
+      "sha256": "7395e94abbd851c557acd6ec3cd16207dd5810bc02b69aa2ed1e0b64d1fe4006",
+      "bytes": 9785610
+    },
+    {
+      "dataset": "NUS-48E",
+      "singer_id": "NJAT",
+      "song_id": "15",
+      "name": "NJAT_15.txt",
+      "kind": "annotation",
+      "url": "https://drive.usercontent.google.com/download?id=1oPai8ZwTcyQVz1sCmWebC5s8jOvUcfUa&export=download",
+      "status": "reserved_bytes_only",
+      "path": "/private/tmp/nf-singing-reference-reservation-v1/NJAT_15.txt",
+      "sha256": "cd721ec62f7ca81faf2d26965661bf0a6d5fd35764afb077c3ff5ac44aa22ee1",
+      "bytes": 17131
+    },
+    {
+      "dataset": "NUS-48E",
+      "singer_id": "NJAT",
+      "song_id": "15",
+      "name": "NJAT_15.wav",
+      "kind": "audio",
+      "url": "https://drive.usercontent.google.com/download?id=1x-sRTQHr43opdgXKw8cPqtXLbRaWOgtl&export=download",
+      "status": "reserved_bytes_only",
+      "path": "/private/tmp/nf-singing-reference-reservation-v1/NJAT_15.wav",
+      "sha256": "7aefbf010b895b453e4c24f2a93977764e8ee9dd9296708ee9a2e8da4f3c1d91",
+      "bytes": 23527126
+    },
+    {
+      "dataset": "NUS-48E",
+      "singer_id": "PMAR",
+      "song_id": "08",
+      "name": "PMAR_08.txt",
+      "kind": "annotation",
+      "url": "https://drive.usercontent.google.com/download?id=1rCWjOyJMXqhdKBm3LJtZy1QqpukdBEI-&export=download",
+      "status": "reserved_bytes_only",
+      "path": "/private/tmp/nf-singing-reference-reservation-v1/PMAR_08.txt",
+      "sha256": "49baab830c0dbb01465279028b5e080ca815dbabc946a2e3a69fb99338d6338c",
+      "bytes": 12089
+    },
+    {
+      "dataset": "NUS-48E",
+      "singer_id": "PMAR",
+      "song_id": "08",
+      "name": "PMAR_08.wav",
+      "kind": "audio",
+      "url": "https://drive.usercontent.google.com/download?id=1Dr8k8hq1P51cF3BKV4oyPDNc8eZLD581&export=download",
+      "status": "reserved_bytes_only",
+      "path": "/private/tmp/nf-singing-reference-reservation-v1/PMAR_08.wav",
+      "sha256": "0c8748b4c9fa8250f18eab530c10f6a30b02f6b4b5a8c9152bc6d3864564f1e2",
+      "bytes": 18160538
+    },
+    {
+      "dataset": "NUS-48E",
+      "singer_id": "SAMF",
+      "song_id": "09",
+      "name": "SAMF_09.txt",
+      "kind": "annotation",
+      "url": "https://drive.usercontent.google.com/download?id=1MWQi4oY40KrePjNZnQiOXAyg4bBLKTTx&export=download",
+      "status": "reserved_bytes_only",
+      "path": "/private/tmp/nf-singing-reference-reservation-v1/SAMF_09.txt",
+      "sha256": "f985cc7ce98fea60e8e29c7f66a90455d749d9a122b06b42e94ee9ebfbe299a0",
+      "bytes": 9344
+    },
+    {
+      "dataset": "NUS-48E",
+      "singer_id": "SAMF",
+      "song_id": "09",
+      "name": "SAMF_09.wav",
+      "kind": "audio",
+      "url": "https://drive.usercontent.google.com/download?id=1eschexCY5pfsObCw0T4Ap3PcdQ-VvNJj&export=download",
+      "status": "reserved_bytes_only",
+      "path": "/private/tmp/nf-singing-reference-reservation-v1/SAMF_09.wav",
+      "sha256": "1cc27a413904b0ede13bdaedad941a79884b2d1e7ab4196a07208ff691b93a52",
+      "bytes": 12913682
+    },
+    {
+      "dataset": "NUS-48E",
+      "singer_id": "VKOW",
+      "song_id": "19",
+      "name": "VKOW_19.txt",
+      "kind": "annotation",
+      "url": "https://drive.usercontent.google.com/download?id=1lMsKPST3ATlygMxcYekYAW6mX7ET19-p&export=download",
+      "status": "reserved_bytes_only",
+      "path": "/private/tmp/nf-singing-reference-reservation-v1/VKOW_19.txt",
+      "sha256": "396ed97427f1707746ec8d0f6c31b946f219fe9edb7a5fde4271587e63e22698",
+      "bytes": 13888
+    },
+    {
+      "dataset": "NUS-48E",
+      "singer_id": "VKOW",
+      "song_id": "19",
+      "name": "VKOW_19.wav",
+      "kind": "audio",
+      "url": "https://drive.usercontent.google.com/download?id=1BCJy5a_rO8lk9kXNonTZpS3Ul-XYFZba&export=download",
+      "status": "reserved_bytes_only",
+      "path": "/private/tmp/nf-singing-reference-reservation-v1/VKOW_19.wav",
+      "sha256": "8bdc2ca2ddfc8bedd1afb1f6b79f602192a0f92fcdf48fcda2e8aa6b6543fcda",
+      "bytes": 45515908
+    },
+    {
+      "dataset": "NUS-48E",
+      "singer_id": "ZHIY",
+      "song_id": "03",
+      "name": "ZHIY_03.txt",
+      "kind": "annotation",
+      "url": "https://drive.usercontent.google.com/download?id=1_BK2doE78IhUlflimOQXf5lpUDvTyAWY&export=download",
+      "status": "reserved_bytes_only",
+      "path": "/private/tmp/nf-singing-reference-reservation-v1/ZHIY_03.txt",
+      "sha256": "6b56c46e55f15f5e70bb15c6a1c837a92b017cf09ba36f5082716cacd063ad9c",
+      "bytes": 19313
+    },
+    {
+      "dataset": "NUS-48E",
+      "singer_id": "ZHIY",
+      "song_id": "03",
+      "name": "ZHIY_03.wav",
+      "kind": "audio",
+      "url": "https://drive.usercontent.google.com/download?id=12gg3kt37gDtkJ0oFPvf2LlY3eIPMpNrG&export=download",
+      "status": "reserved_bytes_only",
+      "path": "/private/tmp/nf-singing-reference-reservation-v1/ZHIY_03.wav",
+      "sha256": "e037e9798812d8f951ccaef174e1ad570908d5744535f003f9f18c762b5dd2aa",
+      "bytes": 7202996
+    },
+    {
+      "dataset": "librosa-example",
+      "recording_id": "brahms",
+      "name": "brahms.ogg",
+      "kind": "audio",
+      "expected_sha256": "919b48aa4cc66a0357d2cd5728664c5ab8f15c4b3469460df4b59470d35d3e49",
+      "url": "https://librosa.org/data/audio/Hungarian_Dance_number_5_-_Allegro_in_F_sharp_minor_%28string_orchestra%29.ogg",
+      "status": "reserved_bytes_only",
+      "path": "/private/tmp/nf-singing-reference-reservation-v1/brahms.ogg",
+      "sha256": "919b48aa4cc66a0357d2cd5728664c5ab8f15c4b3469460df4b59470d35d3e49",
+      "bytes": 242853
+    },
+    {
+      "dataset": "librosa-example",
+      "recording_id": "brahms",
+      "name": "brahms.txt",
+      "kind": "license",
+      "expected_sha256": "0c857ef8a7365e3df9d5c25c2b08ec3169c0585e3ec08c9c6423d2a04d72fe5f",
+      "url": "https://librosa.org/data/audio/Hungarian_Dance_number_5_-_Allegro_in_F_sharp_minor_%28string_orchestra%29.txt",
+      "status": "reserved_bytes_only",
+      "path": "/private/tmp/nf-singing-reference-reservation-v1/brahms.txt",
+      "sha256": "0c857ef8a7365e3df9d5c25c2b08ec3169c0585e3ec08c9c6423d2a04d72fe5f",
+      "bytes": 265
+    },
+    {
+      "dataset": "librosa-example",
+      "recording_id": "pistachio",
+      "name": "pistachio.ogg",
+      "kind": "audio",
+      "expected_sha256": "9617c9be55c128177b13c20fbc52178ed482e3545094517efb30a7db2798991e",
+      "url": "https://librosa.org/data/audio/442789__lena-orsa__happy-music-pistachio-ice-cream-ragtime.ogg",
+      "status": "reserved_bytes_only",
+      "path": "/private/tmp/nf-singing-reference-reservation-v1/pistachio.ogg",
+      "sha256": "9617c9be55c128177b13c20fbc52178ed482e3545094517efb30a7db2798991e",
+      "bytes": 347949
+    },
+    {
+      "dataset": "librosa-example",
+      "recording_id": "pistachio",
+      "name": "pistachio.txt",
+      "kind": "license",
+      "expected_sha256": "99f9c44368918572ac154ae4a2fec4020d1d4bb418ae7bf241864916d68f9d04",
+      "url": "https://librosa.org/data/audio/442789__lena-orsa__happy-music-pistachio-ice-cream-ragtime.txt",
+      "status": "reserved_bytes_only",
+      "path": "/private/tmp/nf-singing-reference-reservation-v1/pistachio.txt",
+      "sha256": "99f9c44368918572ac154ae4a2fec4020d1d4bb418ae7bf241864916d68f9d04",
+      "bytes": 174
+    }
+  ],
+  "source_metadata": {
+    "nus": "https://smcnus.comp.nus.edu.sg/",
+    "nus_files": "https://drive.google.com/drive/folders/12pP9uUl0HTVANU3IPLnumTJiRjPtVUMx",
+    "song_identity_basis": "Duan et al. NUS sung and spoken lyrics corpus (2013), Table1 global song list and Table3 singer assignments; directory metadata only inspected.",
+    "nus_terms": "Research purposes only; cite Duan et al.2013. Raw audio and annotations remain outside Git.",
+    "brahms_terms": "Public Domain; Johannes Brahms Hungarian Dance5 / US Army Strings; Musopen source listed in hashed license text.",
+    "pistachio_terms": "CC-BY-NC3.0; Lena Orsa Pistachio Ice Cream Ragtime; Freesound442789; hashed license text."
+  },
+  "training_overlap_audit": [
+    {
+      "model": "bobboyms/wav2vec2-base-en-phoneme-ctc-41h",
+      "revision": "04111e5d2ee8030f715b057f076defa227827454",
+      "status": "unknown",
+      "basis": "Pinned model card names an unknown fine-tuning dataset. No absence-of-overlap claim."
+    },
+    {
+      "model": "facebook/wav2vec2-lv-60-espeak-cv-ft",
+      "revision": "ae45363bf3413b374fecd9dc8bc1df0e24c3b7f4",
+      "status": "unverified",
+      "basis": "Model card describes Common Voice phonetic fine-tuning and Libri-Light pretraining; no complete recording-level overlap audit."
+    },
+    {
+      "model": "RVC RMVPE",
+      "checkpoint_sha256": "6d62215f4306e3ca278246188607209f09af3dc77ed4232efdd069798c4ec193",
+      "status": "unknown",
+      "basis": "Weight-specific training manifest unavailable. Paper training/evaluation sets do not prove provenance of this checkpoint."
+    },
+    {
+      "model": "CPJKU veracity",
+      "checkpoint_sha256": "f09cd6a55c83c13640622ce67480443ce282e3124dd22fccee8a898bb2ba9dee",
+      "status": "unverified",
+      "basis": "Jamendo-VAD training documented; exhaustive recording-level overlap not verified."
+    },
+    {
+      "model": "Demucs htdemucs",
+      "status": "unverified",
+      "basis": "No exhaustive track-level training manifest checked for all reserved recordings."
+    }
+  ],
+  "fresh_pitch_reference": {
+    "status": "not_secured",
+    "candidate": "iKala",
+    "url": "https://zenodo.org/records/3532214",
+    "blocker": "Record files restricted; an authorized dataset copy/access grant is needed. No recording-level pitch holdout is claimed reserved.",
+    "alternatives_reviewed": [
+      "TONAS (access/terms unresolved)",
+      "VocalNotes (audio by request)"
+    ],
+    "no_substitute": "NUS phone intervals do not supply F0 contours; F0-zero does not label vocal absence."
+  },
+  "evaluation_release_conditions": [
+    "Freeze separate evaluation protocol and candidate SHA before reading annotations or running models.",
+    "Verify reserved bytes and known downstream consumption; document remaining checkpoint-training uncertainty.",
+    "Use distinct singers, global songs and accompaniment recordings; do not infer song separation from excerpt IDs.",
+    "Report phone support independently of F0 acceptance; never use F0-zero as negative vocal-presence ground truth.",
+    "Reserve a licensed, accessible F0 reference partition before making fresh pitch qualification claims."
+  ],
+  "qualification_allowed": false
+}

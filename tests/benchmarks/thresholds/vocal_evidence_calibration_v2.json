@@ -1,0 +1,82 @@
+{
+  "schema": "JointVocalEvidenceProtocol/v2",
+  "state": "development",
+  "qualification_allowed": false,
+  "purpose": "One bounded two-arm comparison on all90 consumed native inputs; no fresh data, default changes or hyperparameter search.",
+  "canonical_base_commit": "91bd4a436f96b78165e1c59641a407a9f2014541",
+  "input_report": {
+    "path": "tests/benchmarks/reports/vocal_backend_comparison_v1.json",
+    "sha256": "773ca0c2edf7f21eeb80d40c0375e184cc3a4ec3bc43d197a4bc14b1730f50e4"
+  },
+  "reference_reservation": {
+    "path": "tests/benchmarks/thresholds/singing_reference_reservation_v1.json",
+    "sha256": "be283cec73febc6a9e5261eb6d26375e5558e2700668486e3f81871a2216d741"
+  },
+  "frozen_sources": {
+    "scripts/calibrate_vocal_evidence.py": "275d2333bad467b9df5c26181196ad6fdce19036ae9670e1f11986db95abbabd",
+    "src/natural_features/features/audio/vocal_evidence_calibration.py": "aedc23b70b7e00580d7b76b1cb4a13f0405581c49b822f0fe63308be579a664b",
+    "scripts/calibrate_vocal_voicing.py": "66bac92805d8ea3006b70eeddc1661b78a3a29bfade441a69b79b0d3eb5c9872",
+    "scripts/calibrate_vocal_voicing_threshold.py": "fe7fec32e2fb497f0a63cd079beecc4423261de4160a6980d84f13d2b7a97b57",
+    "scripts/calibrate_vocal_f0.py": "f24e7bc77388e3dbe6b897a830972841a45c4ad06b6e71e275198d155332fb86",
+    "scripts/qualify_vocal_f0.py": "139656428df7324df65b00ecc6c8a42156bb6752c33e1a2a2f826de2d6a08d48",
+    "scripts/compare_vocal_backends.py": "645bdb7e0aaaa3a98e7d85c7a3f685b483b744c1092aa300165211835e1965e5",
+    "src/natural_features/features/audio/vocal_voicing.py": "898ef48a5061271a16134e0c0c9739b2b7b7425c29d3c89ebeb3fa9d4837e110",
+    "src/natural_features/features/audio/vocal_voicing_threshold.py": "2b8ea924f76546de1596ec719138efc985b48c11bcace1724423d25cface6185",
+    "src/natural_features/features/audio/vocal_f0_benchmark.py": "23670160c8e70b605a304281d6be653e39178b6ae5dc7a8facdc7cfbc35bcdde",
+    "src/natural_features/features/audio/vocal_evidence.py": "b55699e68a94ce5ce2b9f232e6f7a666f9f40be76ccdf5557bec0f44fde3dc4b"
+  },
+  "arms": [
+    "rmvpe_threshold",
+    "joint_logistic"
+  ],
+  "feature_names": [
+    "rmvpe_salience_logit",
+    "mixture_activity_logit",
+    "crepe_confidence_logit",
+    "log_source_rms",
+    "log_source_share",
+    "pitch_disagreement_octaves",
+    "canonical_missing",
+    "activity_missing"
+  ],
+  "l2": 0.01,
+  "gates": {
+    "raw_pitch_accuracy_min": 0.8,
+    "voicing_recall_min": 0.8,
+    "voicing_false_alarm_rate_max": 0.1,
+    "median_abs_cents_error_max": 50.0,
+    "octave_error_rate_max": 0.05,
+    "backing_false_alarm_rate_max": 0.05,
+    "silence_false_alarm_rate_max": 0.0,
+    "analytic_median_abs_cents_error_max": 50.0
+  },
+  "inputs": "RMVPE stem pitch/salience, CPJKU original-mixture activity, canonical Demucs-CREPE diagnostics. Retained native arrays and exact rendered-input hashes; no model inference rerun.",
+  "targets": {
+    "fit": "F0 reference>0 is pitched voicing; F0=0 is unpitched, not absence of a vocal event; unknown excluded.",
+    "activity": "Frozen external evidence only. No vocal-presence target learned from F0-zero.",
+    "phonetics": "Never gated on pitched voicing or this model."
+  },
+  "admissibility": "Available native RMVPE candidate within real input bounds, finite and50-1000Hz; no salience.03 floor. Missing canonical/activity evidence has a separate indicator and imputed0 continuous features.",
+  "features": "Salience/activity/confidence logits clip1e-4..1-1e-4; log RMS floor1e-6; log source share floor1e-8; absolute candidate disagreement in octaves capped2; missing flags. Nearest canonical tolerance.005001s, activity1/140+1e-8s.",
+  "fit": "Fixed ridge logistic BCE; train-only weighted mean/std; constant feature scale1; unpenalized intercept; no Platt calibration, temporal decoder or regularization search. L-BFGS-B maxiter500,ftol1e-12,gtol1e-8; require finite convergence.",
+  "weights": "each singer mass1, equal excerpts then 3 singing conditions; each negative family mass1, equal unique rendered inputs, repeated copies split input mass; within stream normalize mapped admissible annotation counts; omit streams with zero admissible labels; no class balancing; normalize total mass",
+  "purge": "at every fit/calibration/selector level exclude held singers, exact rendered audio hashes, and negative families of validation rows; inherit all ancestor exclusions. Backing family=(recording SHA,window start); silence one family across lengths. Family purge applies to negative rows, not all singing mixtures using same backing.",
+  "cross_validation": {
+    "outer_folds": 5,
+    "outer_assignment": "(numeric singer ID-1)%5",
+    "selector_folds": 3,
+    "inner_assignment": "remaining numeric singers sorted then round-robin",
+    "nesting": "Outer training -> three-fold singer-OOF scores for threshold choice -> refit on allowed outer training -> score held outer rows once. Every fit inherits ancestor singer/audio/family exclusions; weighting/standardization after purge. Same three-fold procedure on all consumed data produces final development candidate."
+  },
+  "threshold_selection": "Exact attainable states with strict greater-than after1e-12 clipping, inherited v8 selector; original gates by historical group. Rank max minimum RPA, min maximum singing FA, largest threshold. No eligible state: diagnostic threshold.5 and explicit ineligible status. No search expansion.",
+  "selection_structural_absence": "Only inner selector gates for backing/silence with zero eligible validation rows after ancestor family purge are marked not_tested:ancestor_family_purge and omitted, never counted as passed. Any present control rows must satisfy original gate. Undefined metrics or missing artifacts fail. OuterOOF must include all90 rows/all5conditions/3groups.",
+  "advancement": "Every outer selector eligible, complete90-case outer scores pass all unchanged historical-group gates, final selector eligible, and unchanged inherited RMVPE analytic controls complete and within50c. Inherited tone100 missingness prevents overall advancement; report empirical component separately.",
+  "probability_diagnostic": "Brier over all known reference frames; unavailable/inadmissible/unmatched score0 and explicit coverage. Baseline salience is not a probability; fitted score describes benchmark weighting, not demonstrated population calibration.",
+  "stop_rule": "Report both fixed arms and all failures; one run only; no fresh evaluation or automatic adoption.",
+  "limitations": [
+    "Previously examined Vocadito is adaptive development evidence.",
+    "No global song IDs in preserved Vocadito metadata; singer folds do not prove song disjointness.",
+    "Only two consumed accompaniment recordings; negative-family purge is not accompaniment-disjoint mixture validation.",
+    "Exact RVC checkpoint training corpus unknown; no training-disjoint qualification claim."
+  ]
+}
