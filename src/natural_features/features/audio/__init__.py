@@ -1,6 +1,7 @@
 """Audio feature extractors."""
 
 from .cochlear import audio_gammatone
+from .local_modulation import local_modulation_kernel, local_spectrotemporal_modulation
 from .beat import music_beat_activations
 from .envelope import audio_envelope
 from .lowlevel import mel, mfcc, rms, spectral_stats
@@ -40,6 +41,8 @@ __all__ = [
     "audio_pitch",
     "audio_vocal_f0",
     "egemaps_lld",
+    "local_modulation_kernel",
+    "local_spectrotemporal_modulation",
     "log_cochleagram",
     "mel",
     "mfcc",
