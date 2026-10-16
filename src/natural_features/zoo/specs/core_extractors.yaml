@@ -1714,3 +1714,30 @@ extractors:
       speed_onset_quantile: { type: float, default: 0.7 }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
+
+
+  - name: audio.modulation.local
+    impl: natural_features.features.audio.local_modulation:local_spectrotemporal_modulation
+    version: "1.0"
+    label: Finite-support carrier-resolved local modulation
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: base_python
+    cost_class: expensive
+    tags: [audio, auditory, modulation, native-time, carrier]
+    params:
+      hop_s: { type: float, default: 0.01 }
+      win_s: { type: float, default: 0.025 }
+      window_s: { type: float, default: 2.0 }
+      output_hop_s: { type: float, default: 0.1 }
+      n_log_bins: { type: int, default: 64 }
+      fmin: { type: float, default: 50.0 }
+      fmax: { type: float, default: 7500.0 }
+      carriers_hz: { type: 'list[float]', default: [125.0, 250.0, 500.0, 1000.0, 2000.0, 4000.0] }
+      rates_hz: { type: 'list[float]', default: [2.0, 4.0, 8.0, 16.0] }
+      scales_cpo: { type: 'list[float]', default: [0.5, 1.0, 2.0] }
+      spectral_sd_oct: { type: float, default: 0.5 }
+    outputs:
+      default:
+        schema: FeatureSeries/v1
+        kind: features

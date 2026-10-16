@@ -1,0 +1,66 @@
+---
+title: "Carrier-resolved local modulation"
+---
+
+`audio.modulation.local` describes energy changes jointly by carrier frequency,
+temporal rate, spectral scale and spectral direction. It works on a floating-point
+mono or multichannel audio mixture. It does not require detected speech, vocals,
+beats or a fundamental-frequency track.
+
+```python
+from natural_features.core.stimulus import AudioStimulus
+from natural_features.features.audio import local_spectrotemporal_modulation
+
+features = local_spectrotemporal_modulation(
+    AudioStimulus(samples, 16000),
+    carriers_hz=[125., 250., 500., 1000., 2000., 4000.],
+    rates_hz=[2., 4., 8., 16.],
+    scales_cpo=[0.5, 1., 2.],
+)
+```
+
+The output dimensions are
+`(time, carrier_hz, rate_hz, scale_cpo, spectral_sign)`. Positive spectral sign
+with positive temporal rate describes downward constant-phase contours. The
+values are absolute complex Gabor responses to log10 power, with zero-DC,
+unit-L2 spectral and temporal kernels. They are not loudness, a transcription,
+or a physiological auditory-model prediction.
+
+The frontend uses complete periodic-Hann FFT-power frames, 64 triangular ERB
+bands and interpolation onto a uniform log2-frequency grid. Channels are
+averaged. Frequency limits and modulation Nyquist limits are checked; extraction
+does not silently resample audio or reduce the requested frequency range.
+
+## Native clocks and support
+
+The default frontend hop is 10 ms, frontend frame 25 ms, filter window 2 s and
+output hop 100 ms. Parameters are rounded to actual sample/frame counts and both
+requested settings and effective values are recorded. With these defaults, a
+filter output depends on **2.015 s of waveform**, because 200 overlapping frames
+include the final frame's full 25 ms input.
+
+- `times_s` gives the availability endpoint of each complete filter output.
+- `time_bounds_s` gives nonoverlapping output-hop observation cells ending at
+  those times. These are the cells for time-weighted aggregation.
+- `metadata["computation_context"]["dependency_bounds_s"]` separately gives each
+  output's full waveform dependency. These longer intervals must not be
+  mistaken for independent observation cells.
+
+Only complete windows are returned; there is no padding. The initial warm-up is
+unavailable output, not zero modulation evidence. Cropping input before extraction
+changes available context. The consuming analysis chooses target windows and
+pooling and must disclose both observation coverage and input dependencies.
+
+## Qualification and limits
+
+Tests cover known carrier/rate/scale/direction preference, time reversal,
+constant/log-offset invariance, independent direct filter calculations, finite
+silence, append/future independence, offsets, stereo averaging, complete
+parameter hashes and the public registry. The log-power floor means gain
+invariance should only be expected where a gain change acts as a uniform log
+power offset; no claim of invariance across floor crossings is made.
+
+This is a deterministic signal descriptor. Synthetic qualification does not
+establish physiological equivalence or neural selectivity. The frequency
+frontend, taper, amplitudes, axes, support and provenance remain explicit so a
+consumer can test those separate questions.
