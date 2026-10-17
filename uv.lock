@@ -3725,6 +3725,11 @@ mert = [
 ppgs = [
     { name = "ppgs" },
 ]
+source-separation = [
+    { name = "demucs" },
+    { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "scipy", version = "1.17.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+]
 sparc = [
     { name = "speech-articulatory-coding" },
 ]
@@ -3775,6 +3780,7 @@ docs = [
 [package.metadata]
 requires-dist = [
     { name = "beat-this", marker = "extra == 'beats'", specifier = "==1.1.0" },
+    { name = "demucs", marker = "extra == 'source-separation'", specifier = "==4.0.1" },
     { name = "demucs", marker = "extra == 'vocal-f0'", specifier = "==4.0.1" },
     { name = "faster-whisper", marker = "extra == 'speech'", specifier = ">=1.0.0" },
     { name = "gentle", marker = "extra == 'alignment-legacy'", specifier = ">=0.1" },
@@ -3801,6 +3807,7 @@ requires-dist = [
     { name = "quartodoc", marker = "extra == 'docs'", specifier = ">=0.9" },
     { name = "ruff", marker = "extra == 'dev'", specifier = "==0.15.20" },
     { name = "scipy", marker = "extra == 'docs'", specifier = ">=1.10" },
+    { name = "scipy", marker = "extra == 'source-separation'", specifier = ">=1.10" },
     { name = "scipy", marker = "extra == 'vocal-f0'", specifier = ">=1.10" },
     { name = "speech-articulatory-coding", marker = "extra == 'sparc'", specifier = ">=0.1.0" },
     { name = "torch", marker = "extra == 'mert'", specifier = ">=2.2" },
@@ -3811,7 +3818,7 @@ requires-dist = [
     { name = "whisperx", marker = "extra == 'alignment'", specifier = ">=3.1.0" },
     { name = "zarr", marker = "extra == 'storage'", specifier = ">=2.17" },
 ]
-provides-extras = ["mert", "beats", "storage", "vision", "speech", "alignment", "alignment-mfa", "alignment-legacy", "ppgs", "formants", "vocal-f0", "sparc", "llm", "dev", "docs"]
+provides-extras = ["mert", "beats", "storage", "vision", "speech", "alignment", "alignment-mfa", "alignment-legacy", "ppgs", "formants", "source-separation", "vocal-f0", "sparc", "llm", "dev", "docs"]
 
 [package.metadata.requires-dev]
 dev = [

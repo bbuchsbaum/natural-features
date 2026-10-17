@@ -28,9 +28,12 @@ import numpy as np
 
 from natural_features.core.feature_types import FeatureSeries
 from natural_features.core.stimulus import AudioStimulus
-from natural_features.core.timebase import TimebaseSpec, times_from_hop
+from natural_features.core.timebase import SupportSpec, TimebaseSpec, times_from_hop
+from natural_features.features.audio._music_contract import mono_audio, positive_seconds
 from natural_features.features.audio.lowlevel import _mel_filterbank, _mono, _stft_power
+from natural_features.features.audio.music_tuning import resolve_tuning, tuning_context
 from natural_features.features.common import extractor_metadata
+from natural_features.util.hashing import stable_hash
 
 __all__ = [
     "music_chroma",
@@ -98,6 +101,7 @@ def _chroma_filterbank(
     Returns an ``(n_chroma, n_bins)`` matrix.
     """
 
+    positive_seconds(tuning_hz, "tuning_hz")
     if n_chroma <= 0:
         raise ValueError("n_chroma must be > 0")
     if sigma <= 0:
@@ -147,8 +151,13 @@ def _chroma_matrix(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Return ``(chroma[time, n_chroma], frame_times)``."""
 
-    power, freqs, _ = _stft_power(_mono(stimulus.samples), stimulus.sr_hz, hop_s, win_s)
-    mag = np.maximum(power, 0.0) ** (power_exp / 2.0)
+    positive_seconds(hop_s, "hop_s")
+    positive_seconds(win_s, "win_s")
+    x = mono_audio(stimulus).astype(np.float64)
+    sr = int(stimulus.sr_hz)
+    h, w = max(1, round(hop_s * sr)), max(1, round(win_s * sr))
+    count = 1 + max(0, (len(x) - w) // h)
+    freqs = np.fft.rfftfreq(w, 1 / sr)
     fb = _chroma_filterbank(
         freqs,
         n_chroma=n_chroma,
@@ -158,12 +167,61 @@ def _chroma_matrix(
         sigma=sigma,
         octwidth=octwidth,
     )
-    chroma = mag @ fb.T
+    chroma = np.empty((count, n_chroma), dtype=np.float64)
+    window = np.hanning(w + 1)[:-1]
+    for first, frames in _centered_frames(x, count, h, w):
+        power = np.abs(np.fft.rfft(frames * window, axis=1)) ** 2
+        mag = power ** (power_exp / 2.0)
+        chroma[first:first + len(frames)] = mag @ fb.T
     chroma = _normalize_rows(chroma.astype(np.float64), norm).astype(np.float32)
-    times = times_from_hop(
-        chroma.shape[0], hop_s, start_offset_s=stimulus.start_offset_s, center=True, window_s=win_s
-    )
+    times = _frame_bounds(stimulus, len(chroma), hop_s, win_s).mean(axis=1)
     return chroma, times
+
+
+def _centered_frames(x, count, hop, window):
+    """Bounded reductions avoid prefix-energy cancellation and DC leakage."""
+    if len(x) < window:
+        x = np.pad(x, (0, window - len(x)))
+    for first in range(0, count, 32):
+        starts = np.arange(first, min(first + 32, count)) * hop
+        frames = x[starts[:, None] + np.arange(window)[None, :]]
+        yield first, frames - frames.mean(axis=1, keepdims=True)
+
+
+def _frame_bounds(stimulus, count, hop_s, win_s):
+    sr = int(stimulus.sr_hz)
+    h, w = max(1, round(hop_s * sr)), max(1, round(win_s * sr))
+    starts = np.arange(count) * h
+    return stimulus.start_offset_s + np.column_stack((starts, np.minimum(starts + w, len(stimulus.samples)))) / sr
+
+
+def _window_outputs(stimulus, *, values, names, diagnostics, diagnostic_names,
+                    bounds, dependencies, hop_s, extractor, params, code_version,
+                    tuning=None, extra=None):
+    """Named continuous and diagnostic outputs; NaNs remain explicit missingness."""
+    evidence = tuning or {"mode": "fixed", "scope": "not_applicable"}
+    context = tuning_context(stimulus, dependencies, evidence,
+                             preprocessing={"frontend": "windowed_stft", "frame_dc_removed": tuning is not None})
+    pair_id = stable_hash({"samples": np.asarray(stimulus.samples), "sr_hz": stimulus.sr_hz,
+                           "clock": str(stimulus.clock), "offset": stimulus.start_offset_s,
+                           "extractor": extractor, "params": params, "code_version": code_version}, length=24)
+    result = {}
+    for key, data, columns in (("default", values, names), ("diagnostics", diagnostics, diagnostic_names)):
+        md = extractor_metadata(extractor if key == "default" else extractor + ".diagnostics",
+                                params=params, code_version=code_version,
+                                extra={"computation_context": context, "output_pair_id": pair_id,
+                                       "missing_values": "NaN; feature-specific support in diagnostics",
+                                       "requires_validity": True, "validity_output": "diagnostics",
+                                       "output_role": "continuous" if key == "default" else "diagnostic",
+                                       **(extra or {})})
+        result[key] = FeatureSeries(
+            values=np.asarray(data, dtype=np.float32), times_s=bounds.mean(axis=1),
+            coords={"feature": columns}, metadata=md,
+            timebase=TimebaseSpec(kind="audio_hop", reference=stimulus.clock, hop_s=hop_s,
+                                  sampling_rate_hz=1 / hop_s, support=SupportSpec(kind="interval", anchor="center")),
+            time_bounds_s=bounds, temporal_context=stimulus.temporal_context,
+        )
+    return result
 
 
 def _tonnetz_from_chroma(chroma: np.ndarray) -> np.ndarray:
@@ -278,6 +336,7 @@ def music_chroma(
     win_s: float = 0.186,
     n_chroma: int = 12,
     tuning_hz: float = 440.0,
+    tuning_mode: str = "fixed",
     fmin: float = 55.0,
     fmax: float = 5000.0,
     sigma: float = 0.5,
@@ -304,15 +363,18 @@ def music_chroma(
     off-note floor of a synthetic triad from 7% of total chroma energy to under 2%.
 
     A recording tuned appreciably away from A440 should set ``tuning_hz``; the bank is
-    deliberately narrow (``sigma`` 0.5 semitone) and does not estimate tuning itself.
+    deliberately narrow (``sigma`` 0.5 semitone). ``tuning_mode="auto"`` estimates
+    once over the whole input and declares that dependency; unsupported estimates
+    raise instead of silently falling back to 440 Hz.
     """
 
+    effective_tuning, evidence = resolve_tuning(stimulus, tuning_hz, tuning_mode)
     chroma, times = _chroma_matrix(
         stimulus,
         hop_s=hop_s,
         win_s=win_s,
         n_chroma=n_chroma,
-        tuning_hz=tuning_hz,
+        tuning_hz=effective_tuning,
         fmin=fmin,
         fmax=fmax,
         sigma=sigma,
@@ -325,13 +387,17 @@ def music_chroma(
         if n_chroma == 12
         else [f"chroma_{i}" for i in range(n_chroma)]
     )
+    bounds = _frame_bounds(stimulus, len(chroma), hop_s, win_s)
+    effective_hop = max(1, round(hop_s * stimulus.sr_hz)) / stimulus.sr_hz
+    context = tuning_context(stimulus, bounds, evidence, preprocessing={"frame_dc_removed": True})
     md = extractor_metadata(
-        "audio.music.chroma",
+        "audio.music.chroma", code_version="music-chroma-v2",
         params={
             "hop_s": hop_s,
             "win_s": win_s,
             "n_chroma": n_chroma,
             "tuning_hz": tuning_hz,
+            "tuning_mode": tuning_mode,
             "fmin": fmin,
             "fmax": fmax,
             "sigma": sigma,
@@ -339,7 +405,7 @@ def music_chroma(
             "norm": norm,
             "power_exp": power_exp,
         },
-        extra={"backend": "stft_pitch_class_bank"},
+        extra={"backend": "stft_pitch_class_bank", "tuning": evidence, "computation_context": context},
     )
     return FeatureSeries(
         values=chroma,
@@ -347,7 +413,9 @@ def music_chroma(
         dims=("time", "feature"),
         coords={"feature": names},
         metadata=md,
-        timebase=TimebaseSpec(kind="audio_hop", hop_s=hop_s, sampling_rate_hz=1.0 / hop_s),
+        timebase=TimebaseSpec(kind="audio_hop", reference=stimulus.clock, hop_s=effective_hop,
+                              sampling_rate_hz=1.0 / effective_hop, support=SupportSpec(kind="interval", anchor="center")),
+        time_bounds_s=bounds, temporal_context=stimulus.temporal_context,
     )
 
 
@@ -357,6 +425,7 @@ def music_tonnetz(
     hop_s: float = 0.01,
     win_s: float = 0.186,
     tuning_hz: float = 440.0,
+    tuning_mode: str = "fixed",
     fmin: float = 55.0,
     fmax: float = 5000.0,
     sigma: float = 0.5,
@@ -368,12 +437,13 @@ def music_tonnetz(
     a better regressor for harmony than raw chroma.
     """
 
+    effective_tuning, evidence = resolve_tuning(stimulus, tuning_hz, tuning_mode)
     chroma, times = _chroma_matrix(
         stimulus,
         hop_s=hop_s,
         win_s=win_s,
         n_chroma=12,
-        tuning_hz=tuning_hz,
+        tuning_hz=effective_tuning,
         fmin=fmin,
         fmax=fmax,
         sigma=sigma,
@@ -381,17 +451,21 @@ def music_tonnetz(
         norm=None,
     )
     values = _tonnetz_from_chroma(chroma)
+    bounds = _frame_bounds(stimulus, len(chroma), hop_s, win_s)
+    effective_hop = max(1, round(hop_s * stimulus.sr_hz)) / stimulus.sr_hz
+    context = tuning_context(stimulus, bounds, evidence, preprocessing={"frame_dc_removed": True})
     md = extractor_metadata(
-        "audio.music.tonnetz",
+        "audio.music.tonnetz", code_version="music-tonnetz-v2",
         params={
             "hop_s": hop_s,
             "win_s": win_s,
             "tuning_hz": tuning_hz,
+            "tuning_mode": tuning_mode,
             "fmin": fmin,
             "fmax": fmax,
             "sigma": sigma,
         },
-        extra={"backend": "harte2006_tonal_centroid"},
+        extra={"backend": "harte2006_tonal_centroid", "tuning": evidence, "computation_context": context},
     )
     return FeatureSeries(
         values=values,
@@ -408,7 +482,9 @@ def music_tonnetz(
             ]
         },
         metadata=md,
-        timebase=TimebaseSpec(kind="audio_hop", hop_s=hop_s, sampling_rate_hz=1.0 / hop_s),
+        timebase=TimebaseSpec(kind="audio_hop", reference=stimulus.clock, hop_s=effective_hop,
+                              sampling_rate_hz=1.0 / effective_hop, support=SupportSpec(kind="interval", anchor="center")),
+        time_bounds_s=bounds, temporal_context=stimulus.temporal_context,
     )
 
 
@@ -539,139 +615,91 @@ def music_rhythm(
     bpm_max: float = 300.0,
     prior_bpm: float = 120.0,
     prior_octaves: float = 1.0,
-) -> FeatureSeries:
-    """Return scalar rhythm descriptors per analysis window.
+) -> dict[str, FeatureSeries]:
+    """Continuous rhythm descriptors and separate support diagnostics.
 
-    Columns are ``tempo_bpm``, ``log2_tempo``, ``pulse_clarity``, ``beat_strength``,
-    ``onset_rate``, ``ioi_median``, ``ioi_cv`` and
-    ``late_phase_onset_energy_fraction``.
+    Select ``result['default']`` for tempo_bpm, pulse_clarity,
+    onset_peak_strength, onset_rate, ioi_median and ioi_cv. Undefined values
+    are NaN. Tempo requires three detected onsets and positive selected
+    autocorrelation; this is numerical support, not calibrated beat confidence.
+    Median IOI requires one interval; IOI CV requires two. Peak strength is
+    mean detected-peak envelope / mean envelope, not perceptual beat strength.
 
-    ``tempo_bpm`` is the autocorrelation peak under a log-normal prior centred on
-    ``prior_bpm``; without the prior the estimate flips between a tempo and its double
-    or half, which is a well-known octave ambiguity rather than a real difference.
-    ``log2_tempo`` is the base-two logarithm of that same estimate. The final column
-    is the share of onset energy in the latter half of the autocorrelation-estimated
-    period, with phase zero fixed at the first onset-envelope frame of each analysis
-    window. It therefore changes when the same periodic material is shifted relative
-    to the window origin. It is not beat-aligned and has not been validated as a
-    musical syncopation measure. It is undefined (``NaN``) when the window has no
-    autocorrelation-supported period or no onset energy. The other descriptors retain
-    their legacy arithmetic, including tempo and ``log2_tempo``, in these windows.
-    The old ``syncopation`` name is retained only as a deprecated metadata alias for
-    reading legacy outputs.
+    Diagnostics retain the alternative log2 tempo coordinate and the legacy
+    window-origin-relative late_phase_onset_energy_fraction. Neither enters
+    the default predictor matrix. The latter is not musical syncopation.
     """
-
-    if window_s <= 0 or hop_s <= 0:
-        raise ValueError("window_s and hop_s must be > 0")
-
+    mono_audio(stimulus)
+    for name, value in (("window_s", window_s), ("hop_s", hop_s),
+                        ("env_hop_s", env_hop_s), ("env_win_s", env_win_s),
+                        ("bpm_min", bpm_min), ("bpm_max", bpm_max),
+                        ("prior_bpm", prior_bpm), ("prior_octaves", prior_octaves)):
+        positive_seconds(value, name)
+    if bpm_max <= bpm_min:
+        raise ValueError("require bpm_min < bpm_max")
     env, _ = _onset_envelope(
         stimulus, hop_s=env_hop_s, win_s=env_win_s, n_mels=n_mels, fmin=50.0, fmax=None, lag=1
     )
-    frame_rate = 1.0 / env_hop_s
-    starts = _window_bounds(env.shape[0], frame_rate, window_s, hop_s)
+    sr = int(stimulus.sr_hz)
+    frame_hop = max(1, round(env_hop_s * sr))
+    frame_rate = sr / frame_hop
+    starts = _window_bounds(len(env), frame_rate, window_s, hop_s)
     w = int(round(window_s * frame_rate))
     lags = _tempo_axis(frame_rate, w, bpm_min, bpm_max)
-    if starts.shape[0] == 0 or lags.shape[0] == 0:
-        raise ValueError(
-            "signal is shorter than one analysis window, or the tempo range is empty "
-            "at this env_hop_s"
-        )
-
-    lag_bpm = 60.0 * frame_rate / lags.astype(np.float64)
-    prior = np.exp(-0.5 * ((np.log2(lag_bpm) - np.log2(prior_bpm)) / prior_octaves) ** 2)
-
-    names = [
-        "tempo_bpm",
-        "log2_tempo",
-        "pulse_clarity",
-        "beat_strength",
-        "onset_rate",
-        "ioi_median",
-        "ioi_cv",
-        "late_phase_onset_energy_fraction",
-    ]
-    out = np.zeros((starts.shape[0], len(names)), dtype=np.float64)
-
+    if not len(starts) or not len(lags):
+        raise ValueError("signal is shorter than one analysis window, or the tempo range is empty at this env_hop_s")
+    lag_bpm = 60 * frame_rate / lags
+    prior = np.exp(-.5 * ((np.log2(lag_bpm) - np.log2(prior_bpm)) / prior_octaves) ** 2)
+    names = ["tempo_bpm", "pulse_clarity", "onset_peak_strength", "onset_rate", "ioi_median", "ioi_cv"]
+    diagnostic_names = ["tempo_valid", "pulse_clarity_valid", "onset_peak_strength_valid",
+                        "ioi_median_valid", "ioi_cv_valid", "n_onsets", "n_intervals",
+                        "tempo_boundary", "selected_autocorrelation", "log2_tempo",
+                        "late_phase_onset_energy_fraction"]
+    out = np.full((len(starts), len(names)), np.nan)
+    diag = np.full((len(starts), len(diagnostic_names)), np.nan)
     for i, s in enumerate(starts):
-        seg = env[s : s + w].astype(np.float64)
+        seg = env[s:s + w].astype(np.float64)
+        threshold = seg.mean() + seg.std()
+        peaks = np.flatnonzero((seg[1:-1] > seg[:-2]) & (seg[1:-1] >= seg[2:])
+                              & (seg[1:-1] > threshold)) + 1
+        count = len(peaks)
+        ioi = np.diff(peaks) / frame_rate
         ac = _autocorr_tempogram(seg, lags)
-        scored = ac * prior
-        j = int(np.argmax(scored))
-        has_period = bool(scored[j] > 1e-12)
-        tempo = float(lag_bpm[j])
-        period = int(lags[j])
-
-        # Pulse clarity: how much the winning lag stands out from the rest of the
-        # autocorrelation. Flat autocorrelation -> no perceptible pulse.
-        sd = float(ac.std())
-        clarity = float((ac[j] - ac.mean()) / sd) if sd > 1e-12 else 0.0
-
-        # Peak picking on the envelope for onset-rate and IOI statistics.
-        thresh = seg.mean() + seg.std()
-        peaks = np.flatnonzero((seg[1:-1] > seg[:-2]) & (seg[1:-1] >= seg[2:]) & (seg[1:-1] > thresh)) + 1
-        onset_rate = peaks.shape[0] / window_s
-        if peaks.shape[0] >= 2:
-            ioi = np.diff(peaks) / frame_rate
-            ioi_median = float(np.median(ioi))
-            ioi_cv = float(ioi.std() / ioi.mean()) if ioi.mean() > 1e-12 else 0.0
-            beat_strength = float(seg[peaks].mean() / max(seg.mean(), 1e-12))
-        else:
-            ioi_median = 0.0
-            ioi_cv = 0.0
-            beat_strength = 0.0
-
-        late_phase_energy = (
-            _window_relative_late_phase_onset_energy_fraction(seg, period)
-            if has_period
-            else float("nan")
-        )
-
-        out[i] = [
-            tempo,
-            float(np.log2(tempo)),
-            clarity,
-            beat_strength,
-            onset_rate,
-            ioi_median,
-            ioi_cv,
-            late_phase_energy,
-        ]
-
-    times = (starts / frame_rate) + (window_s / 2.0) + stimulus.start_offset_s
-    md = extractor_metadata(
-        "audio.music.rhythm",
-        params={
-            "window_s": window_s,
-            "hop_s": hop_s,
-            "env_hop_s": env_hop_s,
-            "env_win_s": env_win_s,
-            "n_mels": n_mels,
-            "bpm_min": bpm_min,
-            "bpm_max": bpm_max,
-            "prior_bpm": prior_bpm,
-            "prior_octaves": prior_octaves,
-        },
-        code_version="music-rhythm-v2",
-        extra={
-            "backend": "onset_autocorrelation",
-            "descriptor_schema_version": "2.0",
-            "deprecated_feature_aliases": {
-                "syncopation": "late_phase_onset_energy_fraction",
-            },
-            "undefined_feature_values": {
-                "late_phase_onset_energy_fraction": (
-                    "NaN without an autocorrelation-supported period or onset energy"
-                ),
-            },
-        },
-    )
-    return FeatureSeries(
-        values=out.astype(np.float32),
-        times_s=times,
-        dims=("time", "feature"),
-        coords={"feature": names},
-        metadata=md,
-        timebase=TimebaseSpec(kind="audio_hop", hop_s=hop_s, sampling_rate_hz=1.0 / hop_s),
+        j = int(np.argmax(ac * prior))
+        tempo_valid = bool(count >= 3 and ac[j] > 1e-12)
+        clarity_valid = bool(tempo_valid and ac.std() > 1e-12)
+        tempo = float(lag_bpm[j]) if tempo_valid else np.nan
+        clarity = float((ac[j] - ac.mean()) / ac.std()) if clarity_valid else np.nan
+        strength = float(seg[peaks].mean() / seg.mean()) if count and seg.mean() > 1e-12 else np.nan
+        median = float(np.median(ioi)) if len(ioi) else np.nan
+        cv = float(ioi.std() / ioi.mean()) if len(ioi) >= 2 else np.nan
+        phase = _window_relative_late_phase_onset_energy_fraction(seg, int(lags[j])) if tempo_valid else np.nan
+        out[i] = [tempo, clarity, strength, count / (w / frame_rate), median, cv]
+        diag[i] = [tempo_valid, clarity_valid, np.isfinite(strength), len(ioi) >= 1, len(ioi) >= 2,
+                   count, len(ioi), j in (0, len(lags) - 1), ac[j],
+                   np.log2(tempo) if tempo_valid else np.nan, phase]
+    frame_bounds = _frame_bounds(stimulus, len(env), env_hop_s, env_win_s)
+    bounds = np.column_stack((frame_bounds[starts, 0], frame_bounds[starts + w - 1, 1]))
+    # Positive spectral flux also reads the preceding STFT frame.
+    dependencies = bounds.copy()
+    dependencies[:, 0] = frame_bounds[np.maximum(starts - 1, 0), 0]
+    params = {"window_s": window_s, "hop_s": hop_s, "env_hop_s": env_hop_s,
+              "env_win_s": env_win_s, "n_mels": n_mels, "bpm_min": bpm_min,
+              "bpm_max": bpm_max, "prior_bpm": prior_bpm, "prior_octaves": prior_octaves}
+    return _window_outputs(
+        stimulus, values=out, names=names, diagnostics=diag, diagnostic_names=diagnostic_names,
+        bounds=bounds, dependencies=dependencies, hop_s=max(1, round(hop_s * frame_rate)) / frame_rate,
+        extractor="audio.music.rhythm", params=params, code_version="music-rhythm-v3",
+        extra={"backend": "onset_autocorrelation", "descriptor_schema_version": "3.0",
+               "deprecated_feature_aliases": {"syncopation": "late_phase_onset_energy_fraction",
+                                              "beat_strength": "onset_peak_strength"},
+               "validity_columns": {"tempo_bpm": "tempo_valid", "pulse_clarity": "pulse_clarity_valid",
+                                    "onset_peak_strength": "onset_peak_strength_valid",
+                                    "ioi_median": "ioi_median_valid", "ioi_cv": "ioi_cv_valid"},
+               "onset_rate_semantics": "detected interior peaks per realized envelope window; zero is observed absence",
+               "tempo_support": "at least3 detected onsets and positive selected autocorrelation; not calibrated music accuracy",
+               "tempo_boundary_semantics": "winning candidate at search boundary, including unsupported candidates; not automatic rejection",
+               "undefined_feature_values": {"unsupported": "NaN; see feature-specific validity_columns"}},
     )
 
 
@@ -683,98 +711,88 @@ def music_tonality(
     chroma_hop_s: float = 0.01,
     chroma_win_s: float = 0.186,
     tuning_hz: float = 440.0,
+    tuning_mode: str = "fixed",
     fmin: float = 55.0,
     fmax: float = 5000.0,
     sigma: float = 0.5,
-    include_profile: bool = True,
-) -> FeatureSeries:
-    """Return key, mode and tonal-stability descriptors per analysis window.
+    activity_rms: float = 1e-6,
+) -> dict[str, FeatureSeries]:
+    """24 continuous key correlations plus separate labels and diagnostics.
 
-    The Krumhansl-Schmuckler estimator correlates the window's mean chroma against all
-    24 rotated major and minor probe-tone profiles. The full 24-vector of correlations
-    is emitted when ``include_profile`` is true: it is a far better representational
-    feature than the winning key alone, because it keeps the graded similarity between
-    neighbouring keys that a hard argmax throws away.
+    ``default`` contains only named major/minor Krumhansl-Schmuckler profile
+    correlations. ``diagnostics`` carries key_index, is_minor, clarity, margin,
+    flux and support. Inactive frames are excluded from the mean chroma.
+    Silence and constant mean chroma have NaN profiles and no key. A profile
+    can be valid without a unique winner. The key_margin retains its original
+    meaning: winning correlation minus the best key of the opposite mode.
 
-    Scalar columns are ``key_index`` (0-11, C-based), ``is_minor``, ``key_clarity`` (the
-    winning correlation), ``key_margin`` (winner minus best key of the other mode) and
-    ``chroma_flux`` (mean frame-to-frame chroma change, a chord-change-rate proxy).
+    Explicit tuning_hz is the default. tuning_mode='auto' estimates once over
+    the supplied recording, declares that full dependency, and raises on
+    unsupported tuning. Version2 replaces the mixed legacy FeatureSeries;
+    use result['default'] or result['diagnostics'] explicitly.
     """
-
-    if window_s <= 0 or hop_s <= 0:
-        raise ValueError("window_s and hop_s must be > 0")
-
+    for name, value in (("window_s", window_s), ("hop_s", hop_s), ("activity_rms", activity_rms)):
+        positive_seconds(value, name)
+    effective_tuning, evidence = resolve_tuning(stimulus, tuning_hz, tuning_mode)
+    x = mono_audio(stimulus).astype(np.float64)
     chroma, _ = _chroma_matrix(
-        stimulus,
-        hop_s=chroma_hop_s,
-        win_s=chroma_win_s,
-        n_chroma=12,
-        tuning_hz=tuning_hz,
-        fmin=fmin,
-        fmax=fmax,
-        sigma=sigma,
-        octwidth=None,
-        norm="l1",
+        stimulus, hop_s=chroma_hop_s, win_s=chroma_win_s, n_chroma=12,
+        tuning_hz=effective_tuning, fmin=fmin, fmax=fmax, sigma=sigma, octwidth=None, norm="l1",
     )
-    frame_rate = 1.0 / chroma_hop_s
-    starts = _window_bounds(chroma.shape[0], frame_rate, window_s, hop_s)
+    sr = int(stimulus.sr_hz)
+    h, frame_w = max(1, round(chroma_hop_s * sr)), max(1, round(chroma_win_s * sr))
+    frame_rate = sr / h
+    starts = _window_bounds(len(chroma), frame_rate, window_s, hop_s)
     w = int(round(window_s * frame_rate))
-    if starts.shape[0] == 0:
+    if not len(starts):
         raise ValueError("signal is shorter than one analysis window")
-
-    profiles = np.stack(
-        [np.roll(KS_MAJOR, k) for k in range(12)] + [np.roll(KS_MINOR, k) for k in range(12)]
-    )
+    active = np.zeros(len(chroma), dtype=bool)
+    for first, frames in _centered_frames(x, len(chroma), h, frame_w):
+        active[first:first + len(frames)] = np.sqrt(np.mean(frames * frames, axis=1)) > activity_rms
+    active &= np.linalg.norm(chroma, axis=1) > 1e-12
+    profiles = np.stack([np.roll(KS_MAJOR, k) for k in range(12)] + [np.roll(KS_MINOR, k) for k in range(12)])
     pz = (profiles - profiles.mean(axis=1, keepdims=True)) / profiles.std(axis=1, keepdims=True)
-
-    scalar_names = ["key_index", "is_minor", "key_clarity", "key_margin", "chroma_flux"]
-    profile_names = [f"key_r_{PITCH_CLASSES[k % 12]}_{'min' if k >= 12 else 'maj'}" for k in range(24)]
-    n_cols = len(scalar_names) + (24 if include_profile else 0)
-    out = np.zeros((starts.shape[0], n_cols), dtype=np.float64)
-
+    names = [f"key_r_{PITCH_CLASSES[k % 12]}_{'min' if k >= 12 else 'maj'}" for k in range(24)]
+    diagnostic_names = ["profile_valid", "key_valid", "activity_fraction", "active_frames", "key_index",
+                        "is_minor", "key_clarity", "key_margin", "chroma_flux", "top_two_margin"]
+    out = np.full((len(starts), 24), np.nan)
+    diag = np.full((len(starts), len(diagnostic_names)), np.nan)
     for i, s in enumerate(starts):
-        block = chroma[s : s + w].astype(np.float64)
-        mean_chroma = block.mean(axis=0)
+        block = chroma[s:s + w].astype(np.float64)
+        supported = active[s:s + w]
+        count = int(supported.sum())
+        diag[i, :4] = [0, 0, count / w, count]
+        pairs = supported[1:] & supported[:-1]
+        if np.any(pairs):
+            diag[i, 8] = np.linalg.norm(np.diff(block, axis=0)[pairs], axis=1).mean()
+        if not count:
+            continue
+        mean_chroma = block[supported].mean(axis=0)
         sd = mean_chroma.std()
         if sd < 1e-12:
-            corr = np.zeros(24)
-        else:
-            cz = (mean_chroma - mean_chroma.mean()) / sd
-            corr = (pz @ cz) / 12.0
+            continue
+        corr = (pz @ ((mean_chroma - mean_chroma.mean()) / sd)) / 12
+        corr = np.clip(corr, -1, 1)
+        out[i] = corr
         k = int(np.argmax(corr))
-        other = corr[12:] if k < 12 else corr[:12]
-        flux = float(np.linalg.norm(np.diff(block, axis=0), axis=1).mean()) if block.shape[0] > 1 else 0.0
-        out[i, :5] = [
-            float(k % 12),
-            1.0 if k >= 12 else 0.0,
-            float(corr[k]),
-            float(corr[k] - other.max()),
-            flux,
-        ]
-        if include_profile:
-            out[i, 5:] = corr
-
-    times = (starts / frame_rate) + (window_s / 2.0) + stimulus.start_offset_s
-    md = extractor_metadata(
-        "audio.music.tonality",
-        params={
-            "window_s": window_s,
-            "hop_s": hop_s,
-            "chroma_hop_s": chroma_hop_s,
-            "chroma_win_s": chroma_win_s,
-            "tuning_hz": tuning_hz,
-            "fmin": fmin,
-            "fmax": fmax,
-            "sigma": sigma,
-            "include_profile": include_profile,
-        },
-        extra={"backend": "krumhansl_schmuckler"},
-    )
-    return FeatureSeries(
-        values=out.astype(np.float32),
-        times_s=times,
-        dims=("time", "feature"),
-        coords={"feature": scalar_names + (profile_names if include_profile else [])},
-        metadata=md,
-        timebase=TimebaseSpec(kind="audio_hop", hop_s=hop_s, sampling_rate_hz=1.0 / hop_s),
+        top_two = np.sort(corr)[-1] - np.sort(corr)[-2]
+        unique = top_two > 1e-6
+        diag[i, [0, 1, 6, 9]] = [1, unique, corr[k], top_two]
+        if unique:
+            other = corr[12:] if k < 12 else corr[:12]
+            diag[i, [4, 5, 7]] = [k % 12, k >= 12, corr[k] - other.max()]
+    frame_bounds = _frame_bounds(stimulus, len(chroma), chroma_hop_s, chroma_win_s)
+    bounds = np.column_stack((frame_bounds[starts, 0], frame_bounds[starts + w - 1, 1]))
+    params = {"window_s": window_s, "hop_s": hop_s, "chroma_hop_s": chroma_hop_s,
+              "chroma_win_s": chroma_win_s, "tuning_hz": tuning_hz, "tuning_mode": tuning_mode,
+              "fmin": fmin, "fmax": fmax, "sigma": sigma, "activity_rms": activity_rms}
+    return _window_outputs(
+        stimulus, values=out, names=names, diagnostics=diag, diagnostic_names=diagnostic_names,
+        bounds=bounds, dependencies=bounds, hop_s=max(1, round(hop_s * frame_rate)) / frame_rate,
+        extractor="audio.music.tonality", params=params, code_version="music-tonality-v2", tuning=evidence,
+        extra={"backend": "krumhansl_schmuckler", "descriptor_schema_version": "2.0", "tuning": evidence,
+               "validity_column": "profile_valid", "key_tie_tolerance": 1e-6,
+               "column_roles": {"default": "continuous_key_correlations", "key_index": "categorical",
+                                "is_minor": "categorical", "key_valid": "support"},
+               "key_margin_semantics": "winner minus best opposite-mode key; not top-two margin"},
     )

@@ -11,8 +11,6 @@ import hashlib
 from importlib.metadata import version
 from math import ceil, floor, gcd
 from pathlib import Path
-import tempfile
-from urllib.request import urlopen
 
 import numpy as np
 
@@ -21,6 +19,7 @@ from natural_features.core.feature_types import FeatureSeries
 from natural_features.core.stimulus import AudioStimulus
 from natural_features.core.timebase import TimebaseSpec
 from natural_features.features.audio._music_contract import computation_context, mono_audio
+from natural_features.features.audio.source_separation import _cached_separator_runtime, load_separator_runtime
 from natural_features.features.common import extractor_metadata
 
 SEPARATOR_SHA256 = "8726e21a993978c7ba086d3872e7608d7d5bfca646ca4aca459ffda844faa8b4"
@@ -107,30 +106,24 @@ class _Runtime:
 
 
 @lru_cache(maxsize=2)
-def _cached_runtime(checkpoint, device):
+def _cached_runtime(checkpoint, weights, device):
     import torch
     import torchcrepe
-    from demucs.states import load_model
     try:
-        # Only the exact upstream content is unpickled. No arbitrary checkpoint
-        # loading and no implicit download fallback are supported.
+        # The public loader verifies both asset digests before this cache is
+        # reached.  The shared separator cache owns the one pinned unpickle.
+        separator = _cached_separator_runtime(checkpoint, device)
         with torch.random.fork_rng(devices=[]):
-            model = load_model(torch.load(checkpoint, map_location="cpu", weights_only=False), strict=True)
             pitch = torchcrepe.Crepe("full")
-        weights = Path(torchcrepe.__file__).parent / "assets" / "full.pth"
         pitch.load_state_dict(torch.load(weights, map_location="cpu", weights_only=True))
-        if (model.samplerate != 44100 or model.audio_channels != 2 or "vocals" not in model.sources
-                or float(model.segment) != 7.8):
-            raise ValueError("unexpected separator sample rate, channels or source labels")
-        return _Runtime(torch, torchcrepe, model.to(device).eval(), pitch.to(device).eval(), device,
-                        {name: version(name) for name in ("demucs", "torchcrepe", "torch", "scipy")})
+        return _Runtime(torch, torchcrepe, separator.model, pitch.to(device).eval(), device,
+                        {**separator.versions, "torchcrepe": version("torchcrepe")})
     except Exception as exc:
         raise BackendLoadError("vocal_f0", "failed to load the pinned separator/pitch models") from exc
 
 
 def _load_runtime(separator_checkpoint, cache_dir, local_files_only, device):
     try:
-        import torch
         import torchcrepe
         import demucs  # noqa: F401
         import scipy  # noqa: F401
@@ -138,36 +131,17 @@ def _load_runtime(separator_checkpoint, cache_dir, local_files_only, device):
             raise ImportError("requires demucs==4.0.1 and torchcrepe==0.0.24")
     except (ImportError, OSError) as exc:
         raise BackendDependencyError("vocal_f0", "install natural-features[vocal_f0]") from exc
-    cache = Path(cache_dir).expanduser() if cache_dir else Path(torch.hub.get_dir()) / "checkpoints"
-    path = Path(separator_checkpoint).expanduser() if separator_checkpoint else cache / SEPARATOR_FILE
-    if not path.is_file():
-        if separator_checkpoint or local_files_only:
-            raise BackendLoadError("vocal_f0", f"pinned Demucs checkpoint is not available: {path}")
-        cache.mkdir(parents=True, exist_ok=True)
-        temporary = None
-        try:
-            with tempfile.NamedTemporaryFile(dir=cache, delete=False) as stream:
-                temporary = Path(stream.name)
-                with urlopen(SEPARATOR_URL, timeout=60) as response:
-                    for block in iter(lambda: response.read(1024 * 1024), b""):
-                        stream.write(block)
-            if _sha256(temporary) != SEPARATOR_SHA256:
-                raise ValueError("downloaded separator SHA256 mismatch")
-            temporary.replace(path)
-        except Exception as exc:
-            raise BackendLoadError("vocal_f0", "pinned separator download failed") from exc
-        finally:
-            if temporary is not None:
-                temporary.unlink(missing_ok=True)
     weights = Path(torchcrepe.__file__).parent / "assets" / "full.pth"
     try:
         if not weights.is_file():
             raise FileNotFoundError("packaged CREPE weights are missing")
-        if _sha256(path) != SEPARATOR_SHA256 or _sha256(weights) != CREPE_SHA256:
+        if _sha256(weights) != CREPE_SHA256:
             raise BackendLoadError("vocal_f0", "model SHA256 mismatch; only the pinned assets are supported")
     except OSError as exc:
         raise BackendLoadError("vocal_f0", "model assets could not be inspected") from exc
-    return _cached_runtime(str(path.resolve()), device)
+    separator = load_separator_runtime(separator_checkpoint, cache_dir, local_files_only, device,
+                                       extractor="vocal_f0", sha256=_sha256)
+    return _cached_runtime(separator.checkpoint, str(weights.resolve()), device)
 
 
 def _frame_rms(audio, centers):

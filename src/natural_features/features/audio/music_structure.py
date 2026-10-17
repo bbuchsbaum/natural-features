@@ -12,12 +12,12 @@ import numpy as np
 
 from natural_features.core.stimulus import AudioStimulus
 from natural_features.features.audio._music_contract import (
-    computation_context,
     mono_audio,
     music_series,
     positive_seconds,
 )
 from natural_features.features.audio.music import PITCH_CLASSES, _chroma_filterbank
+from natural_features.features.audio.music_tuning import resolve_tuning, tuning_context
 from natural_features.util.hashing import stable_hash
 
 __all__ = ["music_chord_profiles", "music_tonal_novelty", "music_sequence_recurrence"]
@@ -35,11 +35,12 @@ def _frame_chroma(
     hop_s: float,
     win_s: float,
     activity_rms: float,
+    tuning_hz: float = 440.0,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, int, int]:
     """Full-support chroma frames and their physical support.
 
-    This frontend intentionally does not use ``_chroma_matrix``: that helper's
-    timestamps are based on requested rather than realized integer hop lengths.
+    This frontend requires complete observed frames. Unlike the legacy chroma
+    helper it does not pad short inputs; support derives from integer samples.
     """
     hop_s = _finite_positive(hop_s, "hop_s")
     win_s = _finite_positive(win_s, "win_s")
@@ -53,12 +54,13 @@ def _frame_chroma(
         return empty, np.zeros(0, bool), np.zeros(0), np.zeros((0, 2)), h, w
     starts = np.arange(0, len(x) - w + 1, h, dtype=np.int64)
     frames = x[starts[:, None] + np.arange(w)[None, :]].astype(np.float64)
-    # Activity is deliberately measured on the unwindowed input waveform.
+    frames -= frames.mean(axis=1, keepdims=True)
+    # Activity is measured before tapering, after removing frame DC.
     active = np.sqrt(np.mean(frames * frames, axis=1)) > activity_rms
     window = np.hanning(w + 1)[:-1]
     spectrum = np.abs(np.fft.rfft(frames * window[None, :], axis=1)) ** 2
     freqs = np.fft.rfftfreq(w, 1.0 / sr)
-    chroma = spectrum @ _chroma_filterbank(freqs).T
+    chroma = spectrum @ _chroma_filterbank(freqs, tuning_hz=tuning_hz).T
     norm = np.linalg.norm(chroma, axis=1)
     # Activity is governed by waveform RMS; a finite nonzero chroma response is
     # sufficient regardless of its scale, preserving gain invariance away from
@@ -111,16 +113,16 @@ def _delay_stack_similarity(query: np.ndarray, candidate: np.ndarray) -> float:
 def _series(
     stimulus: AudioStimulus, values: np.ndarray, times: np.ndarray, bounds: np.ndarray,
     *, extractor: str, params: dict, names: list[str], policy: str, dependencies: np.ndarray,
-    hop_s: float, extra: dict | None = None,
+    hop_s: float, extra: dict | None = None, tuning: dict | None = None,
 ):
-    context = computation_context(
-        stimulus, policy=policy, bounds_s=dependencies,
-        preprocessing={"frontend": "full_support_chroma", "activity": "unwindowed_rms"},
+    context = tuning_context(
+        stimulus, dependencies, tuning or {"mode": "fixed"}, policy=policy,
+        preprocessing={"frontend": "full_support_chroma", "activity": "unwindowed_ac_rms", "frame_dc_removed": True},
     )
     return music_series(
         stimulus, values=values, times_s=times, bounds_s=bounds, names=names,
-        extractor=extractor, params=params, context=context, hop_s=hop_s,
-        extra={"requires_validity": True, **(extra or {})},
+        extractor=extractor, params=params, context=context, hop_s=hop_s, code_version="music-structure-v2",
+        extra={"requires_validity": True, "tuning": tuning, **(extra or {})},
         alignment="offset" if policy == "past_only" else "center",
     )
 
@@ -135,11 +137,12 @@ def _output_pair_id(stimulus: AudioStimulus, family: str, params: dict) -> str:
 
 def music_chord_profiles(
     stimulus: AudioStimulus, *, hop_s: float = 0.1, win_s: float = 0.25,
-    activity_rms: float = 1e-6,
+    activity_rms: float = 1e-6, tuning_hz: float = 440.0, tuning_mode: str = "fixed",
 ) -> dict[str, object]:
     """Raw cosine similarities to 24 normalized major/minor triad templates."""
+    effective_tuning, evidence = resolve_tuning(stimulus, tuning_hz, tuning_mode, past_only=False)
     chroma, active, times, bounds, h, _w = _frame_chroma(
-        stimulus, hop_s=hop_s, win_s=win_s, activity_rms=activity_rms
+        stimulus, hop_s=hop_s, win_s=win_s, activity_rms=activity_rms, tuning_hz=effective_tuning
     )
     raw_scores, names = _chord_profile_scores(chroma)
     scores = raw_scores.astype(np.float32)
@@ -150,16 +153,17 @@ def music_chord_profiles(
     margin = ordered[:, -1] - ordered[:, -2] if len(scores) else np.zeros(0)
     diag = np.column_stack((active, active, entropy * active, margin * active)).astype(np.float32)
     params = {"hop_s": hop_s, "win_s": win_s, "activity_rms": activity_rms}
+    params.update(tuning_hz=tuning_hz, tuning_mode=tuning_mode)
     realized = h / float(stimulus.sr_hz)
     pair_id = _output_pair_id(stimulus, "audio.music.chord_profiles", params)
     return {
         "default": _series(stimulus, scores, times, bounds, extractor="audio.music.chord_profiles",
                            params=params, names=names, policy="local", dependencies=bounds,
-                           hop_s=realized, extra={"validity_output": "diagnostics", "validity_column": "valid",
+                           hop_s=realized, tuning=evidence, extra={"validity_output": "diagnostics", "validity_column": "valid",
                                                    "output_pair_id": pair_id}),
         "diagnostics": _series(stimulus, diag, times, bounds, extractor="audio.music.chord_profiles.diagnostics",
                                params=params, names=["valid", "activity", "score_entropy", "top_two_margin"],
-                               policy="local", dependencies=bounds, hop_s=realized,
+                               policy="local", dependencies=bounds, hop_s=realized, tuning=evidence,
                                extra={"output_pair_id": pair_id}),
     }
 
@@ -167,14 +171,15 @@ def music_chord_profiles(
 def music_tonal_novelty(
     stimulus: AudioStimulus, *, hop_s: float = 0.1, win_s: float = 0.25,
     window_s: float = 1.0, mode: Literal["centered", "past_only"] = "centered",
-    activity_rms: float = 1e-6,
+    activity_rms: float = 1e-6, tuning_hz: float = 440.0, tuning_mode: str = "fixed",
 ) -> dict[str, object]:
     """Cosine distance between adjacent bounded chroma windows."""
     if mode not in {"centered", "past_only"}:
         raise ValueError("mode must be 'centered' or 'past_only'")
     window_s = _finite_positive(window_s, "window_s")
+    effective_tuning, evidence = resolve_tuning(stimulus, tuning_hz, tuning_mode, past_only=mode == "past_only")
     chroma, active, centers, frame_bounds, h, _w = _frame_chroma(
-        stimulus, hop_s=hop_s, win_s=win_s, activity_rms=activity_rms
+        stimulus, hop_s=hop_s, win_s=win_s, activity_rms=activity_rms, tuning_hz=effective_tuning
     )
     n = len(chroma)
     block = max(1, int(round(window_s * stimulus.sr_hz / h)))
@@ -216,6 +221,7 @@ def music_tonal_novelty(
     policy = "past_only" if mode == "past_only" else "bidirectional"
     params = {"hop_s": hop_s, "win_s": win_s, "window_s": window_s, "mode": mode,
               "activity_rms": activity_rms, "window_frames": block}
+    params.update(tuning_hz=tuning_hz, tuning_mode=tuning_mode)
     realized = h / float(stimulus.sr_hz)
     pair_id = _output_pair_id(stimulus, "audio.music.tonal_novelty", params)
     diagnostics = np.column_stack((valid, left_fraction, right_fraction,
@@ -223,12 +229,12 @@ def music_tonal_novelty(
     return {
         "default": _series(stimulus, values, output_times, out_bounds, extractor="audio.music.tonal_novelty",
                            params=params, names=["tonal_novelty"], policy=policy, dependencies=dep,
-                           hop_s=realized, extra={"validity_output": "diagnostics", "validity_column": "valid",
+                           hop_s=realized, tuning=evidence, extra={"validity_output": "diagnostics", "validity_column": "valid",
                                                    "output_pair_id": pair_id}),
         "diagnostics": _series(stimulus, diagnostics, output_times, out_bounds,
                                extractor="audio.music.tonal_novelty.diagnostics", params=params,
                                names=["valid", "left_activity_fraction", "right_activity_fraction", "window_frames"],
-                               policy=policy, dependencies=dep, hop_s=realized,
+                               policy=policy, dependencies=dep, hop_s=realized, tuning=evidence,
                                extra={"output_pair_id": pair_id}),
     }
 
@@ -237,6 +243,7 @@ def music_sequence_recurrence(
     stimulus: AudioStimulus, *, hop_s: float = 0.1, win_s: float = 0.25,
     embedding_frames: int = 4, delay_frames: int = 1, history_s: float = 30.0,
     exclusion_s: float = 0.0, activity_rms: float = 1e-6,
+    tuning_hz: float = 440.0, tuning_mode: str = "fixed",
 ) -> dict[str, object]:
     """Best bounded-history similarity of ordered chroma delay stacks."""
     if isinstance(embedding_frames, bool) or embedding_frames < 1:
@@ -248,8 +255,9 @@ def music_sequence_recurrence(
     history_s = _finite_positive(history_s, "history_s")
     if isinstance(exclusion_s, bool) or not np.isfinite(exclusion_s) or exclusion_s < 0:
         raise ValueError("exclusion_s must be finite and >= 0")
+    effective_tuning, evidence = resolve_tuning(stimulus, tuning_hz, tuning_mode, past_only=True)
     chroma, active, _centers, frame_bounds, h, w = _frame_chroma(
-        stimulus, hop_s=hop_s, win_s=win_s, activity_rms=activity_rms
+        stimulus, hop_s=hop_s, win_s=win_s, activity_rms=activity_rms, tuning_hz=effective_tuning
     )
     m, d, n = int(embedding_frames), int(delay_frames), len(chroma)
     first_offset = (m - 1) * d
@@ -314,18 +322,19 @@ def music_sequence_recurrence(
         valid[i] = True
     params = {"hop_s": hop_s, "win_s": win_s, "embedding_frames": m, "delay_frames": d,
               "history_s": history_s, "exclusion_s": exclusion_s, "activity_rms": activity_rms}
+    params.update(tuning_hz=tuning_hz, tuning_mode=tuning_mode)
     realized = h / float(stimulus.sr_hz)
     pair_id = _output_pair_id(stimulus, "audio.music.sequence_recurrence", params)
     diagnostics = np.column_stack((valid, count, oldest, query_fraction)).astype(np.float32)
     return {
         "default": _series(stimulus, values, times, bounds, extractor="audio.music.sequence_recurrence",
                            params=params, names=["recurrence", "best_lag_s"], policy="past_only",
-                           dependencies=deps, hop_s=realized,
+                           dependencies=deps, hop_s=realized, tuning=evidence,
                            extra={"embedding_waveform_span_s": duration, "validity_output": "diagnostics",
                                   "validity_column": "valid", "output_pair_id": pair_id}),
         "diagnostics": _series(stimulus, diagnostics, times, bounds,
                                extractor="audio.music.sequence_recurrence.diagnostics", params=params,
                                names=["valid", "candidate_count", "oldest_candidate_lag_s", "query_activity_fraction"],
-                               policy="past_only", dependencies=deps, hop_s=realized,
+                               policy="past_only", dependencies=deps, hop_s=realized, tuning=evidence,
                                extra={"embedding_waveform_span_s": duration, "output_pair_id": pair_id}),
     }

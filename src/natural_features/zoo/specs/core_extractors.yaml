@@ -1153,7 +1153,7 @@ extractors:
 
   - name: audio.music.chord_profiles
     impl: natural_features.features.audio.music_structure:music_chord_profiles
-    version: "1.0"
+    version: "2.0"
     label: Estimated triad-template profiles and ambiguity
     modalities: [audio]
     requires: [audio]
@@ -1164,13 +1164,15 @@ extractors:
       hop_s: { type: float, default: 0.1 }
       win_s: { type: float, default: 0.25 }
       activity_rms: { type: float, default: 0.000001 }
+      tuning_hz: { type: float, default: 440.0 }
+      tuning_mode: { type: str, default: fixed, choices: [fixed, auto] }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
       diagnostics: { schema: FeatureSeries/v1, kind: features }
 
   - name: audio.music.tonal_novelty
     impl: natural_features.features.audio.music_structure:music_tonal_novelty
-    version: "1.0"
+    version: "2.0"
     label: Tonal novelty between adjacent chroma windows
     modalities: [audio]
     requires: [audio]
@@ -1183,13 +1185,15 @@ extractors:
       window_s: { type: float, default: 1.0 }
       mode: { type: str, default: centered, choices: [centered, past_only] }
       activity_rms: { type: float, default: 0.000001 }
+      tuning_hz: { type: float, default: 440.0 }
+      tuning_mode: { type: str, default: fixed, choices: [fixed, auto] }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
       diagnostics: { schema: FeatureSeries/v1, kind: features }
 
   - name: audio.music.sequence_recurrence
     impl: natural_features.features.audio.music_structure:music_sequence_recurrence
-    version: "1.0"
+    version: "2.0"
     label: Ordered motif recurrence in bounded past history
     modalities: [audio]
     requires: [audio]
@@ -1204,13 +1208,15 @@ extractors:
       history_s: { type: float, default: 30.0 }
       exclusion_s: { type: float, default: 0.0 }
       activity_rms: { type: float, default: 0.000001 }
+      tuning_hz: { type: float, default: 440.0 }
+      tuning_mode: { type: str, default: fixed, choices: [fixed, auto] }
     outputs:
       default: { schema: FeatureSeries/v1, kind: features }
       diagnostics: { schema: FeatureSeries/v1, kind: features }
 
   - name: audio.music.chroma
     impl: natural_features.features.audio.music:music_chroma
-    version: "1.0"
+    version: "2.0"
     label: Chroma (pitch-class energy)
     modalities: [audio]
     requires: [audio]
@@ -1222,6 +1228,7 @@ extractors:
       win_s: { type: float, default: 0.186 }
       n_chroma: { type: int, default: 12 }
       tuning_hz: { type: float, default: 440.0 }
+      tuning_mode: { type: str, default: fixed, choices: [fixed, auto] }
       fmin: { type: float, default: 55.0 }
       fmax: { type: float, default: 5000.0 }
       sigma: { type: float, default: 0.5 }
@@ -1235,7 +1242,7 @@ extractors:
 
   - name: audio.music.tonnetz
     impl: natural_features.features.audio.music:music_tonnetz
-    version: "1.0"
+    version: "2.0"
     label: Tonal centroid (Tonnetz)
     modalities: [audio]
     requires: [audio]
@@ -1246,6 +1253,7 @@ extractors:
       hop_s: { type: float, default: 0.01 }
       win_s: { type: float, default: 0.186 }
       tuning_hz: { type: float, default: 440.0 }
+      tuning_mode: { type: str, default: fixed, choices: [fixed, auto] }
       fmin: { type: float, default: 55.0 }
       fmax: { type: float, default: 5000.0 }
       sigma: { type: float, default: 0.5 }
@@ -1300,7 +1308,7 @@ extractors:
 
   - name: audio.music.rhythm
     impl: natural_features.features.audio.music:music_rhythm
-    version: "2.0"
+    version: "3.0"
     label: Rhythm descriptors (tempo, pulse, and onset statistics)
     modalities: [audio]
     requires: [audio]
@@ -1321,11 +1329,12 @@ extractors:
       default:
         schema: FeatureSeries/v1
         kind: features
+      diagnostics: { schema: FeatureSeries/v1, kind: features }
 
   - name: audio.music.tonality
     impl: natural_features.features.audio.music:music_tonality
-    version: "1.0"
-    label: Key, mode and tonal stability
+    version: "2.0"
+    label: Continuous key profiles with separate labels and support
     modalities: [audio]
     requires: [audio]
     dependency_class: base_python
@@ -1337,14 +1346,16 @@ extractors:
       chroma_hop_s: { type: float, default: 0.01 }
       chroma_win_s: { type: float, default: 0.186 }
       tuning_hz: { type: float, default: 440.0 }
+      tuning_mode: { type: str, default: fixed, choices: [fixed, auto] }
       fmin: { type: float, default: 55.0 }
       fmax: { type: float, default: 5000.0 }
       sigma: { type: float, default: 0.5 }
-      include_profile: { type: bool, default: true }
+      activity_rms: { type: float, default: 0.000001 }
     outputs:
       default:
         schema: FeatureSeries/v1
         kind: features
+      diagnostics: { schema: FeatureSeries/v1, kind: features }
 
   - name: audio.modulation.mps
     impl: natural_features.features.audio.modulation:audio_modulation_spectrum
@@ -1368,6 +1379,29 @@ extractors:
       default:
         schema: FeatureSeries/v1
         kind: features
+
+  - name: audio.stem_levels
+    impl: natural_features.features.audio.stem_levels:audio_stem_levels
+    version: "1.0"
+    label: Estimated vocals, drums, bass and other source levels
+    modalities: [audio]
+    requires: [audio]
+    dependency_class: optional_python
+    cost_class: expensive
+    tags: [audio, music, sources, levels, estimated]
+    params:
+      separator_checkpoint: { type: str, default: null, nullable: true }
+      cache_dir: { type: str, default: null, nullable: true }
+      local_files_only: { type: bool, default: true }
+      device: { type: str, default: cpu }
+      hop_s: { type: float, default: 0.1 }
+      window_s: { type: float, default: 0.25 }
+      units: { type: str, default: dbfs, choices: [dbfs, rms] }
+      db_floor: { type: float, default: -120.0 }
+      include_ratio: { type: bool, default: false }
+    outputs:
+      default: { schema: FeatureSeries/v1, kind: features }
+      diagnostics: { schema: FeatureSeries/v1, kind: features }
 
   - name: audio.vocal_f0
     impl: natural_features.features.audio.vocal_f0:audio_vocal_f0

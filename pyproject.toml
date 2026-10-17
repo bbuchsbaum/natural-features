@@ -54,6 +54,10 @@ ppgs = [
 formants = [
   "praat-parselmouth>=0.4",
 ]
+source_separation = [
+  "demucs==4.0.1",
+  "scipy>=1.10",
+]
 vocal_f0 = [
   "demucs==4.0.1",
   "torchcrepe==0.0.24",

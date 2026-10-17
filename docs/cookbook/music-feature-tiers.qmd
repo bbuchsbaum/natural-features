@@ -64,196 +64,112 @@ print("onset envelope", onsets.values.shape)
 
 ```{python}
 for window_s in (3.0, 6.0):
-    ton = music_tonality(stim, window_s=window_s, hop_s=1.0)
-    rhy = music_rhythm(stim, window_s=window_s, hop_s=1.0)
+    ton = music_tonality(stim, window_s=window_s, hop_s=1.0)["diagnostics"]
+    rhy = music_rhythm(stim, window_s=window_s, hop_s=1.0)["default"]
     tc, rc = list(ton.coords["feature"]), list(rhy.coords["feature"])
     print(f"window {window_s:>4.1f}s -> {ton.values.shape[0]:2d} rows | "
           f"key_clarity {ton.values[:, tc.index('key_clarity')].mean():.2f} | "
           f"tempo {np.median(rhy.values[:, rc.index('tempo_bpm')]):.0f} BPM")
 ```
 
-`music_tonality` also emits the full 24-dimensional vector of correlations against every
+`music_tonality(...)["default"]` contains exactly the 24-dimensional vector of correlations against every
 major and minor key profile. Prefer it over the winning key for modelling: it keeps the
 graded similarity between neighbouring keys that a hard `argmax` discards.
 
 ```{python}
-ton = music_tonality(stim, window_s=6.0, hop_s=1.0)
+ton = music_tonality(stim, window_s=6.0, hop_s=1.0)["default"]
 profile = [c for c in ton.coords["feature"] if c.startswith("key_r_")]
 print(len(profile), "key-profile columns, e.g.", profile[:4])
 ```
 
-## Rhythm descriptor limits
+## Tuning and recording context
 
-`music_rhythm` estimates `tempo_bpm` from an onset-envelope autocorrelation and
-`log2_tempo` is the logarithm of that same estimate. They are two coordinate systems
-for one autocorrelation-selected period, not independent rhythm-family geometry; do
-not enter both as separate interpretable RSA features.
-
-Its `late_phase_onset_energy_fraction` descriptor is only the fraction of onset energy
-in the latter half of that estimated period, anchored to the start of each analysis
-window. Shifting otherwise identical periodic material by half a period relative to the
-window changes the descriptor from 0 to 1. It is not beat-aligned and is not a
-validated musical syncopation measure.
-
-Primary interpretable RSA analyses should exclude this descriptor. A reproduction or
-sensitivity analysis that uses the former `syncopation` column should label it
-“legacy window-relative late-phase onset-energy fraction”; saved outputs can map that
-deprecated name through the extractor metadata. Windows without an
-autocorrelation-supported period or onset energy contain `NaN` for this descriptor.
-Tempo and log2-tempo retain their legacy arithmetic in those windows.
-
-## Spectrotemporal modulation
-
-`audio.modulation.mps` is the 2-D Fourier transform of a log-frequency cochleagram
-patch: spectral modulation in cycles per octave against temporal modulation in Hz. Cells
-are labelled by the *sign* of the spectral modulation, because a ripple sweeping up in
-frequency and one sweeping down differ only in that sign.
+Chroma, tonnetz, tonality, chord profiles, tonal novelty, and sequence recurrence
+share an explicit `tuning_hz=440.0` default. For a known reference, pass it directly:
 
 ```{python}
-mps = audio_modulation_spectrum(stim, window_s=2.0, hop_s=1.0)
-names = list(mps.coords["feature"])
-print(mps.values.shape, "->", len(names), "modulation cells")
-top = np.argsort(np.nanmean(mps.values, axis=0))[::-1][:3]
-print("strongest:", [names[i] for i in top])
+from natural_features.features.audio import estimate_music_tuning
+
+# Inspect evidence before deciding whether automatic tuning is appropriate.
+evidence = estimate_music_tuning(stim)
+print(evidence["supported"], evidence["cents_from_a440"], evidence["concentration"])
+fixed = music_chroma(stim, tuning_hz=440 * 2 ** (49 / 1200))
 ```
 
-## Handing off to a modelling library
+`tuning_mode="auto"` estimates one reference from the supplied recording. It uses
+interpolated spectral peaks in at most 256 complete 0.5-second frames, a weighted
+circular mean of semitone residuals, and explicit consistency/support rules.
+It raises if evidence is insufficient or ambiguous; it never silently substitutes
+440 Hz. The candidate and diagnostics are available from `estimate_music_tuning`.
+Concentration measures spectral consistency, not calibrated accuracy. Percussion,
+inharmonic spectra, changing tuning, and non-equal-tempered music need separate
+validation; no harmonic/percussive separator is applied by this estimator.
 
-Nothing above is convolved or resampled to a scan clock. Keep it that way: HRF
-convolution, TR sampling and design-matrix choices belong downstream — see
-[the native temporal contract](../spec/native-temporal-contract.qmd) and
-[Convolve RMS with an SPMG1 HRF](rms-hrf-spmg1.qmd). Because the window extractors
-already integrate over `window_s`, resample them by taking the window *nearest* each
-analysis timepoint rather than by averaging adjacent rows, which would widen the
-integration window past the value you asked for. For the context-bearing features
-below, use the native payload and make aggregation validity-aware; the legacy
-feature resampler refuses these outputs.
+Offsets are identifiable modulo 100 cents. Automatic mode refuses candidates
+within 5 cents of the ±50-cent boundary because tiny errors there can shift every
+pitch-class label. A recording around +49 cents therefore requires a trusted
+explicit reference; the library does not resolve this ambiguity from a scalar
+estimate. Supplying `tuning_hz` together with automatic mode is rejected unless
+it is the untouched 440-Hz default.
 
-## Chord profiles, novelty and ordered recurrence
+Automatic tuning declares a whole-input, bidirectional computation dependency.
+Observation bounds still describe individual frames/windows. Past-only novelty
+and sequence recurrence reject automatic tuning. They accept a fixed reference
+from prior calibration; estimating that reference from future audio would still
+make the caller's overall analysis noncausal. Fixed-reference prefix outputs do
+not change when audio is appended.
 
-These three extractors use NumPy and return a pair of native `FeatureSeries`
-objects: `default` holds scores and `diagnostics` holds validity and method-specific
-diagnostics. Keep the pair together. A score in a row whose `valid` column is zero
-is a placeholder, not a measured zero. The pair shares an `output_pair_id` and
-identical row coordinates, including after storage and interval alignment.
+## Missingness and migration
 
-```{python}
-from natural_features.features.audio import (
-    music_chord_profiles, music_tonal_novelty, music_sequence_recurrence,
-)
+Tonality version 2 and rhythm version 3 return dictionaries with `default` and
+`diagnostics` series. Direct callers must select the named output before accessing
+`.values`. Recipes and `extract_features` retain both outputs; the latter names
+companions such as `audio.music.tonality.diagnostics`.
 
-chords = music_chord_profiles(stim)
-novelty = music_tonal_novelty(stim, window_s=1.0, mode="past_only")
-recurrence = music_sequence_recurrence(
-    stim, embedding_frames=4, delay_frames=2, history_s=8.0,
-)
-for name, pair in (("chords", chords), ("novelty", novelty), ("recurrence", recurrence)):
-    columns = pair["diagnostics"].coords["feature"]
-    valid = pair["diagnostics"].values[:, columns.index("valid")] == 1
-    print(name, pair["default"].values.shape, "valid rows:", int(valid.sum()))
-```
+Tonality's default matrix contains only 24 continuous correlations. Key index and
+mode are categorical diagnostic columns. Silence and zero-variance mean chroma
+produce NaN profiles and no key, with `profile_valid=0`. A valid profile can have
+an ambiguous winner (`key_valid=0`). `activity_fraction` and `active_frames` report
+how much of the window supports the profile. Activity uses untapered frame RMS
+after removing DC; inactive frames are excluded from
+its mean. This support rule is not evidence that a passage has a perceptually
+unambiguous key. `key_margin` retains its legacy opposite-mode comparison;
+`top_two_margin` reports the runner-up difference. The old `include_profile`
+switch has been removed: choose `default` or `diagnostics` explicitly.
 
-Chord profiles compare unit-normalized chroma with 24 major/minor triad templates.
-They omit sevenths, inversions and a no-chord class, and are estimates rather than
-validated annotations. Score entropy normalizes the nonnegative template scores
-to sum to one; it is not posterior uncertainty. An ideal major triad still overlaps
-other templates and therefore need not have zero entropy. Activity uses unwindowed
-waveform RMS greater than `activity_rms` (default `1e-6`, in input amplitude units),
-plus nonzero chroma. Activity does not establish tonal reliability.
+Rhythm's default matrix contains `tempo_bpm`, `pulse_clarity`,
+`onset_peak_strength`, `onset_rate`, `ioi_median`, and `ioi_cv`.
 
-Novelty is cosine distance between the means of two adjacent blocks of individually
-normalized chroma frames. `window_s` specifies each block; both must be fully
-supported and active. `centered` places the timestamp between the blocks;
-`past_only` timestamps the end of the available waveform support and uses two
-trailing blocks. Leading warmup rows are invalid; centered mode also has invalid
-trailing rows. Use separate calls for separate temporal scales.
+| Quantity | Minimum numerical support |
+|---|---|
+| Tempo | Three detected onsets and positive selected autocorrelation |
+| Pulse clarity | Supported tempo and nonconstant autocorrelation |
+| Onset peak strength | One detected peak and positive mean envelope |
+| Median IOI | One observed interval |
+| IOI CV | Two observed intervals |
+| Onset rate | Defined for every full window, including measured zero |
 
-Recurrence compares ordered stacks of `embedding_frames` chroma vectors, separated
-by `delay_frames` hops. Reordering pitch classes changes a stack even if its pitch
-inventory is unchanged. Each historical candidate must fit entirely inside
-`history_s` and must not overlap the query's **waveform support**. `exclusion_s`
-can impose a larger separation. The outputs contain best cosine similarity and
-lag; diagnostics report candidate count, oldest candidate lag and query activity.
-Ties choose the smallest lag. Missing history has false validity.
+Unsupported quantities are NaN with feature-specific validity columns. Zero CV
+for observed regular intervals remains a valid measurement. `tempo_boundary`
+flags the selected candidate at a search edge, including unsupported candidates;
+it does not automatically invalidate a supported 30-BPM estimate. These checks
+remove degenerate arithmetic, but do not calibrate tempo detection on music/noise.
+`onset_peak_strength` is the renamed legacy `beat_strength`: peak-envelope contrast,
+not perceptual beat strength.
 
-All framing uses integer sample positions and reports the realized hop. Short
-inputs with no complete frame yield empty series. Computation-context intervals
-enclose all inputs affecting a result, including the searched recurrence history.
-They remain explicitly tagged to the source clock after output clock conversion.
+`log2_tempo` is retained in diagnostics as an alternative coordinate of the same
+tempo estimate. Select one coordinate deliberately; the default no longer weights
+that estimate twice. The origin-anchored `late_phase_onset_energy_fraction` is also
+diagnostic-only. Shifting a periodic pattern relative to a window changes it; it
+is not beat-aligned or a validated syncopation measure. `syncopation` remains only
+a deprecated metadata alias.
 
-## Optional learned music representations
+Times, observation bounds, and output hops use the realized integer-sample grid.
+Window support includes the frontend frames contributing to each statistic;
+onset-flux dependencies additionally include the preceding frame. Retain NaNs and
+diagnostics when forming summaries, report retained coverage, and do not zero-fill
+missing observations. Default-profile selection prevents categorical labels from
+entering continuous geometry; it does not choose an RSA distance or validate an
+analysis. Schema and code identities changed, so recompute affected cached outputs.
 
-Install only the backends you need:
-
-```bash
-pip install 'natural-features[mert,beats]' scipy
-```
-
-MERT requires audio at the checkpoint's declared rate (24 kHz for MERT-v1-95M).
-Beat This requires 22.05 kHz. Neither extractor resamples. For example, an explicit
-polyphase conversion can preserve the stimulus clock and offset:
-
-```{python}
-from math import gcd
-from scipy.signal import resample_poly
-
-def at_rate(audio, target):
-    factor = gcd(audio.sr_hz, target)
-    samples = resample_poly(audio.samples, target // factor,
-                            audio.sr_hz // factor, axis=0)
-    return AudioStimulus.from_array(
-        samples.astype(np.float32), target, start_offset_s=audio.start_offset_s,
-        clock=audio.clock, temporal_context=audio.temporal_context,
-    )
-
-music_24k = at_rate(stim, 24000)
-```
-
-Prepare assets explicitly, outside extraction. For MERT, download a pinned snapshot
-and review its custom Python source before opting in. Custom model and processor
-code must reside inside that snapshot; cross-repository `auto_map` references are
-refused because their source is not covered by its content identity. Use a standalone
-checkpoint with flat `config.json` and `preprocessor_config.json` files. Versioned
-`configuration_files`, nested processors, fallback `processor_config.json`, and
-PEFT `adapter_config.json` layouts are unsupported.
-These model calls are not executed during the documentation build:
-
-```python
-from huggingface_hub import snapshot_download
-from natural_features.features.audio import audio_music_mert, music_beat_activations
-
-revision = "12af15fef9d0ac838c3f475bfbbf26d2060dd4f5"
-local_model = snapshot_download(
-    "m-a-p/MERT-v1-95M", revision=revision,
-    allow_patterns=["config.json", "preprocessor_config.json",
-                    "configuration_MERT.py", "modeling_MERT.py", "pytorch_model.bin"],
-)
-mert = audio_music_mert(
-    music_24k, model=local_model, layers=[0, 6, 12], trust_remote_code=True,
-)
-beats = music_beat_activations(stim, checkpoint="/path/to/beat-this-final0.ckpt")
-```
-
-The [MERT model card](https://huggingface.co/m-a-p/MERT-v1-95M) documents the
-candidate checkpoint and its license. MERT output has separate time, layer and
-unit axes, with no dimensionality reduction. `layers=None` selects all layers;
-layer zero is the backend's initial hidden state. Frame stride, centers and counts
-come from convolution configuration. The 95M model has a nominal 75 Hz stride,
-but a one-second unpadded input need not produce exactly 75 rows. Whole-input
-normalization and bidirectional context apply even when convolution support is
-short. Selecting a different input window can therefore change shared-frame values.
-
-[Beat This](https://github.com/CPJKU/beat_this) provides downloadable checkpoints.
-Pass an existing local file, or a cached `final0`/`small0` model name. A cache miss
-fails offline. Explicit downloads through `local_files_only=False` also require
-`checkpoint_sha256` from your trusted asset manifest. Scores are sigmoid-transformed
-frame logits at 50 Hz; `representation="logit"` returns logits. Neither form is
-empirically calibrated confidence. The adapter records reflected frontend support
-and bidirectional chunk context, including overlap and final-chunk cropping.
-
-Both adapters use evaluation mode, record content-based asset identity and runtime
-versions, and raise typed dependency, load or inference errors. Missing backends
-never produce a tempo heuristic or a substitute embedding. Model predictions and
-structure descriptors still require evaluation on suitable held-out genres and
-excerpt lengths before neural interpretation; synthetic tests and backend parity
-establish implementation behavior only.
+For source-level features with different semantics, see [estimated stem levels](stem-levels.qmd).

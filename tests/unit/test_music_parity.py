@@ -137,7 +137,7 @@ def test_chroma_tracks_librosa_chroma_stft() -> None:
 def test_tempo_agrees_with_librosa() -> None:
     x = _musical_signal(dur_s=16.0)
     stim = AudioStimulus.from_array(x, sr_hz=SR)
-    ours = music_rhythm(stim, window_s=8.0, hop_s=4.0).values[:, 0]
+    ours = music_rhythm(stim, window_s=8.0, hop_s=4.0)["default"].values[:, 0]
     theirs = float(
         librosa.feature.tempo(y=x, sr=SR, hop_length=int(round(SR * HOP_S)))[0]
     )

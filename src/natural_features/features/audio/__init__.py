@@ -26,6 +26,8 @@ from .periodicity import audio_periodicity
 from .phonetic import audio_formants, audio_harmonicity
 from .prosody import audio_pitch, prosody_features
 from .vocal_f0 import audio_vocal_f0
+from .stem_levels import audio_stem_levels
+from .music_tuning import estimate_music_tuning
 
 __all__ = [
     "audio_ast_embeddings",
@@ -39,6 +41,8 @@ __all__ = [
     "audio_periodicity",
     "audio_pitch",
     "audio_vocal_f0",
+    "audio_stem_levels",
+    "estimate_music_tuning",
     "egemaps_lld",
     "log_cochleagram",
     "mel",

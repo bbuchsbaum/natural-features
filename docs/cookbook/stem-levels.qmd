@@ -1,0 +1,91 @@
+---
+title: "Measure estimated stem levels"
+subtitle: "Native-time vocals, drums, bass and other source levels with explicit provenance."
+sidebar: cookbook
+---
+
+`audio.stem_levels` summarizes four estimated HTDemucs source waveforms. It returns
+`default` and `diagnostics` series on the input audio clock. The default columns
+are `vocals`, `drums`, `bass`, and `other`; these are model source names, not verified
+instrument annotations or source-presence probabilities.
+
+## Extract levels
+
+Install `natural-features[source_separation]`. This extra requires Demucs 4.0.1
+and SciPy, independently of CREPE. Extraction uses the fixed upstream
+`955717e8-8726e21a.th` checkpoint, verified against SHA256
+`8726e21a993978c7ba086d3872e7608d7d5bfca646ca4aca459ffda844faa8b4`
+before loading. `local_files_only=True` is the default; missing or altered assets
+raise an error. Set it to false explicitly to download the pinned public asset.
+
+```{python}
+#| eval: false
+from natural_features.features.audio import audio_stem_levels
+
+# stim is an AudioStimulus containing scaled floating-point mono/stereo audio.
+out = audio_stem_levels(
+    stim,
+    separator_checkpoint="/path/to/955717e8-8726e21a.th",
+    hop_s=0.1,
+    window_s=0.25,
+    units="dbfs",       # or "rms" for linear amplitude
+    db_floor=-120.0,
+)
+levels, diagnostics = out["default"], out["diagnostics"]
+print(levels.coords["feature"], levels.times_s, levels.time_bounds_s)
+```
+
+The registry identifier is `audio.stem_levels`. The high-level planner requires
+the normal optional-backend opt-in (`budget="allow_python"`). Recipe execution
+preserves both named outputs.
+
+## What is measured
+
+Each complete, untapered window computes the square root of the mean squared
+samples across time **and both channels**. Channels are not averaged before
+measuring energy, so opposing-polarity stereo does not cancel. Windows use rounded
+integer sample lengths and hops; exact bounds and realized rates are retained.
+Partial end windows are omitted. Inputs shorter than one window produce empty
+outputs after the normal strict backend checks.
+
+`units="dbfs"` means `20*log10(RMS)` with unity sample amplitude as reference,
+floored at `db_floor`. It is not LUFS or acoustic SPL. In linear RMS output, the
+floor does not alter values. Per-stem `valid`, `silent`, and `below_floor`
+diagnostics distinguish numerical validity, exact zero energy, and a clipped dB
+representation. Quiet nonzero estimates remain distinguishable from silence.
+
+The level path normalizes the whole stereo input by a common RMS, restores that
+gain after separation, and removes each estimated channel's global DC. There is
+no per-stem gain normalization. The existing vocal-F0 adapter retains its previous
+normalization and mono-stem behavior. Source levels are independent of F0
+acceptance: an unvoiced consonant can contribute vocal-stem energy.
+
+`include_ratio=True` explicitly appends `vocals_to_accompaniment_db`. Accompaniment
+is the **waveform sum** of drums, bass and other, followed by stereo RMS. The ratio
+is NaN unless both vocal and accompaniment RMS are positive; `ratio_valid` reports
+support. Its units remain dB even with `units="rms"`; per-column units are recorded.
+This is not a probability or fraction of mixture energy. Summing stem energies
+would drop cross terms and answer a different question.
+
+## Context and validation limits
+
+Although each level has a local observation window, separation and normalization
+depend on the entire supplied recording. Metadata declares whole-input,
+bidirectional dependencies, the model hash and runtime versions, resampling,
+7.8-second model segments, overlap 0.25, and zero random shifts. Recordings cut
+into different extraction contexts need not yield identical levels.
+
+Leakage can have nonzero energy, and a weak source can be suppressed. These
+diagnostics do not classify leakage or establish vocal activity. Known-stem tests
+check the RMS, stereo, ratio and missingness arithmetic. An opt-in real-model
+smoke test checks execution, timing, and common-gain behavior:
+
+```bash
+NF_TEST_VOCAL_F0_CHECKPOINT=/path/to/955717e8-8726e21a.th \
+  pytest -q tests/external/test_stem_levels_external.py
+```
+
+Neither establishes separation accuracy on commercial recordings. Validate that
+separately against reference sources appropriate to the intended domain. Study
+windows, scanner alignment, nuisance controls and neural model selection remain
+downstream choices.

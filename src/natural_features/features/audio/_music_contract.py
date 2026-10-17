@@ -120,6 +120,7 @@ def music_series(
     dims: tuple[str, ...] = ("time", "feature"),
     coords: dict[str, list[Any]] | None = None,
     model_revision: str = "none",
+    code_version: str = "music-v1",
     extra: dict[str, Any] | None = None,
     alignment: str = "center",
 ) -> FeatureSeries:
@@ -139,7 +140,7 @@ def music_series(
         dims=dims,
         coords=coords if coords is not None else {"feature": names or []},
         metadata=extractor_metadata(
-            extractor, params=params, code_version="music-v1", model_revision=model_revision,
+            extractor, params=params, code_version=code_version, model_revision=model_revision,
             extra={"computation_context": context, **(extra or {})},
         ),
         timebase=TimebaseSpec(

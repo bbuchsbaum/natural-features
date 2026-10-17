@@ -121,7 +121,7 @@ def test_onset_strength_is_positive_and_peaks_at_clicks() -> None:
 
 @pytest.mark.parametrize("bpm", [90.0, 120.0, 150.0])
 def test_rhythm_recovers_a_known_tempo(bpm: float) -> None:
-    fs = music_rhythm(_click_train(bpm, dur_s=16.0), window_s=8.0, hop_s=4.0)
+    fs = music_rhythm(_click_train(bpm, dur_s=16.0), window_s=8.0, hop_s=4.0)["default"]
     tempo = fs.values[:, list(fs.coords["feature"]).index("tempo_bpm")]
     assert np.all(np.abs(tempo - bpm) < 0.05 * bpm)
 
@@ -132,9 +132,9 @@ def test_rhythm_pulse_clarity_is_higher_for_a_beat_than_for_noise() -> None:
         (0.1 * rng.standard_normal(SR * 16)).astype(np.float32), sr_hz=SR
     )
     idx = None
-    beat = music_rhythm(_click_train(120.0, dur_s=16.0), window_s=8.0, hop_s=4.0)
+    beat = music_rhythm(_click_train(120.0, dur_s=16.0), window_s=8.0, hop_s=4.0)["default"]
     idx = list(beat.coords["feature"]).index("pulse_clarity")
-    noisy = music_rhythm(noise, window_s=8.0, hop_s=4.0)
+    noisy = music_rhythm(noise, window_s=8.0, hop_s=4.0)["default"]
     assert beat.values[:, idx].mean() > noisy.values[:, idx].mean()
 
 
@@ -150,25 +150,26 @@ def test_rhythm_late_phase_fraction_is_window_origin_relative() -> None:
 
 
 def test_rhythm_renames_syncopation_and_marks_undefined_periods() -> None:
-    fs = music_rhythm(_click_train(120.0, dur_s=16.0), window_s=8.0, hop_s=4.0)
+    fs = music_rhythm(_click_train(120.0, dur_s=16.0), window_s=8.0, hop_s=4.0)["default"]
     names = list(fs.coords["feature"])
-    assert "late_phase_onset_energy_fraction" in names
+    assert "late_phase_onset_energy_fraction" not in names
     assert "syncopation" not in names
     assert fs.metadata["deprecated_feature_aliases"] == {
-        "syncopation": "late_phase_onset_energy_fraction"
+        "syncopation": "late_phase_onset_energy_fraction",
+        "beat_strength": "onset_peak_strength",
     }
 
     silence = AudioStimulus.from_array(np.zeros(SR * 16, dtype=np.float32), sr_hz=SR)
-    silent = music_rhythm(silence, window_s=8.0, hop_s=4.0)
+    silent = music_rhythm(silence, window_s=8.0, hop_s=4.0)["diagnostics"]
     silent_names = list(silent.coords["feature"])
-    assert np.all(np.isfinite(silent.values[:, silent_names.index("tempo_bpm")]))
-    assert np.all(np.isfinite(silent.values[:, silent_names.index("log2_tempo")]))
+    assert not silent.values[:, silent_names.index("tempo_valid")].any()
+    assert np.all(np.isnan(silent.values[:, silent_names.index("log2_tempo")]))
     assert np.all(
         np.isnan(silent.values[:, silent_names.index("late_phase_onset_energy_fraction")])
     )
-    assert silent.metadata["code_version"] == "music-rhythm-v2"
-    assert silent.metadata["descriptor_schema_version"] == "2.0"
-    assert Registry.with_builtin_specs().get("audio.music.rhythm").version == "2.0"
+    assert silent.metadata["code_version"] == "music-rhythm-v3"
+    assert silent.metadata["descriptor_schema_version"] == "3.0"
+    assert Registry.with_builtin_specs().get("audio.music.rhythm").version == "3.0"
     cache_inputs = {
         "extractor_name": "audio.music.rhythm",
         "params": {"window_s": 8.0, "hop_s": 4.0},
@@ -188,13 +189,13 @@ def test_rhythm_marks_low_flat_activity_as_an_undefined_beat(monkeypatch) -> Non
         lambda *_args, **_kwargs: (low_flat_envelope, np.arange(low_flat_envelope.size) / 100),
     )
     fs = music_rhythm(
-        AudioStimulus.from_array(np.zeros(SR, dtype=np.float32), sr_hz=SR),
+        AudioStimulus.from_array(np.zeros(SR * 12, dtype=np.float32), sr_hz=SR),
         window_s=8.0,
         hop_s=1.0,
-    )
+    )["diagnostics"]
     names = list(fs.coords["feature"])
-    assert np.all(np.isfinite(fs.values[:, names.index("tempo_bpm")]))
-    assert np.all(np.isfinite(fs.values[:, names.index("log2_tempo")]))
+    assert not fs.values[:, names.index("tempo_valid")].any()
+    assert np.all(np.isnan(fs.values[:, names.index("log2_tempo")]))
     assert np.all(
         np.isnan(fs.values[:, names.index("late_phase_onset_energy_fraction")])
     )
@@ -209,10 +210,10 @@ def test_rhythm_phase_fraction_uses_public_extractor_with_mocked_onsets(monkeypa
         "_onset_envelope",
         lambda *_args, **_kwargs: (onset_envelope, np.arange(onset_envelope.size) / 100),
     )
-    stimulus = AudioStimulus.from_array(np.zeros(SR, dtype=np.float32), sr_hz=SR)
+    stimulus = AudioStimulus.from_array(np.zeros(10000, dtype=np.float32), sr_hz=1000)
 
     def late_fraction() -> float:
-        fs = music_rhythm(stimulus, window_s=8.0, hop_s=1.0)
+        fs = music_rhythm(stimulus, window_s=8.0, hop_s=1.0)["diagnostics"]
         return float(
             fs.values[0, list(fs.coords["feature"]).index("late_phase_onset_energy_fraction")]
         )
@@ -242,7 +243,7 @@ def test_tempogram_peaks_at_the_true_tempo() -> None:
 
 
 def test_tonality_recovers_c_major_from_a_c_major_triad() -> None:
-    fs = music_tonality(_tone([261.63, 329.63, 392.00]), window_s=2.0, hop_s=1.0)
+    fs = music_tonality(_tone([261.63, 329.63, 392.00]), window_s=2.0, hop_s=1.0)["diagnostics"]
     names = list(fs.coords["feature"])
     key = fs.values[:, names.index("key_index")]
     minor = fs.values[:, names.index("is_minor")]
@@ -251,17 +252,15 @@ def test_tonality_recovers_c_major_from_a_c_major_triad() -> None:
 
 
 def test_tonality_emits_the_full_24_key_profile() -> None:
-    fs = music_tonality(_tone([261.63, 329.63, 392.00]), window_s=2.0, hop_s=1.0)
+    fs = music_tonality(_tone([261.63, 329.63, 392.00]), window_s=2.0, hop_s=1.0)["default"]
     names = list(fs.coords["feature"])
     assert sum(n.startswith("key_r_") for n in names) == 24
-    assert len(names) == 5 + 24
+    assert len(names) == 24
 
 
-def test_tonality_profile_can_be_switched_off() -> None:
-    fs = music_tonality(
-        _tone(440.0), window_s=2.0, hop_s=1.0, include_profile=False
-    )
-    assert len(list(fs.coords["feature"])) == 5
+def test_tonality_legacy_profile_switch_requires_explicit_migration() -> None:
+    with pytest.raises(TypeError, match="include_profile"):
+        music_tonality(_tone(440.0), window_s=2.0, include_profile=False)
 
 
 # ---------------------------------------------------------------- modulation / MPS
@@ -361,9 +360,11 @@ def test_modulation_spectrum_extractor_shape_and_times() -> None:
 )
 def test_feature_series_contract(fn, kw) -> None:
     fs = fn(_tone([261.63, 329.63], dur_s=6.0), **kw)
+    if isinstance(fs, dict):
+        fs = fs["default"]
     assert fs.dims == ("time", "feature")
     assert fs.values.shape == (fs.times_s.shape[0], len(list(fs.coords["feature"])))
-    assert np.all(np.isfinite(fs.values))
+    assert not np.any(np.isinf(fs.values))
     assert np.all(np.diff(fs.times_s) > 0)
     assert fs.metadata["extractor_name"].startswith("audio.")
 

@@ -604,7 +604,10 @@ def _register_outputs(
     step_id: str,
     outputs: dict[str, Any],
 ) -> None:
-    for out_key, out_spec in outputs.items():
+    # Generic kind aliases must select the primary output, independent of
+    # declaration order. Named diagnostics remain explicitly addressable.
+    ordered = sorted(outputs.items(), key=lambda item: item[0] == "default")
+    for out_key, out_spec in ordered:
         token = f"ref:{step_id}.{out_key}"
         kind = out_spec.get("kind") if isinstance(out_spec, Mapping) else None
         schema = out_spec.get("schema") if isinstance(out_spec, Mapping) else None

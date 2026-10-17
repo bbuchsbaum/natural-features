@@ -5,16 +5,35 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Changed
-- `audio.music.rhythm` now names its origin-anchored late-phase onset-energy
-  fraction `late_phase_onset_energy_fraction`. The former `syncopation` label is
-  a deprecated metadata alias retained for legacy-output interpretation; the
-  descriptor is not beat-aligned or a validated musical-syncopation measure.
-  Its value is `NaN` when an analysis window has no autocorrelation-supported
-  period or onset energy. Tempo and log2-tempo retain their legacy arithmetic
-  under those conditions. This output-schema change is versioned as
-  `audio.music.rhythm` 2.0 / `music-rhythm-v2`.
+- Music issues #32–34: explicit `tuning_hz` and opt-in `tuning_mode="auto"` now
+  work consistently across chroma, tonnetz, tonality, chord profiles and tonal
+  novelty. Sequence recurrence accepts a fixed reference. Automatic tuning
+  reports bounded spectral-peak evidence, refuses unsupported/ambiguous estimates
+  (including candidates within 5 cents of the half-semitone boundary), and declares
+  whole-recording dependencies. Past-only modes reject whole-recording estimation.
+  Tonal frontends remove frame DC; affected feature/code versions advance to 2.
+- `audio.music.tonality` 2.0 returns `default` (24 continuous correlations) and
+  `diagnostics` (labels, support and summary statistics). Silence/degenerate
+  chroma have missing profiles and no winning key. Direct callers must select a
+  named output; the legacy `include_profile` switch is removed.
+- `audio.music.rhythm` 3.0 returns `default` (six descriptors) and `diagnostics`.
+  Unsupported tempo, IOI and pulse statistics are NaN with per-feature support;
+  legitimate measured zeros remain zero. `beat_strength` is renamed
+  `onset_peak_strength` to identify its peak-envelope contrast calculation.
+  The redundant `log2_tempo` coordinate and origin-relative
+  `late_phase_onset_energy_fraction` are diagnostic-only. The deprecated
+  `syncopation` alias remains metadata; it is not a validated syncopation measure.
+- Music timing uses realized sample hops and explicit observation/dependency
+  bounds. See the music cookbook for schema migration and cache recomputation.
+  Automatic workflow routing now prefers each extractor's named `default`
+  over diagnostic feature outputs; explicit diagnostic references remain usable.
 
 ### Added
+- `audio.stem_levels`: native-window RMS/dBFS levels for pinned Demucs vocals,
+  drums, bass and other estimates, with stereo energy, numerical/floor diagnostics,
+  optional waveform-sum accompaniment ratio, and whole-input provenance. The
+  `source_separation` extra loads Demucs independently of CREPE. Vocal-F0 retains
+  its existing numerical adapter. These levels are not source-activity probabilities.
 - Native music feature extensions: layer-resolved MERT hidden states and Beat
   This beat/downbeat activations, with optional `mert` and `beats` dependencies,
   content-identified assets, explicit sample-rate refusal, and source-clock
