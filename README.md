@@ -22,6 +22,8 @@ and re-exported at package root.
 - One-call extraction through `extract_features(...)`
 - Explicit alignment to event, frame, regular, or custom timelines
 - Audio-batch, acoustic-phonetics, speech-ladder, multiscale-language, and video-text workflows
+- [Transcript pronunciation sequences, phone ngrams, and acoustic comparison](docs/transcript_phonology.md)
+  with a pinned dictionary, explicit coverage, and no new runtime dependencies
 - Dependency-light native-time payloads for downstream `fmrimod`/fMRI modeling
 - Compatibility-only run-aware fMRI query and rendering helpers
 - Storage and interchange through NPZ, Zarr, Parquet, and tabular exports

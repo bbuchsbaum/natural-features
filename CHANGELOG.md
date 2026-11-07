@@ -15,6 +15,13 @@ All notable changes to this project will be documented in this file.
   `audio.music.rhythm` 2.0 / `music-rhythm-v2`.
 
 ### Added
+- Experimental transcript pronunciation and phone-sequence APIs with a pinned,
+  licensed CMUdict resource; explicit alternatives, overrides, coverage and gaps;
+  fixed-vocabulary unigrams/bigrams; and inspectable English feature-weighted edit
+  distance. No new runtime dependencies or invented timestamps.
+- Sentence acoustic blocks retaining native support/validity, frozen reference
+  scaling, and a public-speech comparison example with common-pair RDM exports
+  and descriptive overlap/collinearity checks. See `docs/transcript_phonology.md`.
 - Native music feature extensions: layer-resolved MERT hidden states and Beat
   This beat/downbeat activations, with optional `mert` and `beats` dependencies,
   content-identified assets, explicit sample-rate refusal, and source-clock

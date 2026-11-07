@@ -3,6 +3,8 @@
 - `onboarding.md`: end-to-end setup and first workflows.
 - `audio_batch_quickstart.md`: short-audio batch extraction.
 - `acoustic_phonetics_quickstart.md`: posterior -> articulatory workflow.
+- `transcript_phonology.md`: untimed dictionary pronunciations, ordered phone
+  features, native acoustic aggregation, and a matched-pair overlap audit.
 - `multiscale_language_quickstart.md`: multiscale semantic features.
 - `cookbook/auditory-language-hierarchy.qmd`: one speech wav -> acoustics,
   prosody, phonology, and semantics on one grid (hierarchical analysis recipe).
