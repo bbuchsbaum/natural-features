@@ -1,6 +1,9 @@
 """Experimental, untimed English pronunciations from pinned dictionary data.
 
-No recognizer, G2P fallback, timing, or confidence estimation is performed.
+No recognizer, statistical G2P, timing, or confidence estimation is performed.
+An opt-in deterministic composition step (``compose=True``) can estimate words
+missing from the dictionary from dictionary parts; such words keep the origin
+``composed_estimated`` so they are never mistaken for dictionary entries.
 """
 
 from __future__ import annotations
@@ -17,6 +20,10 @@ from typing import Mapping, Sequence
 import unicodedata
 
 from natural_features.features.common import extractor_metadata
+from natural_features.features.speech.pronunciation_compose import (
+    COMPOSITION_RULES,
+    compose_pronunciation,
+)
 
 VOWELS = tuple("AA AE AH AO AW AY EH ER EY IH IY OW OY UH UW".split())
 PHONES = tuple(
@@ -58,6 +65,7 @@ def provenance(name: str, params: dict, **extra: object) -> dict:
                 for p in (
                     Path(__file__),
                     Path(__file__).with_name("phone_sequences.py"),
+                    Path(__file__).with_name("pronunciation_compose.py"),
                 )
                 if p.exists()
             },
@@ -238,6 +246,9 @@ class PronunciationSequence:
             "unselected_indices": [
                 w.index for w in self.words if w.alternatives and w.selected is None
             ],
+            "estimated_indices": [
+                w.index for w in self.words if w.origin == "composed_estimated"
+            ],
         }
 
     def to_dict(self) -> dict:
@@ -267,11 +278,16 @@ def extract_pronunciations(
     lexicon: PronunciationLexicon | None = None,
     supplemental: PronunciationLexicon | None = None,
     overrides: Mapping[str, Mapping[int, Sequence[str]]] | None = None,
+    compose: bool = False,
 ) -> list[PronunciationSequence]:
     """Preserve every item and unresolved token. Selection is never inferred.
 
     ``retain`` selects only unambiguous entries; ``dictionary_order`` explicitly
     chooses the first variant. Overrides supersede lookup for one item/word only.
+    ``compose=True`` estimates words found in neither lexicon from dictionary
+    parts (see :func:`compose_pronunciation`); disagreeing analyses are kept as
+    alternatives under the same selection rule, and every such word has origin
+    ``composed_estimated``. Supplemental entries and overrides take precedence.
     """
     if selection not in {"retain", "dictionary_order"}:
         raise ValueError("selection must be 'retain' or 'dictionary_order'")
@@ -312,6 +328,15 @@ def extract_pronunciations(
                 origin = "supplemental_unverified"
             alternatives = source.entries.get(key, ())
             labels = source.labels.get(key, ())
+            if compose and not alternatives:
+                lookup = (
+                    lexicon.entries
+                    if supplemental is None
+                    else {**lexicon.entries, **supplemental.entries}
+                )
+                alternatives, labels = compose_pronunciation(key, lookup)
+                if alternatives:
+                    origin = "composed_estimated"
             chosen = (
                 0
                 if len(alternatives) == 1
@@ -360,6 +385,7 @@ def extract_pronunciations(
                 "lexicon": lexicon.metadata,
                 "supplemental": supplemental.metadata if supplemental else None,
                 "overrides": {str(k): list(v) for k, v in item_overrides.items()},
+                "composition": COMPOSITION_RULES if compose else None,
             },
             text_sha256=hashlib.sha256(text.encode()).hexdigest(),
             language="en-US",
@@ -391,7 +417,23 @@ def coverage_report(
                 row["occurrences"] += 1
                 if seq.item_id not in row["item_ids"]:
                     row["item_ids"].append(seq.item_id)
-    for row in unresolved.values():
+    estimated: dict[str, dict] = {}
+    for seq in sequences:
+        for word in seq.words:
+            if word.origin == "composed_estimated":
+                row = estimated.setdefault(
+                    word.normalized,
+                    {
+                        "token": word.normalized,
+                        "occurrences": 0,
+                        "item_ids": [],
+                        "derivations": list(word.alternative_labels),
+                    },
+                )
+                row["occurrences"] += 1
+                if seq.item_id not in row["item_ids"]:
+                    row["item_ids"].append(seq.item_id)
+    for row in (*unresolved.values(), *estimated.values()):
         row["affected_pairs"] = sum(
             a in row["item_ids"] or b in row["item_ids"] for a, b in pairs
         )
@@ -405,6 +447,13 @@ def coverage_report(
         "total_pairs": len(pairs),
         "unresolved": sorted(
             unresolved.values(),
+            key=lambda r: (-r["affected_pairs"], -r["occurrences"], r["token"]),
+        ),
+        "estimated_items": sum(
+            s.eligible and bool(s.coverage["estimated_indices"]) for s in sequences
+        ),
+        "estimated": sorted(
+            estimated.values(),
             key=lambda r: (-r["affected_pairs"], -r["occurrences"], r["token"]),
         ),
     }

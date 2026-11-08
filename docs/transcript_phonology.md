@@ -50,9 +50,10 @@ never downloads data. Resource updates require fixture review and new provenance
   part of the token. The span and original text still include the mark.
 - Punctuation is excluded from pronunciation; it does not insert a silence phone.
   Cross-word bigrams may cross punctuation, exactly as other word boundaries.
-- Contractions, possessives and compounds are looked up as whole tokens. No
-  suffix rules, compound splitting, accent stripping, number expansion or G2P
-  is silently applied. Numeric forms and unsupported symbols remain explicit
+- Contractions, possessives and compounds are looked up as whole tokens. By
+  default no suffix rules, compound splitting, accent stripping, number expansion
+  or G2P is applied. The opt-in composition step below is the only exception and
+  is never silent. Numeric forms and unsupported symbols remain explicit
   unresolved tokens when absent from the lexicon. Underscore-containing strings
   are whole tokens. Word count means non-punctuation source tokens.
 - Vowels require original stress labels `0`, `1` or `2`; consonants are unstressed.
@@ -84,6 +85,58 @@ audio verification. Supplement hashes and the exact overrides are recorded.
 `coverage_report(..., pairs=[("s1", "s2"), ...])` reports affected items and pairs
 for each unresolved type. Affected-pair counts overlap and are not additive or
 promises of recovered coverage. Unselected alternatives are reported separately.
+
+### Estimating missing words from dictionary parts
+
+`extract_pronunciations(..., compose=True)` estimates a word found in neither the
+dictionary nor the supplement by rebuilding it from entries in both. The fixed
+rules (`affix-compound-v1`, recorded in metadata) are:
+
+- regular suffixes `-s/-es/-ies`, `-ed/-ied`, `-ing`, `-er`, `-est`, `-y`,
+  `-ish`, `-able`, `-ly`, `-ness`, `-less`, `-ful` and `-ment`, with silent-`e`,
+  doubled-consonant and `y`/`i` spelling changes (`huggable` = `hug` + `-able`);
+- `'s` and plural `s'` possessives (`snowflake's`, `dogs'` = `dogs`);
+- `-s` and `-ed` endings chosen from the base's final phone (`/IH0 Z/`, `/S/`,
+  `/Z/`; `/IH0 D/`, `/T/`, `/D/`); the base keeps its own stress;
+- closed compounds of two parts, each at least 3 and 4 letters, where the
+  second part's primary stress becomes secondary (`mouth` + `watering`);
+- hyphenated words whose parts all resolve, with stress unchanged.
+
+At most two rules are stacked. Suffix analyses take precedence over compound
+splits, and a suffix never attaches to a guessed compound. Analyses that
+disagree (`hop`/`hope` cannot both explain a form) all become alternatives
+under the usual `selection` rule, so ambiguity is never resolved silently.
+Composed words have origin `composed_estimated` and derivation labels such as
+`composed:hug+able`. Their indices are listed in `coverage["estimated_indices"]`,
+and `coverage_report` lists them under `estimated`, separate from dictionary
+words and from words that remain `unresolved`. A sentence that relies on an
+estimate is eligible; studies should report how many items do (`estimated_items`)
+and can rerun without `compose` as a sensitivity check. Supplemental entries and
+item overrides always take precedence. Words that no rule explains, such as
+`cerulean`, stay unresolved and need a supplement. No statistical model, weights
+or external package is involved.
+
+Held-out check against the bundled CMUdict
+(`examples/validate_pronunciation_composition.py`; each word rebuilt without its own
+entry; 125,938 alphabetic entries, 59,564 composable). Stress is ignored in
+the phone error rate.
+
+| Rule | Words | Exact | Exact ignoring stress |
+| --- | ---: | ---: | ---: |
+| `'s` possessive | 6,316 | 92.4% | 93.9% |
+| `-s` | 14,066 | 87.8% | 89.6% |
+| `-ed` | 4,659 | 87.1% | 89.3% |
+| `-ing` | 4,545 | 86.6% | 88.9% |
+| `-er` | 4,336 | 68.2% | 69.7% |
+| `-y` | 3,171 | 53.0% | 55.9% |
+| closed compound | 18,312 | 30.5% | 51.9% |
+
+Overall phone error rate is 6.2%. CMUdict is dominated by surnames, which are
+not regular derivations (`vin` + `cent`, `king` + `man` with a reduced vowel),
+so the compound and `-y` rows understate accuracy for ordinary vocabulary: 34
+of 36 common closed compounds (`sunflower`, `toothbrush`, `lighthouse`, ...)
+are reproduced exactly, and the other two fall below the 4-letter limit.
+These are canonical estimates, never audio verification.
 
 ## Representations and distances
 
@@ -190,7 +243,8 @@ The demo group label is an example grouping, not a real experimental run.
 
 A study manifest is JSON with `items`, each containing `item_id`, `text`, `audio`
 (relative to the manifest), and optionally `group`. Optional top-level
-`supplemental`, `overrides` (word indices as JSON keys), `pairs` (item-ID pairs),
+`supplemental`, `overrides` (word indices as JSON keys), `compose` (boolean,
+default false), `pairs` (item-ID pairs),
 and `acoustic_config` follow the APIs above. Duplicate IDs, unknown pair members,
 self-pairs and duplicate unordered pairs fail. `--within-group` intersects the
 requested pairs with within-group pairs; missing group labels fail.
