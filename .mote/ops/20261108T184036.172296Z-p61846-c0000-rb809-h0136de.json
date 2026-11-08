@@ -1,0 +1,1 @@
+{"actor":"claude-pronunciation-compose","entity":"bd-01M6Y709PE8XQREWD25K3KV32S","kind":"note","note_kind":"progress","op":"20261108T184036.172296Z-p61846-c0000-rb809-h0136de","text":"Implemented opt-in affix-compound-v1 composition, tests (57 pass in phonology/sentence tests), docs and held-out CMUdict validation; draft PR pending.","ts":"2026-11-08T18:40:36.172296Z","v":1}

@@ -290,11 +290,15 @@ def run_comparison(
         item: {int(i): p for i, p in choices.items()}
         for item, choices in manifest.get("overrides", {}).items()
     }
+    compose = manifest.get("compose", False)
+    if type(compose) is not bool:
+        raise ValueError("manifest 'compose' must be true or false")
     seqs = extract_pronunciations(
         dict(zip(ids, (i["text"] for i in items))),
         selection=selection,
         supplemental=supplemental,
         overrides=overrides,
+        compose=compose,
     )
     groups = (
         {i["item_id"]: str(i["group"]) for i in items}
